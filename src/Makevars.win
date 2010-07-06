@@ -1,0 +1,3 @@
+SYMPHONY_LIBS = -lSym -lCgl -lOsiClp -lClp -lOsi -lCoinUtils
+PKG_CPPFLAGS = -I$(SYMPHONY_HOME)/include
+PKG_LIBS = -L$(SYMPHONY_HOME)/lib $(SYMPHONY_LIBS)

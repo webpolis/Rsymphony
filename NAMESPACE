@@ -1,0 +1,6 @@
+useDynLib("Rsymphony")
+
+export("Rsymphony_solve_LP")
+
+S3method("make_csc_matrix", "matrix")
+S3method("make_csc_matrix", "simple_triplet_matrix")

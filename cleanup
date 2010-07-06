@@ -1,0 +1,8 @@
+#! /bin/sh
+(cd src/SYMPHONY; 
+  if test -f Makefile; then
+    make distclean || true
+    make distclean SUBDIRS= || true
+  fi)
+rm -f config.* autom4te.cache src/SYMPHONY.ts src/Makevars
+exit 0

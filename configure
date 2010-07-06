@@ -1,0 +1,64 @@
+#! /bin/sh
+## For the time being, this is a simple shell script ...
+
+## Test whether a complete SYMPHONY library environment is available,
+## e.g. https://projects.coin-or.org/CoinBinary.
+
+## Find the R home directory.
+: ${R_HOME=`R RHOME`}
+if test -z "${R_HOME}"; then
+  echo "Could not determine R_HOME."
+  exit 1
+fi
+
+R="${R_HOME}/bin/R"
+
+SYMPHONY_LIBS="-lSym -lCgl -lOsiClp -lClp -lOsi -lCoinUtils"
+
+## Test whether we can compile and link a minimal program.
+rm -f conftest.*
+
+cat > conftest.cc <<EOF
+#include <coin/symphony.h>
+extern "C"
+int
+main ()
+{
+    sym_environment *env = sym_open_environment();
+    sym_close_environment(env);
+    return 0;
+}
+EOF
+
+${R} CMD SHLIB conftest.cc ${SYMPHONY_LIBS} >/dev/null 2>&1
+status=${?}
+
+rm -f conftest.*
+
+if test ${status} -eq 0; then
+    SYMPHONY_INCLUDE_PATH=
+    SYMPHONY_LIB_PATH=
+    SYMPHONY_TS=
+else    
+    (cd src/SYMPHONY && \
+	./configure \
+	--enable-static --disable-shared --with-pic \
+        --with-application=no --disable-dependency-tracking \
+        --disable-cplex-libcheck --disable-glpk-libcheck \
+        --disable-osl-libcheck --disable-soplex-libcheck \
+        --disable-xpress-libcheck \
+	CC="`${R} CMD config CC`" \
+	CPP="`${R} CMD config CPP`" \
+	CXX="`${R} CMD config CXX`" \
+	CXXCPP="`${R} CMD config CXXCPP`" \
+	F77="`${R} CMD config F77`" \
+	FLIBS="`${R} CMD config FLIBS`")
+    SYMPHONY_INCLUDE_PATH="-ISYMPHONY/include"
+    SYMPHONY_LIB_PATH="-LSYMPHONY/lib"
+    SYMPHONY_TS="SYMPHONY.ts"
+fi
+
+sed -e "s|@SYMPHONY_INCLUDE_PATH@|${SYMPHONY_INCLUDE_PATH}|" \
+    -e "s|@SYMPHONY_LIB_PATH@|${SYMPHONY_LIB_PATH}|" \
+    -e "s|@SYMPHONY_TS@|${SYMPHONY_TS}|" \
+    src/Makevars.in > src/Makevars
