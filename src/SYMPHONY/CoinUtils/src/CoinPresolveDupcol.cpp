@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveDupcol.cpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinPresolveDupcol.cpp 1269 2010-04-02 17:15:06Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 #include <stdio.h>
@@ -702,7 +702,10 @@ const CoinPresolveAction
 	   nactions,nfixed_down,nfixed_up) ; }
 # endif
   if (nactions)
-  { next = new dupcol_action(nactions,CoinCopyOfArray(actions,nactions),next) ; }
+  { next = new dupcol_action(nactions,CoinCopyOfArray(actions,nactions),next) ;
+    // we can't go round again in integer
+    prob->presolveOptions_ |= 0x80000000;
+}
   deleteAction(actions,action*) ;
 
   if (nfixed_down)

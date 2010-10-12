@@ -80,7 +80,7 @@ if USE_CL
 endif
 
 
-#Add SymConfig.h even though it is not used - for COIN compability
+#Add SymConfig.h
 SYMINCFILES = ../include/SymConfig.h $(SYMHEADERS)
 
 SYM_MASTER_SRC	= Master/master.c Master/master_wrapper.c Master/master_io.c \
@@ -258,7 +258,8 @@ ADDLIBS += \
 endif
 
 # Add include files
-AM_CPPFLAGS += -I`$(CYGPATH_W) $(SYMINCDIR)`
+AM_CPPFLAGS += -I`$(CYGPATH_W) $(SYMINCDIR)` \
+               -I`$(CYGPATH_W) $(SYMPHONYOBJDIR)/include`
 
 # List all additionally required solver and Osi libraries
 
@@ -742,11 +743,8 @@ rename_obj:
 
 # Here list all the header files that are required by a user of the library,
 # and that therefore should be installed in 'install/coin'
-# Although SYMPHONY is not using configuration defs file config.sym, we 
-# add it for now for COIN compatibility.  
 includecoindir = $(includedir)/coin
 includecoin_HEADERS = \
-	../include/config_sym.h \
 	../include/symphony.h
 #	$(SYMHEADERS)
 
@@ -758,9 +756,6 @@ includecoin_HEADERS = \
 ConfigHeader = SymConfig.h
 
 install-exec-local:
-	echo "#ifndef HAVE_CONFIG_H" >bla
-	echo "#define HAVE_CONFIG_H" >>bla
-	echo "#endif" >> bla
 	cat $(top_srcdir)/include/$(ConfigHeader) >> bla
 	$(install_sh_DATA) bla $(DESTDIR)$(includecoindir)/$(ConfigHeader)
 	rm -f bla

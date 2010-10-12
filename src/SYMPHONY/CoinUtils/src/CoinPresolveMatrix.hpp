@@ -1,4 +1,4 @@
-/* $Id: CoinPresolveMatrix.hpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinPresolveMatrix.hpp 1269 2010-04-02 17:15:06Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 #ifndef CoinPresolveMatrix_H
@@ -1082,6 +1082,7 @@ class CoinPresolveMatrix : public CoinPrePostsolveMatrix
       4 set to inhibit x+y+z=1 mods
       8 not used
       16 set to allow stuff which won't unroll easily 
+      0x80000000 set by presolve to say dupcol_action compressed columns
   */
   int presolveOptions_;
   /*! Flag to say if any rows or columns are marked as prohibited

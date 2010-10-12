@@ -1,4 +1,4 @@
-/* $Id: Idiot.cpp 1460 2009-11-06 17:34:01Z forrest $ */
+/* $Id: Idiot.cpp 1513 2010-02-09 16:12:10Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 
@@ -210,12 +210,12 @@ Idiot::cleanIteration(int iteration, int ordinaryStart, int ordinaryEnd,
 	CoinBigIndex j=columnStart[iCol];
 	rowSave += (colsol[iCol]-lower[iCol])*element[j];
 	colsol[iCol]=lower[iCol];
-	assert (lower[iCol]>-1.0e20);
 	while (nextSlack[iCol]>=0) {
 	  iCol = nextSlack[iCol];
+	  double lowerValue = CoinMax(CoinMin(colsol[iCol],0.0)-1000.0,lower[iCol]);
 	  j=columnStart[iCol];
-	  rowSave += (colsol[iCol]-lower[iCol])*element[j];
-	  colsol[iCol]=lower[iCol];
+	  rowSave += (colsol[iCol]-lowerValue)*element[j];
+	  colsol[iCol]=lowerValue;
 	}
 	iCol =negSlack[i];
 	while (rowValue>rowUpper[i]&&iCol>=0) {
@@ -830,7 +830,9 @@ Idiot::solve2(CoinMessageHandler * handler,const CoinMessages * messages)
 #endif
     }
     if (iteration>50&&n==numberAway&&result.infeas<1.0e-4) {
+#ifdef CLP_INVESTIGATE
       printf("infeas small %g\n",result.infeas);
+#endif
       break; // not much happening
     }
     if (lightWeight_==1&&iteration>10&&result.infeas>1.0&&maxIts!=7) {
@@ -1318,7 +1320,9 @@ Idiot::crossOver(int mode)
     int * posSlack = whenUsed_+ncols;
     int * negSlack = posSlack+nrows;
     int * nextSlack = negSlack + nrows;
-#if 1
+    /* Laci - try both ways - to see what works -
+       you can change second part as much as you want */
+#ifndef LACI_TRY
     // Array for sorting out slack values
     double * ratio = new double [ncols];
     int * which = new int [ncols];

@@ -1,4 +1,4 @@
-/* $Id: CoinPackedMatrix.cpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinPackedMatrix.cpp 1259 2010-03-01 03:45:05Z ladanyi $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
 
@@ -2711,7 +2711,7 @@ CoinPackedMatrix::gutsOfOpEqual(const bool colordered,
    majorDim_ = major;
    minorDim_ = minor;
    size_ = numels;
-   if (!len&&numels==start[major]&&!start[0]) {
+   if (!len && numels > 0 && numels==start[major] && start[0]==0) {
      // No gaps - do faster
      if (major>maxMajorDim_||!start_) {
        maxMajorDim_ = major;

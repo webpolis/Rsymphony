@@ -1,4 +1,4 @@
-/* $Id: ClpSimplexPrimal.cpp 1458 2009-11-05 12:34:07Z forrest $ */
+/* $Id: ClpSimplexPrimal.cpp 1532 2010-03-23 14:36:16Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 
@@ -754,7 +754,7 @@ ClpSimplexPrimal::statusOfProblemInPrimal(int & lastCleaned,int type,
 	// is factorization okay?
 	int factorStatus = internalFactorize(1);
 	if (factorStatus) {
-	  if (solveType_==2+8) {
+	  if (solveType_==2) {
 	    // say odd
 	    problemStatus_=5;
 	    return;
@@ -1451,8 +1451,17 @@ ClpSimplexPrimal::statusOfProblemInPrimal(int & lastCleaned,int type,
   lastGoodIteration_ = numberIterations_;
   if (numberIterations_>lastBadIteration_+100)
     moreSpecialOptions_ &= ~16; // clear check accuracy flag
-  if (goToDual) 
+  if (goToDual) { 
     problemStatus_=10; // try dual
+    // See if second call
+    if ((moreSpecialOptions_&256)!=0) {
+      numberPrimalInfeasibilities_ = nonLinearCost_->numberInfeasibilities();
+      sumPrimalInfeasibilities_ = nonLinearCost_->sumInfeasibilities();
+      // say infeasible
+      if (numberPrimalInfeasibilities_)
+	problemStatus_=1;
+    }
+  }
   // make sure first free monotonic
   if (firstFree_>=0&&saveFirstFree>=0) {
     firstFree_= (numberIterations_) ? saveFirstFree : -1;
@@ -2745,8 +2754,21 @@ ClpSimplexPrimal::pivotResult(int ifValuesPass)
     // Get extra rows
     matrix_->extendUpdated(this,rowArray_[1],0);
     // do ratio test and re-compute dj
-    primalRow(rowArray_[1],rowArray_[3],rowArray_[2],
-	      ifValuesPass);
+#ifdef CLP_USER_DRIVEN
+    if (solveType_!=2||(moreSpecialOptions_&512)==0) {
+#endif
+      primalRow(rowArray_[1],rowArray_[3],rowArray_[2],
+		ifValuesPass);
+#ifdef CLP_USER_DRIVEN
+    } else {
+      int status = eventHandler_->event(ClpEventHandler::pivotRow);
+      if (status>=0) {
+	problemStatus_=5;
+	secondaryStatus_=ClpEventHandler::pivotRow;
+	break;
+      }
+    }
+#endif
     if (ifValuesPass) {
       saveDj=dualIn_;
       //assert (fabs(alpha_)>=1.0e-5||(objective_->type()<2||!objective_->activated())||pivotRow_==-2);
@@ -2837,7 +2859,7 @@ ClpSimplexPrimal::pivotResult(int ifValuesPass)
       }
     }
     if (pivotRow_>=0) {
-      if (solveType_==2) {
+      if (solveType_==2&&(moreSpecialOptions_&512)==0) {
 	// **** Coding for user interface
 	// do ray
 	primalRay(rowArray_[1]);
@@ -2915,7 +2937,7 @@ ClpSimplexPrimal::pivotResult(int ifValuesPass)
 	if(lastGoodIteration_ != numberIterations_) {
 	  clearAll();
 	  pivotRow_=-1;
-	  if (solveType_==1) {
+	  if (solveType_==1||(moreSpecialOptions_&512)!=0) {
 	    returnCode=-4;
 	    break;
 	  } else {
@@ -2976,7 +2998,7 @@ ClpSimplexPrimal::pivotResult(int ifValuesPass)
 	  returnCode = 2; //say looks unbounded
 	  // do ray
 	  primalRay(rowArray_[1]);
-	} else if (solveType_==2) {
+	} else if (solveType_==2&&(moreSpecialOptions_&512)==0) {
 	  // refactorize
 	  int lastCleaned=0;
 	  ClpSimplexProgress dummyProgress;
@@ -3083,7 +3105,8 @@ ClpSimplexPrimal::pivotResult(int ifValuesPass)
       }
     }
   }
-  if (solveType_==2&&(returnCode == -2||returnCode==-3)) {
+  if ((solveType_==2&&(moreSpecialOptions_&512)==0)&&
+      (returnCode == -2||returnCode==-3)) {
     // refactorize here
     int lastCleaned=0;
     ClpSimplexProgress dummyProgress;

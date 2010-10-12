@@ -68,7 +68,8 @@ noinst_PROGRAMS = unitTest$(EXEEXT)
 @COIN_HAS_ASL_TRUE@@COIN_HAS_CBC_TRUE@am__append_10 = $(ASL_CPPFLAGS) -DCOIN_HAS_ASL
 @COIN_HAS_SYMPHONY_TRUE@am__append_11 = OsiSymSolverInterfaceTest.cpp
 @COIN_HAS_SYMPHONY_TRUE@am__append_12 = -I`$(CYGPATH_W) $(SYMPHONYSRCDIR)/include` \
-@COIN_HAS_SYMPHONY_TRUE@	-I`$(CYGPATH_W) $(srcdir)/../src/OsiSym`
+@COIN_HAS_SYMPHONY_TRUE@	-I`$(CYGPATH_W) $(srcdir)/../src/OsiSym` \
+@COIN_HAS_SYMPHONY_TRUE@	-I`$(CYGPATH_W) $(SYMPHONYOBJDIR)/include`
 
 @COIN_HAS_SYMPHONY_TRUE@am__append_13 = ../src/OsiSym/libOsiSym.la \
 @COIN_HAS_SYMPHONY_TRUE@	$(SYMPHONYOBJDIR)/src/libSym.la

@@ -13,7 +13,7 @@ fi
 
 R="${R_HOME}/bin/R"
 
-SYMPHONY_LIBS="-lSym -lCgl -lOsiClp -lClp -lOsi -lCoinUtils"
+SYMPHONY_LIBS="-lSym"
 
 ## Test whether we can compile and link a minimal program.
 rm -f conftest.*
@@ -53,12 +53,14 @@ else
 	CXXCPP="`${R} CMD config CXXCPP`" \
 	F77="`${R} CMD config F77`" \
 	FLIBS="`${R} CMD config FLIBS`")
+    SYMPHONY_LIBS="-lSym -lCgl -lOsiClp -lClp -lOsi -lCoinUtils"
     SYMPHONY_INCLUDE_PATH="-ISYMPHONY/include"
     SYMPHONY_LIB_PATH="-LSYMPHONY/lib"
     SYMPHONY_TS="SYMPHONY.ts"
 fi
 
-sed -e "s|@SYMPHONY_INCLUDE_PATH@|${SYMPHONY_INCLUDE_PATH}|" \
+sed -e "s|@SYMPHONY_LIBS@|${SYMPHONY_LIBS}|" \
+    -e "s|@SYMPHONY_INCLUDE_PATH@|${SYMPHONY_INCLUDE_PATH}|" \
     -e "s|@SYMPHONY_LIB_PATH@|${SYMPHONY_LIB_PATH}|" \
     -e "s|@SYMPHONY_TS@|${SYMPHONY_TS}|" \
     src/Makevars.in > src/Makevars

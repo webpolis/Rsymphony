@@ -1,4 +1,4 @@
-/* $Id: ClpSimplex.cpp 1458 2009-11-05 12:34:07Z forrest $ */
+/* $Id: ClpSimplex.cpp 1511 2010-02-08 16:25:08Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 
@@ -5126,8 +5126,17 @@ int ClpSimplex::dualDebug (int ifValuesPass , int startFinishOptions)
 #endif
 {
   //double savedPivotTolerance = factorization_->pivotTolerance();
-  int saveQuadraticActivated = objective_->activated();
-  objective_->setActivated(0);
+  int saveQuadraticActivated = 0;
+  if (objective_) {
+    saveQuadraticActivated = objective_->activated();
+    objective_->setActivated(0);
+  } else {
+    // create dummy stuff
+    assert (!numberColumns_);
+    if (!numberRows_) 
+      problemStatus_=0; // say optimal
+    return 0;
+  }
   ClpObjective * saveObjective = objective_;
   CoinAssert (ifValuesPass>=0&&ifValuesPass<3);
   /*  Note use of "down casting".  The only class the user sees is ClpSimplex.
@@ -5341,11 +5350,24 @@ int ClpSimplex::dualDebug (int ifValuesPass , int startFinishOptions)
     //if (returnCode!=10)
     //assert (!numberDualInfeasibilities_);
   }
+  //#define CLP_INVESTIGATE_OBJ
+#ifdef CLP_INVESTIGATE_OBJ
+  if (saveObjective != objective_) {
+    // We changed objective to see if infeasible
+    printf("ZZ DUAL objective_ %p saveObjective %p\n",
+	   objective_,saveObjective);
+    delete objective_;
+    objective_=saveObjective;
+  }
+#endif
   return returnCode;
 }
 // primal 
 int ClpSimplex::primal (int ifValuesPass , int startFinishOptions)
 {
+#ifdef CLP_INVESTIGATE_OBJ
+  ClpObjective * saveObjective = objective_;
+#endif
   //double savedPivotTolerance = factorization_->pivotTolerance();
 #ifndef SLIM_CLP
   // See if nonlinear
@@ -5585,13 +5607,26 @@ int ClpSimplex::primal (int ifValuesPass , int startFinishOptions)
     baseIteration_=0;
     setInitialDenseFactorization(denseFactorization);
     perturbation_=savePerturbation;
-    if (problemStatus_==10) 
-      problemStatus_=0;
+    if (problemStatus_==10) {
+      if (!numberPrimalInfeasibilities_)
+        problemStatus_=0;
+      else
+        problemStatus_=4;
+    }
   }
   //factorization_->pivotTolerance(savedPivotTolerance);
   onStopped(); // set secondary status if stopped
   //if (problemStatus_==1&&lastAlgorithm==1)
   //returnCode=10; // so will do primal after postsolve
+#ifdef CLP_INVESTIGATE_OBJ
+  if (saveObjective != objective_) {
+    // We changed objective to see if infeasible
+    printf("ZZ PRIMAL objective_ %p saveObjective %p\n",
+	   objective_,saveObjective);
+    delete objective_;
+    objective_=saveObjective;
+  }
+#endif
   return returnCode;
 }
 #ifndef SLIM_CLP
@@ -10072,17 +10107,25 @@ ClpSimplex::fathom(void * stuff)
 	//check this does everything
 	static_cast<ClpSimplexOther *> (this)->afterCrunch(*small,
 						whichRow,whichColumn,nBound);
+	bool badSolution=false;
 	for (int i=0;i<numberColumns_;i++) {
 	  if (integerType_[i]) { 
 	    double value = columnActivity_[i];
 	    double value2 = floor(value+0.5);
-	    assert (fabs(value-value2)<1.0e-4);
+	    if (fabs(value-value2)>=1.0e-4) {
+	      // Very odd - can't use
+	      badSolution=true;
+	    }
 	    columnActivity_[i]=value2;
 	    if (fixBounds) {
 	      columnLower_[i]=value2;
 	      columnUpper_[i]=value2;
 	    }
 	  }
+	}
+	if (badSolution) {
+	  info->nNodes_=-1;
+	  returnCode=0;
 	}
 	//setLogLevel(63);
 	//double objectiveValue=doubleCheck();
@@ -11226,6 +11269,8 @@ ClpSimplex::fastDual2(ClpNodeStuff * info)
     }
   }
   if (problemStatus_==10) {
+    // Say second call
+    moreSpecialOptions_ |= 256;
     //printf("Cleaning up with primal\n");
     //lastAlgorithm=1;
     int savePerturbation = perturbation_;
@@ -11290,6 +11335,8 @@ ClpSimplex::fastDual2(ClpNodeStuff * info)
 	printf("looks like real trouble - too many iterations in second clean up - giving up\n");
 #endif
     }
+    // Say not second call
+    moreSpecialOptions_ &= ~256;
     intParam_[ClpMaxNumIteration] = saveMax;
     
     setInitialDenseFactorization(denseFactorization);

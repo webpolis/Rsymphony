@@ -4,16 +4,28 @@
 /* SYMPHONY Branch, Cut, and Price Library. This application is a solver for */
 /* the Vehicle Routing Problem and the Traveling Salesman Problem.           */
 /*                                                                           */
-/* (c) Copyright 2000-2007 Ted Ralphs. All Rights Reserved.                  */
+/* (c) Copyright 2000-2010 Ted Ralphs. All Rights Reserved.                  */
 /*                                                                           */
-/* This application was developed by Ted Ralphs (ted@lehigh.edu)             */
+/* This application was developed by Ted Ralphs (ted@lehigh.edu)        */
 /*                                                                           */
 /* This software is licensed under the Common Public License. Please see     */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
 
+/* This file is a modified version of SYMPHONY's vrp_main.c file that 
+   adds the ability to determine an initial upper bound by running
+   heuristics from the VRPH library. This capability can be turned off by
+   setting USE_VRPH 0 below.
+
+   Modifications by Chris Groer (cgroer@gmail.com) */
+
 #define COMPILING_FOR_MASTER
+
+#define USE_VRPH 0
+
+/* We will have VRPH generate NUM_VRPH_SOLUTIONS */
+#define NUM_VRPH_SOLUTIONS 10
 
 /*===========================================================================*/
 
@@ -57,10 +69,22 @@ int main(int argc, char **argv)
 #include "vrp_types.h"
 #include "vrp_const.h"
 
+#if USE_VRPH
+#include "VRPH.h"
+#endif
+
 int vrp_test(sym_environment *env, int argc, char **argv);
 
 int main(int argc, char **argv)
 {
+
+#if USE_VRPH
+   int i;
+   double best_sol=VRP_INFINITY;
+   int best_sol_buff[500];
+   clock_t start, vrph_stop, final_stop;
+#endif
+
    vrp_problem *vrp;
 
    sym_environment *env = sym_open_environment();
@@ -70,12 +94,77 @@ int main(int argc, char **argv)
    sym_parse_command_line(env, argc, argv);
 
    sym_get_user_data(env, (void**)&vrp);
+   
+#if USE_VRPH
+   
+   start=clock();
 
-   if (vrp->par.test){
+   /* Get the size of the problem in the input file */
+   int n=VRPGetDimension(vrp->par.infile);
+
+   /* Declare a VRP object of size n */
+   VRP V(n);
+
+   /* Declare a ClarkeWright object of size n */
+   ClarkeWright CW(n);
  
-     vrp_test(env, argc, argv);
+   /* Populate the VRP object with the input file */
+   V.read_TSPLIB_file(vrp->par.infile);
 
-   } else {
+   /* Now create NUM_VRPH_SOLUTIONS solutions using VRPH and set the
+      upper bound to the best solution discovered */
+
+   for (i = 0; i < NUM_VRPH_SOLUTIONS; i++){
+
+      /* Create default routes - each customer on its own route */
+      V.create_default_routes();
+
+      /* Create a new random feasible solution with Clarke Wright */
+
+      CW.Construct(&V, .5+ lcgrand(1),false);
+
+      /* Improve it with the RTR heuristic */
+      V.RTR_solve(ONE_POINT_MOVE+TWO_POINT_MOVE+TWO_OPT+THREE_OPT,
+		  30,5,1,.01,25,VRPH_LI_PERTURB,VRPH_BEST_ACCEPT,false);
+
+      if (V.get_total_route_length()-V.get_total_service_time()<best_sol){
+	 best_sol=V.get_total_route_length()-V.get_total_service_time();
+	 V.export_canonical_solution_buff(best_sol_buff);
+      }
+      
+      /* Reset VRPH's internal data structures */
+      V.reset();
+   }
+   vrph_stop=clock();
+
+   /* Import the best solution and display it - if SYMPHONY claims an
+      infeasibility because the VRPH solution is optimal, we wouldn't see it
+      otherwise! */
+   printf("VRPH set SYMPHONY upper bound to %f based on solution:\n",best_sol);
+   V.import_solution_buff(best_sol_buff);
+   V.summary();
+
+   /* Set the upper bound using VRPH solution by accessing SYMPHONY's
+      internal data structures */
+   env->has_ub=1;
+   env->ub=best_sol;
+
+#if 0
+   /* Note that this might be incorrect if the VRPH solution is not optimal
+      So the # of trucks still needs to be passed in on the command line! */
+   vrp->numroutes=V.get_total_number_of_routes();
+#endif
+#endif
+
+   
+   if (vrp->par.test){
+
+#if USE_VRPH
+      printf("Can't run in test mode with VRPH. Exiting...");
+#else
+      vrp_test(env, argc, argv);
+#endif
+   }else{
 
      sym_load_problem(env);
      
@@ -88,6 +177,15 @@ int main(int argc, char **argv)
      sym_solve(env);
 
    }
+
+#if USE_VRPH
+   final_stop=clock();
+
+   /* Print timings to stderr: file vrph_time, sym_time */
+   fprintf(stderr,"%s %5.3f %5.3f\n", vrp->par.infile,
+	   (double)(vrph_stop-start)/CLOCKS_PER_SEC,
+	   (double)(final_stop-vrph_stop)/CLOCKS_PER_SEC);
+#endif
 
    sym_close_environment(env);
      

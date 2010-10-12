@@ -13,6 +13,7 @@ extern int osi_hot;
 #include "CoinModel.hpp"
 #include "CoinMpsIO.hpp"
 #include "CoinSort.hpp"
+#include "ClpMessage.hpp"
 #include "ClpDualRowSteepest.hpp"
 #include "ClpPrimalColumnSteepest.hpp"
 #include "ClpPackedMatrix.hpp"
@@ -5312,6 +5313,9 @@ OsiClpSolverInterface::enableSimplexInterface(bool doingPrimal)
   int returnCode=modelPtr_->startup(0);
   assert (!returnCode||returnCode==2);
 #endif
+  // Reset objective if primal as may be a bit infeasible
+  if (modelPtr_->algorithm_>0&&modelPtr_->nonLinearCost_)
+    modelPtr_->objectiveValue_=modelPtr_->nonLinearCost_->feasibleCost();
   modelPtr_->specialOptions_=saveOptions;
   modelPtr_->numberIterations_=saveIts;
 }
@@ -6373,6 +6377,7 @@ OsiClpSolverInterface::crunch()
     (modelPtr_)->crunch(rhs,whichRow,whichColumn,
 			nBound,moreBounds,tightenBounds);
 #endif
+  bool inCbcOrOther = (modelPtr_->specialOptions()&0x03000000)!=0;
   if (small) {
     small->specialOptions_ |= 262144;
     if ((specialOptions_&131072)!=0) {
@@ -6406,7 +6411,6 @@ OsiClpSolverInterface::crunch()
       small->setColumnScale(columnScale2);
     }
     disasterHandler_->setOsiModel(this);
-    bool inCbcOrOther = (modelPtr_->specialOptions()&0x03000000)!=0;
     if (inCbcOrOther) {
       disasterHandler_->setSimplex(small);
       disasterHandler_->setWhereFrom(1); // crunch
@@ -6430,25 +6434,24 @@ OsiClpSolverInterface::crunch()
 #endif
     totalIterations += small->numberIterations();
     int problemStatus = small->problemStatus();
-    if (problemStatus==0||problemStatus==2) {
-      modelPtr_->setProblemStatus(0);
-      // Scaling may have changed - if so pass across
-      if (modelPtr_->scalingFlag()==4)
-	modelPtr_->scaling(small->scalingFlag());
-      static_cast<ClpSimplexOther *> (modelPtr_)->afterCrunch(*small,whichRow,whichColumn,nBound);
-      if (problemStatus==2)
-	modelPtr_->primal(1);
-#if 0
-      ClpSimplex save(*modelPtr_);
-      save.dual();
-      //assert(!modelPtr_->numberIterations());
-      if(save.numberIterations()) {
-	printf("Iterated!\n");
-	save = ClpSimplex(*modelPtr_);
-	save.setLogLevel(63);
-	save.dual();
+    if (problemStatus>=0&&problemStatus<=2) {
+      modelPtr_->setProblemStatus(problemStatus);
+      if (!inCbcOrOther||!problemStatus) {
+	// Scaling may have changed - if so pass across
+	if (modelPtr_->scalingFlag()==4)
+	  modelPtr_->scaling(small->scalingFlag());
+	static_cast<ClpSimplexOther *> (modelPtr_)->afterCrunch(*small,whichRow,whichColumn,nBound);
+	if ((specialOptions_&1048576)==0) {
+	  // get correct rays
+	  if (problemStatus==2)
+	    modelPtr_->primal(1);
+	  else if (problemStatus==1)
+	    modelPtr_->dual();
+	} else {
+	  delete [] modelPtr_->ray_;
+	  modelPtr_->ray_=NULL;
+	}
       }
-#endif
 #ifdef KEEP_SMALL
       //assert (!smallModel_);
       //smallModel_ = small;
@@ -7365,6 +7368,7 @@ OsiClpSolverInterface::branchAndBound() {
     int nRedundantUp2=0;
     int nRedundantDown2=0;
     OsiNodeSimple bestNode;
+    char generalPrint[300];
     ////// Start main while of branch and bound
     // while until nothing on stack
     while (branchingTree.size()) {
@@ -7666,18 +7670,22 @@ OsiClpSolverInterface::branchAndBound() {
         bestNode = node;
         // set cutoff (hard coded tolerance)
         setDblParam(OsiDualObjectiveLimit,(bestNode.objectiveValue_-1.0e-5)*direction);
-        std::cout<<"Integer solution of "
-                 <<bestNode.objectiveValue_
-                 <<" found after "<<numberIterations
-                 <<" iterations and "<<numberNodes<<" nodes"
-                 <<std::endl;
+	sprintf(generalPrint,"Integer solution of %g found after %d iterations and %d nodes",
+		bestNode.objectiveValue_,numberIterations,
+		numberNodes);
+	CoinMessages generalMessages = modelPtr_->messages();
+	modelPtr_->messageHandler()->message(CLP_GENERAL,generalMessages)
+	  << generalPrint
+	  <<CoinMessageEol;
       }
     }
     ////// End main while of branch and bound
-    std::cout<<"Search took "
-             <<numberIterations
-             <<" iterations and "<<numberNodes<<" nodes"
-             <<std::endl;
+    sprintf(generalPrint,"Search took %d iterations and %d nodes",
+	    numberIterations,numberNodes);
+    CoinMessages generalMessages = modelPtr_->messages();
+    modelPtr_->messageHandler()->message(CLP_GENERAL,generalMessages)
+      << generalPrint
+      <<CoinMessageEol;
     if (bestNode.numberIntegers_) {
       // we have a solution restore
       // do bounds
@@ -7699,8 +7707,8 @@ OsiClpSolverInterface::branchAndBound() {
     delete [] relaxedLower;
     delete [] relaxedUpper;
   } else {
-    std::cout<<"The LP relaxation is infeasible"
-             <<std::endl;
+    if(messageHandler())
+      *messageHandler() <<"The LP relaxation is infeasible" <<CoinMessageEol;
     modelPtr_->setProblemStatus(1);
     //throw CoinError("The LP relaxation is infeasible or too expensive",
     //"branchAndBound", "OsiClpSolverInterface");

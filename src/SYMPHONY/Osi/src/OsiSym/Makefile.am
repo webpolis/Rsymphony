@@ -14,7 +14,7 @@
 #                                                                           #
 #===========================================================================#
 
-## $Id: Makefile.am 1152 2007-12-28 03:59:07Z andreasw $
+## $Id: Makefile.am 1494 2010-04-25 19:08:02Z tkr $
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -42,6 +42,7 @@ AM_CPPFLAGS = \
 	-I`$(CYGPATH_W) $(COINUTILSSRCDIR)/src` \
 	-I`$(CYGPATH_W) $(COINUTILSOBJDIR)/inc` \
 	-I`$(CYGPATH_W) $(SYMPHONYSRCDIR)/include` \
+	-I`$(CYGPATH_W) $(SYMPHONYOBJDIR)/include` \
 	-I`$(CYGPATH_W) $(srcdir)/..`
 
 # This line is necessary to allow VPATH compilation with MS compilers

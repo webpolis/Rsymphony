@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Common Public License.
 
-## $Id: Makefile.am 1438 2010-01-04 23:47:44Z stefan $
+## $Id: Makefile.am 1497 2010-04-27 03:45:29Z tkr $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -69,7 +69,8 @@ endif
 if COIN_HAS_SYMPHONY
   unitTest_SOURCES += OsiSymSolverInterfaceTest.cpp
   AM_CPPFLAGS += -I`$(CYGPATH_W) $(SYMPHONYSRCDIR)/include` \
-	-I`$(CYGPATH_W) $(srcdir)/../src/OsiSym`
+	-I`$(CYGPATH_W) $(srcdir)/../src/OsiSym` \
+	-I`$(CYGPATH_W) $(SYMPHONYOBJDIR)/include`
   unitTest_LDADD += ../src/OsiSym/libOsiSym.la \
 	$(SYMPHONYOBJDIR)/src/libSym.la
   LIBS += `cat $(SYMPHONYOBJDIR)/sym_addlibs.txt`

@@ -2,7 +2,7 @@
 # All Rights Reserved.
 # This file is distributed under the Common Public License.
 
-## $Id: configure.ac 1452 2010-01-11 20:40:38Z stefan $
+## $Id: configure.ac 1501 2010-05-08 23:48:25Z tkr $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,7 +12,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Osi],[0.102stable],[coin-osi@list.coin-or.org])
+AC_INIT([Osi],[0.102.3],[coin-osi@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.

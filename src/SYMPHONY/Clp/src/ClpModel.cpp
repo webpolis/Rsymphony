@@ -1,4 +1,4 @@
-/* $Id: ClpModel.cpp 1482 2009-12-22 10:03:10Z forrest $ */
+/* $Id: ClpModel.cpp 1536 2010-04-07 09:37:19Z stefan $ */
 // copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
 
@@ -2571,7 +2571,7 @@ double *
 ClpModel::infeasibilityRay() const
 {
   double * array = NULL;
-  if (problemStatus_==1) {
+  if (problemStatus_==1 && ray_) {
     array = ClpCopyOfArray(ray_,numberRows_);
 #ifndef CLP_NO_SWAP_SIGN
     // swap signs to be consistent with norm

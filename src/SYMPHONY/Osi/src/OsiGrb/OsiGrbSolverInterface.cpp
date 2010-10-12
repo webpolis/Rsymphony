@@ -8,7 +8,7 @@
 // Copyright (C) 2009 Humboldt University Berlin and others.
 // All Rights Reserved.
 
-// $Id: OsiGrbSolverInterface.cpp 1445 2010-01-09 20:33:43Z stefan $
+// $Id: OsiGrbSolverInterface.cpp 1475 2010-02-25 12:05:41Z stefan $
 
 #include <iostream>
 #include <cassert>
@@ -1504,7 +1504,7 @@ const double * OsiGrbSolverInterface::getRowActivity() const
   		
   		GUROBI_CALL( "getRowActivity", GRBupdatemodel(getMutableLpPtr()) );
 
-      if ( GRBgetdblattrelement(getMutableLpPtr(), GRB_DBL_ATTR_SLACK, 0, colsol_) == 0 )
+      if ( GRBgetdblattrelement(getMutableLpPtr(), GRB_DBL_ATTR_SLACK, 0, rowact_) == 0 )
       {
         GUROBI_CALL( "getRowActivity", GRBgetdblattrarray(getMutableLpPtr(), GRB_DBL_ATTR_SLACK, 0, nrows, rowact_) );
       }
