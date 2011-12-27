@@ -1,10 +1,10 @@
-/* $Id: CoinPrePostsolveMatrix.cpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinPrePostsolveMatrix.cpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#include <stdio.h>
-
-#include <assert.h>
+#include <cstdio>
+#include <cassert>
 #include <iostream>
 
 #include "CoinHelperFunctions.hpp"

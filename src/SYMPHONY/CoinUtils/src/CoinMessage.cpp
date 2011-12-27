@@ -1,6 +1,8 @@
-/* $Id: CoinMessage.cpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinMessage.cpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -58,6 +60,8 @@ static Coin_message us_english[]=
   { COIN_PRESOLDBG_DUALSTAT,518,3,
     "dual[%d] = %g inconsistent with status %s (%s)." },
 # endif
+  {COIN_GENERAL_INFO,9,1,"%s"},
+  {COIN_GENERAL_WARNING,3007,1,"%s"},
   {COIN_DUMMY_END,999999,0,""}
 };
 // **** aiutami!

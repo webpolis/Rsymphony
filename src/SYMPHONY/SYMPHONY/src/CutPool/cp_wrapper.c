@@ -5,9 +5,9 @@
 /* SYMPHONY was jointly developed by Ted Ralphs (ted@lehigh.edu) and         */
 /* Laci Ladanyi (ladanyi@us.ibm.com).                                        */
 /*                                                                           */
-/* (c) Copyright 2000-2010 Ted Ralphs. All Rights Reserved.                  */
+/* (c) Copyright 2000-2011 Ted Ralphs. All Rights Reserved.                  */
 /*                                                                           */
-/* This software is licensed under the Common Public License. Please see     */
+/* This software is licensed under the Eclipse Public License. Please see    */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -205,8 +205,8 @@ int check_cut_u(cut_pool *cp, lp_sol *cur_sol, cut_data *cut, int *is_violated,
       
     case EXPLICIT_ROW:
       nzcnt = ((int *) (cut->coef))[0];
-      matind = (int *) (cut->coef + ISIZE);
-      matval = (double *) (cut->coef + (1 + nzcnt) * ISIZE);
+      matval = (double *) (cut->coef + DSIZE);
+      matind = (int *) (cut->coef + (nzcnt+ 1) * DSIZE);
       for (i = 0, j = 0; i < nzcnt && j < varnum; ){
 	 if (matind[i] == indices[j]){
 	    lhs += matval[i++]*values[j++];

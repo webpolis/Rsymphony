@@ -5,9 +5,9 @@
 /* SYMPHONY was jointly developed by Ted Ralphs (ted@lehigh.edu) and         */
 /* Laci Ladanyi (ladanyi@us.ibm.com).                                        */
 /*                                                                           */
-/* (c) Copyright 2000-2010 Ted Ralphs. All Rights Reserved.                  */
+/* (c) Copyright 2000-2011 Ted Ralphs. All Rights Reserved.                  */
 /*                                                                           */
-/* This software is licensed under the Common Public License. Please see     */
+/* This software is licensed under the Eclipse Public License. Please see    */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -23,6 +23,7 @@
 #endif
 
 #include "symphony.h"
+#include "SymConfig.h"
 #include "sym_proccomm.h"
 #include "sym_timemeas.h"
 #include "sym_messages.h"
@@ -59,6 +60,28 @@
 /*===========================================================================*/
 /*===========================================================================*/
 
+void sym_version(void)
+{
+   printf("\n");
+   printf("==  Welcome to the SYMPHONY MILP Solver \n");
+   printf("==  Copyright 2000-2011 Ted Ralphs and others \n");
+   printf("==  All Rights Reserved. \n");
+   printf("==  Distributed under the Eclipse Public License 1.0 \n");
+   if (strcmp(SYMPHONY_VERSION, "trunk")){
+      printf("==  Version: %s \n", SYMPHONY_VERSION);
+   }else{
+      printf("==  Version: Trunk (unstable) \n");
+   }
+   printf("==  Build Date: %s \n", __DATE__);
+#ifdef SYMPHONY_SVN_REV
+   printf("==  Revision Number: %d \n", SYMPHONY_SVN_REV);
+#endif
+   printf("\n");
+}
+
+/*===========================================================================*/
+/*===========================================================================*/
+
 sym_environment *sym_open_environment()
 {
    sym_environment *env;
@@ -84,7 +107,7 @@ sym_environment *sym_open_environment()
 #endif
    
 #if 0
-   version();
+   sym_version();
 #endif
    
    if (initialize_u(env) == FUNCTION_TERMINATED_NORMALLY){
@@ -617,6 +640,7 @@ int sym_load_problem(sym_environment *env)
    env->comp_times.readtime = used_time(&t);
 
    env->termcode = TM_NO_SOLUTION;
+   env->mip->is_modified = TRUE; 
 
    return(termcode);
 }
@@ -687,6 +711,17 @@ int sym_solve(sym_environment *env)
 
    start_time = wall_clock(NULL);
 
+   double *tmp_sol;
+   lp_sol *best_sol = &(env->best_sol);
+
+   if(best_sol->has_sol && env->mip->is_modified){
+      FREE(best_sol->xind);
+      FREE(best_sol->xval);
+      best_sol->has_sol = FALSE;
+   }
+
+   env->mip->is_modified = FALSE;
+   
 #ifndef USE_SYM_APPLICATION   
 
    /* we send environment in just because we may need to 
@@ -710,16 +745,16 @@ int sym_solve(sym_environment *env)
       }else if(termcode == PREP_UNBOUNDED){
 	 return(env->termcode = PREP_UNBOUNDED);
       }else if(termcode == PREP_SOLVED){
-	 env->best_sol.has_sol = TRUE;
-	 env->best_sol.xind = (int *) malloc(ISIZE *
+	 best_sol->has_sol = TRUE;
+	 best_sol->xind = (int *) malloc(ISIZE *
 					     env->prep_mip->fixed_n);
-	 env->best_sol.xval = (double *) malloc(DSIZE *
+	 best_sol->xval = (double *) malloc(DSIZE *
 						env->prep_mip->fixed_n); 
 	 
-	 env->best_sol.xlength = env->prep_mip->fixed_n;
-	 memcpy(env->best_sol.xind, env->prep_mip->fixed_ind, ISIZE *
+	 best_sol->xlength = env->prep_mip->fixed_n;
+	 memcpy(best_sol->xind, env->prep_mip->fixed_ind, ISIZE *
 		env->prep_mip->fixed_n);
-	 memcpy(env->best_sol.xval, env->prep_mip->fixed_val, ISIZE *
+	 memcpy(best_sol->xval, env->prep_mip->fixed_val, ISIZE *
 		env->prep_mip->fixed_n);
 	 
 	 return(env->termcode = PREP_OPTIMAL_SOLUTION_FOUND);
@@ -914,6 +949,16 @@ int sym_solve(sym_environment *env)
 #endif
 #endif
 
+   // Check stored solution to see if it is still feasible
+
+   if (best_sol->has_sol){
+      tmp_sol = (double *) calloc(env->mip->n, DSIZE);
+      for (i = 0; i < best_sol->xlength; i++){
+	 tmp_sol[best_sol->xind[i]] = best_sol->xval[i];
+      }
+      sym_set_col_solution(env, tmp_sol);
+   }
+   
    //   memset(&(env->best_sol), 0, sizeof(lp_sol));
 
    if (env->warm_start && env->par.tm_par.warm_start){
@@ -931,9 +976,11 @@ int sym_solve(sym_environment *env)
 	 }
 	 tm->has_ub = TRUE;
       }
-      FREE(env->best_sol.xind);
-      FREE(env->best_sol.xval);
-      env->best_sol = env->warm_start->best_sol;
+      if (best_sol->objval > env->warm_start->best_sol.objval){
+	 FREE(best_sol->xind);
+	 FREE(best_sol->xval);
+	 env->best_sol = env->warm_start->best_sol;
+      }
       tm->phase = env->warm_start->phase;
    }else if (env->warm_start){
       /* Otherwise, free what was saved */
@@ -950,17 +997,6 @@ int sym_solve(sym_environment *env)
 	    }
 	 FREE(env->warm_start->cuts);
       }
-      if(env->best_sol.xlength){
-	 FREE(env->best_sol.xind);
-	 FREE(env->best_sol.xval);
-      }
-      memset(&(env->best_sol), 0, sizeof(lp_sol));
-   }else{
-      if(env->best_sol.xlength){
-	 FREE(env->best_sol.xind);
-	 FREE(env->best_sol.xval);
-      }
-      memset(&(env->best_sol), 0, sizeof(lp_sol));
    }
    /* Now the tree manager owns everything */
    FREE(env->warm_start);
@@ -1170,8 +1206,8 @@ int sym_solve(sym_environment *env)
    if (env->tm->lpp[thread_num]){
       env->par.lp_par.cgl = env->tm->lpp[thread_num]->par.cgl;
       if (env->tm->lpp[thread_num]->best_sol.has_sol){
-	 FREE(env->best_sol.xind);
-	 FREE(env->best_sol.xval);
+	 FREE(best_sol->xind);
+	 FREE(best_sol->xval);
 	 env->best_sol = 
 	    env->tm->lpp[thread_num]->best_sol;
       }else {
@@ -1180,24 +1216,24 @@ int sym_solve(sym_environment *env)
    }
 #else
    if (env->tm->best_sol.has_sol){
-     FREE(env->best_sol.xind);
-     FREE(env->best_sol.xval);
+     FREE(best_sol->xind);
+     FREE(best_sol->xval);
      env->best_sol = env->tm->best_sol;
    }
 #endif
       
-   if (env->best_sol.has_sol) {
+   if (best_sol->has_sol) {
       memcpy(&env->warm_start->best_sol, &env->best_sol, sizeof(lp_sol) *1);
       env->warm_start->best_sol.xind = 0;
       env->warm_start->best_sol.xval = 0;
-      if(env->best_sol.xlength){
-	 env->warm_start->best_sol.xind = (int *) malloc(ISIZE * env->best_sol.xlength);
+      if(best_sol->xlength){
+	 env->warm_start->best_sol.xind = (int *) malloc(ISIZE * best_sol->xlength);
 	 env->warm_start->best_sol.xval = (double *) malloc(DSIZE * 
-							    env->best_sol.xlength);
+							    best_sol->xlength);
 	 memcpy(env->warm_start->best_sol.xind, 
-		env->best_sol.xind, ISIZE * env->best_sol.xlength);
+		best_sol->xind, ISIZE * best_sol->xlength);
 	 memcpy(env->warm_start->best_sol.xval, 
-		env->best_sol.xval, DSIZE * env->best_sol.xlength);	
+		best_sol->xval, DSIZE * best_sol->xlength);	
       }
    }
 
@@ -1235,9 +1271,9 @@ int sym_solve(sym_environment *env)
       because it doesn't know whether a solution was found. This should be
       changed. */
    if (termcode == TM_FINISHED){
-      if (tm->par.find_first_feasible && env->best_sol.has_sol){
+      if (tm->par.find_first_feasible && best_sol->has_sol){
 	 termcode = TM_FOUND_FIRST_FEASIBLE;
-      }else if (env->best_sol.has_sol){
+      }else if (best_sol->has_sol){
 	 termcode = TM_OPTIMAL_SOLUTION_FOUND;
       }else{
 	 termcode = TM_NO_SOLUTION;
@@ -1247,7 +1283,7 @@ int sym_solve(sym_environment *env)
    /* Not sure of the reason for this */
    else if((termcode == TM_ERROR__NUMERICAL_INSTABILITY ||
 	    termcode == SOMETHING_DIED) && 
-	   env->best_sol.xlength ){
+	   best_sol->xlength ){
      termcode = TM_FEASIBLE_SOLUTION_FOUND;
    }
 #endif
@@ -2562,6 +2598,7 @@ int sym_explicit_load_problem(sym_environment *env, int numcols, int numrows,
    env->comp_times.readtime = used_time(&t);
  
    env->termcode = TM_NO_SOLUTION;
+   env->mip->is_modified = TRUE; 
 
    return termcode;
 }
@@ -2659,6 +2696,7 @@ int sym_is_target_gap_achieved(sym_environment *env)
  
    switch(env->termcode){
     case TM_TARGET_GAP_ACHIEVED:
+    case TM_OPTIMAL_SOLUTION_FOUND:
        return(TRUE);
     default:
        break;
@@ -3094,7 +3132,7 @@ int sym_get_col_solution(sym_environment *env, double *colsol)
 
    sol = env->best_sol;
 
-   if (!sol.has_sol || (sol.xlength && (!sol.xind || !sol.xval))){
+   if (!sol.xlength || sol.xlength && (!sol.xind || !sol.xval)){
       if(env->par.verbosity >= 1){
 	 printf("sym_get_col_solution(): There is no solution!\n");
       }
@@ -3104,6 +3142,9 @@ int sym_get_col_solution(sym_environment *env, double *colsol)
       return(FUNCTION_TERMINATED_ABNORMALLY);
    }
    else{
+      if (!sol.has_sol){
+	 printf("sym_get_col_solution(): Stored solution may not be feasible!\n");
+      }	 
       memset(colsol, 0, DSIZE*env->mip->n);
       if(sol.xlength){
 	 if(!env->prep_mip){
@@ -3175,10 +3216,8 @@ int sym_get_obj_val(sym_environment *env, double *objval)
 
    if (env->best_sol.has_sol){
       *objval = (env->mip->obj_sense == SYM_MINIMIZE ? env->best_sol.objval :
-		 -env->best_sol.objval) + env->mip->obj_offset + 
-	(env->prep_mip ? (env->mip->obj_sense == SYM_MINIMIZE ? 
-			  env->prep_mip->obj_offset : 
-			  -env->prep_mip->obj_offset) : 0.0);
+		 -env->best_sol.objval) +
+	 (env->prep_mip ? env->prep_mip->obj_offset : env->mip->obj_offset);
    }else{ 
       if(env->par.verbosity >= 1){
 	 printf("sym_get_obj_val(): There is no solution!\n");
@@ -3744,7 +3783,8 @@ int sym_set_col_solution(sym_environment *env, double * colsol)
    
    sol->xlength = nz;
    sol->objval = 0.0;
-
+   sol->has_sol = FALSE;
+   
    if(nz){
       sol->xval = (double*)calloc(nz,DSIZE);
       sol->xind = (int*)malloc(ISIZE*nz);
@@ -3776,7 +3816,7 @@ int sym_set_col_solution(sym_environment *env, double * colsol)
 	 env->has_ub = TRUE;
 	 env->ub = sol->objval;
       }
-
+      sol->has_sol = TRUE; 
    }else{
       //      env->best_sol.objval = SYM_INFINITY;
       env->best_sol.objval = 0.0;
@@ -3787,6 +3827,7 @@ int sym_set_col_solution(sym_environment *env, double * colsol)
    }
 
    FREE(tmp_ind);
+   env->mip->is_modified = FALSE; 
    
    return(FUNCTION_TERMINATED_NORMALLY);      
 }
@@ -4061,7 +4102,8 @@ int sym_add_col(sym_environment *env, int numelems, int *indices,
    }
 
    env->mip->new_col_num++;
-   
+   env->mip->is_modified = TRUE; 
+
    return(FUNCTION_TERMINATED_NORMALLY);      
 }
 
@@ -4131,6 +4173,7 @@ int sym_add_row(sym_environment *env, int numelems, int *indices,
 	       sym_add_col(env, 0, NULL, NULL, 0.0, SYM_INFINITY, 0.0, FALSE, 
 			   NULL);
 	    }
+	    env->mip->is_modified = TRUE; 
 	 } 
 
 	 n = env->mip->n;
@@ -4411,6 +4454,8 @@ int sym_delete_cols(sym_environment *env, int num, int * indices)
    env->mip->colname = (char **) realloc(colName, n*sizeof(char *));
 
    free(lengths);
+
+   env->mip->is_modified = TRUE; 
    
    return(FUNCTION_TERMINATED_NORMALLY);      
 

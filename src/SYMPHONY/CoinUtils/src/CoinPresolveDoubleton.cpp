@@ -1,10 +1,12 @@
-/* $Id: CoinPresolveDoubleton.cpp 1231 2009-12-03 03:11:32Z bjarni $ */
+/* $Id: CoinPresolveDoubleton.cpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #include <stdio.h>
 #include <math.h>
 
+#include "CoinFinite.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPresolveMatrix.hpp"
 
@@ -56,7 +58,11 @@ namespace {	/* begin unnamed local namespace */
    and consistency will be restored.
 */
 
-  bool elim_doubleton (const char * /*msg*/,
+  bool elim_doubleton (const char * 
+#ifdef PRESOLVE_DEBUG
+msg
+#endif
+		       ,
 		     CoinBigIndex *mcstrt, 
 		     double *rlo, double *rup,
 		     double *colels,
@@ -66,7 +72,11 @@ namespace {	/* begin unnamed local namespace */
 		     CoinBigIndex *mrstrt, double *rowels,
 		     double coeff_factor,
 		     double bounds_factor,
-		       int /*row0*/, int icolx, int icoly)
+		       int
+#ifdef PRESOLVE_DEBUG
+		       row0
+#endif
+		       , int icolx, int icoly)
 
 {
   CoinBigIndex kcsx = mcstrt[icolx];
@@ -420,6 +430,8 @@ const CoinPresolveAction
 
 	// common equations are of the form ax + by = 0, or x + y >= lo
 	{
+	  PRESOLVE_DETAIL_PRINT(printf("pre_doubleton %dC %dC %dR E\n",
+				       icoly,icolx,irow));
 	  action *s = &actions[nactions];	  
 	  nactions++;
 	  
@@ -1238,6 +1250,8 @@ void doubleton_action::postsolve(CoinPostsolveMatrix *prob) const
     cdone[jcoly] = DOUBLETON;
     rdone[irow] = DOUBLETON;
     presolve_check_threads(prob) ;
+#endif
+# if PRESOLVE_DEBUG
 /*
   Confirm accuracy of reduced cost for columns x and y.
 */
@@ -1323,8 +1337,13 @@ void check_doubletons(const CoinPresolveAction * paction)
   }
 }
 
+#if	PRESOLVE_DEBUG
+void check_doubletons1(const CoinPresolveAction * paction,
+		       int ncols)
+#else
 void check_doubletons1(const CoinPresolveAction * /*paction*/,
 		       int /*ncols*/)
+#endif
 {
 #if	PRESOLVE_DEBUG
   doubleton_mult = new double[ncols];

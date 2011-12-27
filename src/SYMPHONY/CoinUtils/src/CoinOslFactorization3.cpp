@@ -1,8 +1,13 @@
-/* $Id: CoinOslFactorization3.cpp 1202 2009-09-25 15:27:15Z forrest $ */
-/* Copyright (C) 1987, 2009, International Business Machines
-   Corporation and others.  All Rights Reserved. */
+/* $Id: CoinOslFactorization3.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/*
+  Copyright (C) 1987, 2009, International Business Machines
+  Corporation and others.  All Rights Reserved.
+
+  This code is licensed under the terms of the Eclipse Public License (EPL).
+*/
 #include "CoinOslFactorization.hpp"
 #include "CoinOslC.h"
+#include "CoinFinite.hpp"
 #define GO_DENSE 70
 #define GO_DENSE_RATIO 1.8
 int c_ekkclco(const EKKfactinfo *fact,int *hcoli,

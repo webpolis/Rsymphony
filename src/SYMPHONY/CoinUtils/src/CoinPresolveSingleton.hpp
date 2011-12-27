@@ -1,6 +1,7 @@
-/* $Id: CoinPresolveSingleton.hpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinPresolveSingleton.hpp 1372 2011-01-03 23:31:00Z lou $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #ifndef CoinPresolveSingleton_H
 #define CoinPresolveSingleton_H
@@ -11,7 +12,7 @@
   \file
 */
 
-const int MAX_SLACK_DOUBLETONS	= 1000;
+//const int MAX_SLACK_DOUBLETONS	= 1000;
 
 /*! \class slack_doubleton_action
     \brief Convert an explicit bound constraint to a column bound
@@ -50,7 +51,7 @@ class slack_doubleton_action : public CoinPresolveAction {
 
   /*! \brief Convert explicit bound constraints to column bounds.
   
-    There is a hard limit (#MAX_SLACK_DOUBLETONS) on the number of
+    Not now There is a hard limit (#MAX_SLACK_DOUBLETONS) on the number of
     constraints processed in a given call. \p notFinished is set to true
     if candidates remain.
   */

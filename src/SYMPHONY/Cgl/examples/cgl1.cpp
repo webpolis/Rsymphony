@@ -1,5 +1,7 @@
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 //----------------------------------------------------- 
 // Simple example usage of the cut generation library. 
 //
@@ -41,7 +43,15 @@ using std::string;
 int main(int argc, const char *argv[])
 {
   // If no parms specified then use these
-  string mpsFileName = "../../Data/Sample/p0033.mps";
+  string mpsFileName;
+#if defined(SAMPLEDIR)
+  mpsFileName = SAMPLEDIR "/p0033.mps";
+#else
+  if (argc == 1) {
+    fprintf(stderr, "Do not know where to find sample MPS files.\n");
+    exit(1);
+  }
+#endif
   string objSense = "min";
 
   // Make sure a file name and objective sense or nothing

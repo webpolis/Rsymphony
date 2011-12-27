@@ -1,26 +1,59 @@
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1088 2007-08-20 04:05:19Z andreasw $
+## $Id: Makefile.am 1782 2011-08-14 10:45:31Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
 AUTOMAKE_OPTIONS = foreign
 
 ########################################################################
+#                         unitTest for OsiClp                          #
+########################################################################
+
+if COIN_HAS_OSITESTS
+
+noinst_PROGRAMS = osiUnitTest
+
+osiUnitTest_SOURCES = osiUnitTest.cpp OsiClpSolverInterfaceTest.cpp
+
+osiUnitTest_LDADD = ../src/libClp.la ../src/OsiClp/libOsiClp.la \
+  $(CLPLIB_LIBS) $(OSICLP_LIBS) $(OSITESTS_LIBS)
+
+osiUnitTest_DEPENDENCIES = ../src/libClp.la ../src/OsiClp/libOsiClp.la \
+  $(CLPLIB_DEPENDENCIES) $(OSICLP_DEPENDENCIES) $(OSITESTS_DEPENDENCIES)
+
+AM_CPPFLAGS = \
+	-I`$(CYGPATH_W) $(srcdir)/../src` \
+	-I`$(CYGPATH_W) $(srcdir)/../src/OsiClp` \
+	$(COINUTILS_CFLAGS) $(OSI_CFLAGS) $(OSITESTS_CFLAGS)
+
+testdepend =  osiUnitTest$(EXEEXT)
+endif
+
+########################################################################
 #                         unitTest for Clp                             #
 ########################################################################
 
+unittestflags = 
+osiunittestflags =
+if COIN_HAS_SAMPLE
+  unittestflags += -dirSample `$(CYGPATH_W) $(SAMPLE_DATA)`
+  osiunittestflags += -mpsDir=`$(CYGPATH_W) $(SAMPLE_DATA)`
+endif
+unittestflags += -unitTest
+if COIN_HAS_NETLIB
+  unittestflags += -dirNetlib `$(CYGPATH_W) $(NETLIB_DATA)` -netlib
+  osiunittestflags += -netlibDir=`$(CYGPATH_W) $(NETLIB_DATA)` -testOsiSolverInterface
+endif
+
 # We are using the CLP solver executable to do the unit test
-test: ../src/clp$(EXEEXT)
-	if test x"$(DIRNETLIB)" != x; then \
-		NETLIBARG="-dirNetlib $(DIRNETLIB) -netlib"; \
-	fi; \
-	if test x"$(DIRSAMPLE)" != x; then \
-		SAMPLEARG="-dirSample $(DIRSAMPLE)"; \
-	fi; \
-	../src/clp$(EXEEXT) $$SAMPLEARG -unitTest $$NETLIBARG
+test: ../src/clp$(EXEEXT) $(testdepend)
+	../src/clp$(EXEEXT) $(unittestflags) || exit 1
+	if test -e osiUnitTest$(EXEEXT) ; then \
+	  ./osiUnitTest$(EXEEXT) $(osiunittestflags) || exit 1 ; \
+	fi
 
 .PHONY: test
 

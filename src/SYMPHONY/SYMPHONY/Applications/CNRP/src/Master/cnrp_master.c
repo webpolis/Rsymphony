@@ -8,7 +8,7 @@
 /*                                                                           */
 /* This application was developed by Ted Ralphs (ted@lehigh.edu)             */
 /*                                                                           */
-/* This software is licensed under the Common Public License. Please see     */
+/* This software is licensed under the Eclipse Public License. Please see    */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -860,7 +860,7 @@ int user_free_master(void **user)
 
 /*===========================================================================*\
  * This function is used to lift the user created cuts during warm starting *
-/*===========================================================================*/
+\*===========================================================================*/
 
 int user_ws_update_cuts (void *user, int *size, char **coef, double * rhs, 
 			 char *sense, char type, int new_col_num, 

@@ -1,5 +1,7 @@
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -278,7 +280,7 @@ CglStored::CglStored (const char * fileName) :
 {  
   FILE * fp = fopen(fileName,"rb");
   if (fp) {
-    int numberRead;
+    size_t numberRead;
     int maxInCut=0;
     int * index = NULL;
     double * coefficient = NULL;
@@ -299,9 +301,9 @@ CglStored::CglStored (const char * fileName) :
       numberRead = fread(rhs,sizeof(double),2,fp);
       assert (numberRead==2);
       numberRead = fread(index,sizeof(int),n,fp);
-      assert (numberRead==n);
+      //assert (numberRead==n);
       numberRead = fread(coefficient,sizeof(double),n,fp);
-      assert (numberRead==n);
+      //assert (numberRead==n);
       OsiRowCut rc;
       rc.setRow(n,index,coefficient,false);
       rc.setLb(rhs[0]);

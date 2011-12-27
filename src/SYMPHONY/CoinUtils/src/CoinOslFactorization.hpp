@@ -1,6 +1,7 @@
-/* $Id: CoinOslFactorization.hpp 1191 2009-07-25 08:38:12Z forrest $ */
+/* $Id: CoinOslFactorization.hpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 1987, 2009, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 /* 
    Authors
@@ -13,7 +14,7 @@
 #include <iostream>
 #include <string>
 #include <cassert>
-#include "CoinFinite.hpp"
+#include "CoinTypes.hpp"
 #include "CoinIndexedVector.hpp"
 #include "CoinDenseFactorization.hpp"
 class CoinPackedMatrix;
@@ -70,6 +71,9 @@ typedef struct _EKKfactinfo {
   int num_resets;
   int nnentl;
   int nnentu;
+#ifdef CLP_REUSE_ETAS
+  int save_nnentu;
+#endif
   int ndenuc;
   int npivots; /* use as xpivsq in factorization */
   int kmxeta;
@@ -87,7 +91,9 @@ typedef struct _EKKfactinfo {
   int switch_off_sparse_update;
   int nuspike;
   bool rows_ok;	/* replaces test using mrstrt[1] */
-
+#ifdef CLP_REUSE_ETAS
+  mutable int reintro;
+#endif
   int nR_etas;
   int sortedEta; /* if vector for F-T is sorted */
   int lastEtaCount;

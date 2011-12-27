@@ -44,6 +44,7 @@ else
 	./configure \
 	--enable-static --disable-shared --with-pic \
         --with-application=no --disable-dependency-tracking \
+	--disable-zlib --disable-bzlib\
         --disable-cplex-libcheck --disable-glpk-libcheck \
         --disable-osl-libcheck --disable-soplex-libcheck \
         --disable-xpress-libcheck \

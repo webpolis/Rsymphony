@@ -1,6 +1,10 @@
-/* $Id: Coin_C_defines.h 1215 2009-11-05 11:03:04Z forrest $ */
-/* Copyright (C) 2002, 2003 International Business Machines
-   Corporation and others.  All Rights Reserved.*/
+/* $Id: Coin_C_defines.h 1448 2011-06-19 15:34:41Z stefan $ */
+/*
+  Copyright (C) 2002, 2003 International Business Machines Corporation
+  and others.  All Rights Reserved.
+
+  This code is licensed under the terms of the Eclipse Public License (EPL).
+*/
 #ifndef CoinCDefine_H
 #define CoinCDefine_H
 
@@ -8,10 +12,6 @@
     If COIN_EXTERN_C defined then an extra extern C
 */
 
-/* Plus infinity */
-#ifndef COIN_DBL_MAX
-#define COIN_DBL_MAX DBL_MAX
-#endif
 #if defined (CLP_EXTERN_C)
 #define COIN_EXTERN_C
 #define COIN_NO_SBB

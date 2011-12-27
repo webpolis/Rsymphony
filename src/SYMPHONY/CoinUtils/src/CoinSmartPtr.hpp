@@ -1,8 +1,8 @@
 // Copyright (C) 2004, 2006 International Business Machines and others.
 // All Rights Reserved.
-// This code is published under the Common Public License.
+// This code is published under the Eclipse Public License.
 //
-// $Id: CoinSmartPtr.hpp 1191 2009-07-25 08:38:12Z forrest $
+// $Id: CoinSmartPtr.hpp 1500 2011-11-04 00:01:44Z tkr $
 //
 // Authors:  Carl Laird, Andreas Waechter     IBM    2004-08-13
 // Removed lots of debugging stuff and reformatted: Laszlo Ladanyi, IBM
@@ -11,6 +11,7 @@
 
 #include <list>
 #include <cassert>
+#include <cstddef>
 
 namespace Coin {
 

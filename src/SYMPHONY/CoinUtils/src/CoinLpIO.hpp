@@ -1,4 +1,4 @@
-/* $Id: CoinLpIO.hpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinLpIO.hpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Last edit: 11/5/08
 //
 // Name:     CoinLpIO.hpp; Support for Lp files
@@ -10,10 +10,13 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 2003, Francois Margot, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 
 #include <cstdio>
 
 class CoinPackedMatrix;
+#include "CoinMessage.hpp"
 
 typedef int COINColumnIndex;
 
@@ -441,10 +444,44 @@ public:
   /// Dump the data. Low level method for debugging.
   void print() const;
   //@}
+/**@name Message handling */
+//@{
+  /** Pass in Message handler
+  
+      Supply a custom message handler. It will not be destroyed when the
+      CoinMpsIO object is destroyed.
+  */
+  void passInMessageHandler(CoinMessageHandler * handler);
+
+  /// Set the language for messages.
+  void newLanguage(CoinMessages::Language language);
+
+  /// Set the language for messages.
+  inline void setLanguage(CoinMessages::Language language) {newLanguage(language);}
+
+  /// Return the message handler
+  inline CoinMessageHandler * messageHandler() const {return handler_;}
+
+  /// Return the messages
+  inline CoinMessages messages() {return messages_;}
+  /// Return the messages pointer
+  inline CoinMessages * messagesPointer() {return & messages_;}
+//@}
 
 protected:
   /// Problem name
   char * problemName_;
+
+  /// Message handler
+  CoinMessageHandler * handler_;
+  /** Flag to say if the message handler is the default handler.
+      
+      If true, the handler will be destroyed when the CoinMpsIO
+      object is destroyed; if false, it will not be destroyed.
+  */
+  bool defaultHandler_;
+  /// Messages
+  CoinMessages messages_;
 
   /// Number of rows
   int numberRows_;

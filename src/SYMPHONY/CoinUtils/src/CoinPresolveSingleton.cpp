@@ -1,6 +1,7 @@
-/* $Id: CoinPresolveSingleton.cpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinPresolveSingleton.cpp 1463 2011-07-30 16:31:31Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #include <stdio.h>
 #include <math.h>
@@ -13,6 +14,7 @@
 #include "CoinPresolveSingleton.hpp"
 #include "CoinPresolvePsdebug.hpp"
 #include "CoinMessage.hpp"
+#include "CoinFinite.hpp"
 
 // #define PRESOLVE_DEBUG 1
 // #define PRESOLVE_SUMMARY 1
@@ -77,7 +79,7 @@ slack_doubleton_action::presolve(CoinPresolveMatrix *prob,
   int * look = prob->rowsToDo_;
   bool fixInfeasibility = (prob->presolveOptions_&16384)!=0;
 
-  action actions[MAX_SLACK_DOUBLETONS];
+  action * actions = new action[numberLook];
   int nactions = 0;
   notFinished = false;
 
@@ -107,6 +109,7 @@ slack_doubleton_action::presolve(CoinPresolveMatrix *prob,
       {
 	// put column on stack of things to do next time
 	prob->addCol(jcol);
+	PRESOLVE_DETAIL_PRINT(printf("pre_singleton %dC %dR E\n",jcol,irow));
 	action *s = &actions[nactions];
 	nactions++;
 
@@ -119,6 +122,13 @@ slack_doubleton_action::presolve(CoinPresolveMatrix *prob,
 	s->rup = rup[irow];
 
 	s->coeff = coeff;
+#if 0
+	if (prob->tuning_) {
+	  // really for gcc 4.6 compiler bug
+	  printf("jcol %d %g %g irow %d %g %g coeff %g\n",
+		 jcol,clo[jcol],cup[jcol],irow,rlo[irow],rup[irow],coeff);
+	}
+#endif
       }
 
       if (coeff < 0.0) {
@@ -146,6 +156,7 @@ slack_doubleton_action::presolve(CoinPresolveMatrix *prob,
       if (clo[jcol] < lo) {
 	// If integer be careful
 	if (integerType[jcol]) {
+	  //#define COIN_DEVELOP
 #ifdef COIN_DEVELOP
 	  double lo2=lo;
 #endif
@@ -180,7 +191,6 @@ slack_doubleton_action::presolve(CoinPresolveMatrix *prob,
 	  cup[jcol] = up;
 	}
       }
-
       if (fabs(cup[jcol] - clo[jcol]) < ZTOLDP) {
 	fixed_cols[nfixed_cols++] = jcol;
       }
@@ -265,7 +275,7 @@ slack_doubleton_action::presolve(CoinPresolveMatrix *prob,
       if (hincol[jcol] == 0)
       { PRESOLVE_REMOVE_LINK(prob->clink_,jcol) ; }
 
-      if (nactions >= MAX_SLACK_DOUBLETONS) {
+      if (nactions >= numberLook) {
 	notFinished=true;
 	break;
       }
@@ -299,7 +309,8 @@ slack_doubleton_action::presolve(CoinPresolveMatrix *prob,
   presolve_check_nbasic(prob) ;
   std::cout << "Leaving slack_doubleton_action::presolve." << std::endl ;
 # endif
-
+  delete [] actions;
+  
   return (next);
 }
 
@@ -614,7 +625,8 @@ slack_singleton_action::presolve(CoinPresolveMatrix *prob,
         if (nactions>=maxActions) {
           maxActions += CoinMin(numberLook-iLook,maxActions);
           action * temp = new action[maxActions];
-          CoinMemcpyN(actions,nactions,temp);
+	  memcpy(temp,actions,nactions*sizeof(action));
+          // changed as 4.6 compiler bug! CoinMemcpyN(actions,nactions,temp);
           delete [] actions;
           actions=temp;
         }

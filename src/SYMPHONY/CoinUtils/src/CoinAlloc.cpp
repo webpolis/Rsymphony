@@ -1,6 +1,7 @@
-/* $Id: CoinAlloc.cpp 1191 2009-07-25 08:38:12Z forrest $ */
+/* $Id: CoinAlloc.cpp 1373 2011-01-03 23:57:44Z lou $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #include <cassert>
 #include <cstdlib>

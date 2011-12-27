@@ -8,6 +8,7 @@
 // Copyright (C) 2007 Lou Hafer
 //    University of Pittsburgh coding done by Brady Hunsaker
 // All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 //
 // Comments:
 //   
@@ -65,17 +66,18 @@
   repopulate the cache by interrogating glpk.
 */
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
-
 #include <cassert>
+#include <cstdio>
+#include <cmath>
 #include <string>
 #include <iostream>
-#include <stdio.h>
+
+extern "C" {
+#include "glpk.h"
+}
 
 #include "CoinError.hpp"
+#include "CoinPragma.hpp"
 
 #include "OsiConfig.h"
 
@@ -162,6 +164,20 @@ void OGSI::initialSolve()
   Solve the lp.
 */
   int err = lpx_simplex(model) ;
+
+  // for Glpk, a solve fails if the initial basis is invalid or singular
+  // thus, we construct a (advanced) basis first and try again
+#ifdef LPX_E_BADB
+  if (err == LPX_E_BADB) {
+    lpx_adv_basis(model);
+    err = lpx_simplex(model) ;
+  } else
+#endif
+  if (err == LPX_E_SING || err == LPX_E_FAULT) {
+    lpx_adv_basis(model);
+    err = lpx_simplex(model) ;
+  }
+
   iter_used_ = lpx_get_int_parm(model, LPX_K_ITCNT) ;
 /*
   Sort out the various state indications.
@@ -201,6 +217,9 @@ void OGSI::initialSolve()
     } // no break here, so we still report abandoned
     case LPX_E_FAULT:
     case LPX_E_SING:
+#ifdef LPX_E_BADB
+    case LPX_E_BADB:
+#endif
     { isAbandoned_ = true ;
       break ; }
     case LPX_E_NOPFS:
@@ -242,14 +261,18 @@ void OGSI::resolve()
   // lpx_simplex will use the current basis if possible
   int err = lpx_simplex(model) ;
 
-#ifdef LPX_E_BADB
-  // in Glpk 4.30 a resolve fails if the initial basis is invalid
+  // for Glpk, a solve fails if the initial basis is invalid or singular
   // thus, we construct a (advanced) basis first and try again
+#ifdef LPX_E_BADB
   if (err == LPX_E_BADB) {
-  	lpx_adv_basis(model);
-  	err = lpx_simplex(model) ;
-  }
+    lpx_adv_basis(model);
+    err = lpx_simplex(model) ;
+  } else
 #endif
+  if (err == LPX_E_SING || err == LPX_E_FAULT) {
+    lpx_adv_basis(model);
+    err = lpx_simplex(model) ;
+  }
   
   iter_used_ = lpx_get_int_parm(model,LPX_K_ITCNT) ;
 
@@ -279,6 +302,9 @@ void OGSI::resolve()
     } // no break here, so we still report abandoned
     case LPX_E_FAULT:
     case LPX_E_SING:
+#ifdef LPX_E_BADB
+    case LPX_E_BADB:
+#endif
     { isAbandoned_ = true ;
       break ; }
     case LPX_E_NOPFS:
@@ -1733,7 +1759,7 @@ int OGSI::getIterationCount() const
 
 //-----------------------------------------------------------------------------
 
-std::vector<double*> OGSI::getDualRays(int /*maxNumRays*/) const
+std::vector<double*> OGSI::getDualRays(int /*maxNumRays*/, bool /*fullRay*/) const
 {
 	// ??? not yet implemented.
 	throw CoinError("method is not yet implemented", "getDualRays", "OsiGlpkSolverInterface");
@@ -2749,12 +2775,10 @@ OGSI::loadProblem(const int numcols, const int numrows,
 				   const char* rowsen, const double* rowrhs,   
 				   const double* rowrng)
 {
-   assert( rowsen != NULL );
-   assert( rowrhs != NULL );
    double * rowlb = new double[numrows];
    double * rowub = new double[numrows];
    for (int i = numrows-1; i >= 0; --i) {   
-      convertSenseToBound(rowsen[i],rowrhs[i],rowrng[i],rowlb[i],rowub[i]);
+      convertSenseToBound(rowsen != NULL ? rowsen[i] : 'G', rowrhs != NULL ? rowrhs[i] : 0.0, rowrng != NULL ? rowrng[i] : 0.0, rowlb[i], rowub[i]);
    }
 
    loadProblem( numcols, numrows, start, index, value, collb, colub, obj,

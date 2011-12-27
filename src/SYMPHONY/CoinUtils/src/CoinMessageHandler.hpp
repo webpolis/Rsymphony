@@ -1,20 +1,18 @@
-/* $Id: CoinMessageHandler.hpp 1239 2009-12-10 16:16:11Z ladanyi $ */
+/* $Id: CoinMessageHandler.hpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #ifndef CoinMessageHandler_H
 #define CoinMessageHandler_H
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
-
+#include "CoinUtilsConfig.h"
+#include "CoinPragma.hpp"
 
 #include <iostream>
 #include <cstdio>
 #include <string>
 #include <vector>
-#include "CoinFinite.hpp"
 
 /** \file CoinMessageHandler.hpp
     \brief This is a first attempt at a message handler.
@@ -119,7 +117,7 @@ public:
 /** \brief Class to hold and manipulate an array of massaged messages.
 
   Note that the message index used to reference a message in the array of
-  messages is completly distinct from the external ID number stored with the
+  messages is completely distinct from the external ID number stored with the
   message.
 */
 
@@ -180,8 +178,9 @@ public:
   */
   void setDetailMessages(int newLevel, int numberMessages,
 			 int * messageNumbers);
-  /// Change detail level for all messages with low <= ID number < high
+  /** Change detail level for all messages with low <= ID number < high */
   void setDetailMessages(int newLevel, int low, int high);
+
   /// Returns class
   inline int getClass() const
   { return class_;}
@@ -379,6 +378,12 @@ public:
     Can be used to store alternative log level information within the handler.
   */
   void setLogLevel(int which, int value);
+
+  /// Set the number of significant digits for printing floating point numbers
+  void setPrecision(unsigned int new_precision);
+  /// Current number of significant digits for printing floating point numbers
+  inline int precision() { return (g_precision_) ; }
+
   /// Switch message prefix on or off.
   void setPrefix(bool yesNo);
   /// Current setting for printing message prefix.
@@ -561,12 +566,12 @@ public:
     - 1 - Solver
     - 2 - Stuff in Coin directory
     - 3 - Cut generators
-
   */
 #define COIN_NUM_LOG 4
+/// Maximum length of constructed message (characters)
 #define COIN_MESSAGE_HANDLER_MAX_BUFFER_SIZE 1000
 protected:
-  /**@name Private member data */
+  /**@name Protected member data */
   //@{
   /// values in message
   std::vector<double> doubleValue_;
@@ -601,7 +606,12 @@ protected:
   int highestNumber_;
   /// File pointer
   FILE * fp_;
+  /// Current format for floating point numbers
+  char g_format_[8];
+  /// Current number of significant digits for floating point numbers
+  int g_precision_ ;
    //@}
+
 };
 
 //#############################################################################

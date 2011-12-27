@@ -1,12 +1,16 @@
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1404 2009-07-28 12:25:35Z tkr $
+## $Id: Makefile.am 1753 2011-06-19 16:27:26Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
 AUTOMAKE_OPTIONS = foreign
+
+if COIN_HAS_OSI
+  SUBDIRS = OsiClp
+endif
 
 ########################################################################
 #                               libClp                                 #
@@ -21,10 +25,6 @@ libClp_la_SOURCES = \
 	ClpConfig.h \
 	ClpCholeskyBase.cpp ClpCholeskyBase.hpp \
 	ClpCholeskyDense.cpp ClpCholeskyDense.hpp \
-	ClpCholeskyUfl.cpp ClpCholeskyUfl.hpp \
-	ClpCholeskyMumps.cpp ClpCholeskyMumps.hpp \
-	ClpCholeskyWssmp.cpp ClpCholeskyWssmp.hpp \
-	ClpCholeskyWssmpKKT.cpp ClpCholeskyWssmpKKT.hpp \
 	ClpConstraint.cpp ClpConstraint.hpp \
 	ClpConstraintLinear.cpp ClpConstraintLinear.hpp \
 	ClpConstraintQuadratic.cpp ClpConstraintQuadratic.hpp \
@@ -71,7 +71,28 @@ libClp_la_SOURCES = \
 	Idiot.cpp Idiot.hpp \
 	IdiSolve.cpp
 
-# This is for libtool (on Windows)
+# if AMD, CHOLMOD, or GLPK is available, then compile ClpCholeskyUfl.cpp
+if COIN_HAS_AMD
+libClp_la_SOURCES += ClpCholeskyUfl.cpp ClpCholeskyUfl.hpp
+else
+if COIN_HAS_CHOLMOD
+libClp_la_SOURCES += ClpCholeskyUfl.cpp ClpCholeskyUfl.hpp
+else
+if COIN_HAS_GLPK
+libClp_la_SOURCES += ClpCholeskyUfl.cpp ClpCholeskyUfl.hpp
+endif
+endif
+endif
+
+if COIN_HAS_MUMPS
+libClp_la_SOURCES += ClpCholeskyMumps.cpp ClpCholeskyMumps.hpp
+endif
+
+if COIN_HAS_WSMP
+libClp_la_SOURCES += ClpCholeskyWssmp.cpp ClpCholeskyWssmp.hpp ClpCholeskyWssmpKKT.cpp ClpCholeskyWssmpKKT.hpp
+endif
+
+# This is for libtool
 libClp_la_LDFLAGS = $(LT_LDFLAGS)
 
 ########################################################################
@@ -90,45 +111,41 @@ clp_SOURCES = \
 	MyMessageHandler.cpp MyMessageHandler.hpp \
 	unitTest.cpp
 
-# List all additionally required COIN libraries
-clp_LDADD = libClp.la \
-	$(COINUTILSOBJDIR)/src/libCoinUtils.la
+# List all additionally required libraries
+clp_LDADD = libClp.la $(CLPLIB_LIBS)
 
-# Here we add additional libraries
-LIBS += $(ADDLIBS) `cat $(COINUTILSOBJDIR)/coinutils_addlibs.txt`
-
-# Finally, the -rpath flag is used by libtool to make sure that the shared
-# library is found (in the lib install directory) when we are using dynamic
-# libraries.
-clp_LDFLAGS = -rpath $(libdir)
+# List all dependency libraries (similar to LDADD, but without -l, -L flags)
+clp_DEPENDENCIES = libClp.la $(CLPLIB_DEPENDENCIES)
 
 ########################################################################
 #                            Additional flags                          #
 ########################################################################
 
-# Here list all include flags, relative to this "srcdir" directory.  This
-# "cygpath" stuff is necessary to compile with native compilers on Windows.
-AM_CPPFLAGS = \
-	-I`$(CYGPATH_W) $(COINUTILSSRCDIR)/src` \
-	-I`$(CYGPATH_W) $(COINUTILSOBJDIR)/inc`
+# CbcOrClpParam seem to require COIN_HAS_CLP so that it knows that it is build within Clp
+AM_CPPFLAGS = $(CLPLIB_CFLAGS) -DCOIN_HAS_CLP
 
-# This line is necessary to allow VPATH compilation with MS compilers
-# on Cygwin
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/inc
+if COIN_HAS_CHOLMOD
+AM_CPPFLAGS += -I`$(CYGPATH_W) $(CHOLMODINCDIR)`
+endif
+
+if COIN_HAS_AMD
+AM_CPPFLAGS += -I`$(CYGPATH_W) $(AMDINCDIR)`
+endif
+
+# This line is necessary to allow VPATH compilation
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 
 ########################################################################
 #                Headers that need to be installed                     #
 ########################################################################
 
 # Here list all the header files that are required by a user of the library,
-# and that therefore should be installed in 'install/coin'
+# and that therefore should be installed in 'include/coin'
 includecoindir = $(includedir)/coin
 includecoin_HEADERS = \
-	../inc/config_clp.h \
 	Clp_C_Interface.h \
 	ClpCholeskyBase.hpp \
 	ClpCholeskyDense.hpp \
-	ClpCholeskyWssmp.hpp \
 	ClpConstraint.hpp \
 	ClpConstraintLinear.hpp \
 	ClpConstraintQuadratic.hpp \
@@ -161,29 +178,40 @@ includecoin_HEADERS = \
 	ClpPrimalColumnSteepest.hpp \
 	ClpQuadraticObjective.hpp \
 	ClpSimplex.hpp \
-	ClpSimplexDual.hpp \
 	ClpSimplexNonlinear.hpp \
 	ClpSimplexOther.hpp \
 	ClpSimplexPrimal.hpp \
 	ClpSolve.hpp \
 	CbcOrClpParam.hpp \
-	CbcOrClpParam.cpp \
 	Idiot.hpp
 
-#############################################################################
-# Create the Config.h file that always defines HAVE_CONFIG_H and install it #
-#############################################################################
 
-# You only need to adapt the following line
-ConfigHeader = ClpConfig.h
+# if AMD, CHOLMOD, or GLPK is available, then install ClpCholeskyUfl.hpp (for advanced users)
+if COIN_HAS_AMD
+includecoin_HEADERS += ClpCholeskyUfl.hpp
+else
+if COIN_HAS_CHOLMOD
+includecoin_HEADERS += ClpCholeskyUfl.hpp
+else
+if COIN_HAS_GLPK
+includecoin_HEADERS += ClpCholeskyUfl.hpp
+endif
+endif
+endif
+
+if COIN_HAS_MUMPS
+includecoin_HEADERS += ClpCholeskyMumps.hpp
+endif
+
+if COIN_HAS_WSMP
+includecoin_HEADERS += ClpCholeskyWssmp.hpp ClpCholeskyWssmpKKT.hpp
+endif
+
+# needed by Cbc
+includecoin_HEADERS += CbcOrClpParam.cpp
 
 install-exec-local:
-	echo "#ifndef HAVE_CONFIG_H" >bla
-	echo "#define HAVE_CONFIG_H" >>bla
-	echo "#endif" >> bla
-	cat $(srcdir)/$(ConfigHeader) >> bla
-	$(install_sh_DATA) bla $(DESTDIR)$(includecoindir)/$(ConfigHeader)
-	rm -f bla
+	$(install_sh_DATA) config_clp.h $(DESTDIR)$(includecoindir)/ClpConfig.h
 
 uninstall-local:
-	rm -f $(DESTDIR)$(includecoindir)/$(ConfigHeader)
+	rm -f $(DESTDIR)$(includecoindir)/ClpConfig.h

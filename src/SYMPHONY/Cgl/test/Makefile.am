@@ -1,31 +1,29 @@
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 604 2008-02-06 03:52:53Z tkr $
+## $Id: Makefile.am 1041 2011-08-14 10:55:03Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
 AUTOMAKE_OPTIONS = foreign
 
 ########################################################################
-#                         unitTest for Coin                            #
+#                          unitTest for Cgl                            #
 ########################################################################
 
 noinst_PROGRAMS = unitTest
 
 unitTest_SOURCES = unitTest.cpp
 
-# List libraries of COIN projects
-unitTest_LDADD = ../src/libCgl.la
+# List libraries we need to link in
+unitTest_LDADD = ../src/libCgl.la $(CGLLIB_LIBS)
+
+unitTest_DEPENDENCIES = ../src/libCgl.la $(CGLLIB_DEPENDENCIES)
 
 # Here list all include flags, relative to this "srcdir" directory.  This
 # "cygpath" stuff is necessary to compile with native compilers on Windows
 AM_CPPFLAGS = \
-	-I`$(CYGPATH_W) $(COINUTILSSRCDIR)/src` \
-	-I`$(CYGPATH_W) $(COINUTILSOBJDIR)/inc` \
-	-I`$(CYGPATH_W) $(OSISRCDIR)/src` \
-	-I`$(CYGPATH_W) $(OSIOBJDIR)/inc` \
 	-I`$(CYGPATH_W) $(srcdir)/../src` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglFlowCover` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglGomory` \
@@ -39,111 +37,24 @@ AM_CPPFLAGS = \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglRedSplit` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglTwomir` \
 	-I`$(CYGPATH_W) $(srcdir)/../src/CglClique` \
-	-I`$(CYGPATH_W) $(srcdir)/../src/CglSimpleRounding`
+	-I`$(CYGPATH_W) $(srcdir)/../src/CglSimpleRounding` \
+	$(CGLLIB_CFLAGS)
+if COIN_HAS_SAMPLE
+AM_CPPFLAGS += -DSAMPLEDIR=\"`$(CYGPATH_W) @SAMPLE_DATA@ | sed -e 's/\\\\/\\\\\\\\/g'`\"
+endif
 
 # This line is necessary to allow VPATH compilation with MS compilers
 # on Cygwin
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/inc
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/src
 
 # Depending of what solvers are available, we add the corresponding files,
 # libraries and include dirs
+# For solvers not available, the variables should just resolve to an empty string,
+# so it's no harm to list them all
 
-# Depending of what solvers are available, we add the corresponding files,
-# libraries and include dirs
-
-if COIN_HAS_CLP
-  AM_CPPFLAGS += -I`$(CYGPATH_W) $(CLPSRCDIR)/src` \
-	-I`$(CYGPATH_W) $(CLPOBJDIR)/inc` \
-	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiClp`
-  unitTest_LDADD += $(OSIOBJDIR)/src/OsiClp/libOsiClp.la \
-	$(CLPOBJDIR)/src/libClp.la
-  LIBS  += `cat $(CLPOBJDIR)/clp_addlibs.txt`
-endif
-
-if COIN_HAS_CBC
-  AM_CPPFLAGS += -I`$(CYGPATH_W) $(CBCSRCDIR)/src` \
-	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiCbc`
-  unitTest_LDADD += $(OSIOBJDIR)/src/OsiCbc/libOsiCbc.la \
-	$(CBCOBJDIR)/src/libCbc.la
-  LIBS += `cat $(CBCOBJDIR)/cbc_addlibs.txt`
-endif
-
-if COIN_HAS_CPX
-  AM_CPPFLAGS += -I`$(CYGPATH_W) $(CPXINCDIR)` \
-	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiCpx`
-  unitTest_LDADD += $(OSIOBJDIR)/src/OsiCpx/libOsiCpx.la
-endif
-
-if COIN_HAS_DYLP
-  AM_CPPFLAGS += -I`$(CYGPATH_W) $(DYLPSRCDIR)/src/Dylp` \
-	-I`$(CYGPATH_W) $(DYLPSRCDIR)/src/DylpStdLib` \
-	-I`$(CYGPATH_W) $(DYLPOBJDIR)/inc` \
-	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiDylp`
-  unitTest_LDADD += $(OSIOBJDIR)/src/OsiDylp/libOsiDylp.la \
-	$(DYLPOBJDIR)/src/Dylp/libDylp.la
-  LIBS += `cat $(DYLPOBJDIR)/dylp_addlibs.txt`
-endif
-
-if COIN_HAS_FMP
-  AM_CPPFLAGS += -I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiFmp`
-  unitTest_LDADD += $(OSIOBJDIR)/src/OsiFmp/libOsiFmp.la
-endif
-
-if COIN_HAS_GLPK
-  AM_CPPFLAGS += -I`$(CYGPATH_W) $(GLPKINCDIR)` \
-	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiGlpk`
-  unitTest_LDADD += $(OSIOBJDIR)/src/OsiGlpk/libOsiGlpk.la
-endif
-
-if COIN_HAS_MSK
-  AM_CPPFLAGS += -I`$(CYGPATH_W) $(MSKINCDIR)` \
-	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiMsk`
-  unitTest_LDADD += $(OSIOBJDIR)/src/OsiMsk/libOsiMsk.la
-endif
-
-if COIN_HAS_OSL
-  AM_CPPFLAGS += -I`$(CYGPATH_W) $(OSLINCDIR)` \
-	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiOsl`
-  unitTest_LDADD += $(OSIOBJDIR)/src/OsiOsl/libOsiOsl.la
-endif
-
-if COIN_HAS_SPX
-  AM_CPPFLAGS += -I`$(CYGPATH_W) $(SPXINCDIR)` \
-	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiSpx`
-  unitTest_LDADD += $(OSIOBJDIR)/src/OsiSpx/libOsiSpx.la
-endif
-
-if COIN_HAS_SYMPHONY
-  AM_CPPFLAGS += -I`$(CYGPATH_W) $(SYMPHONYSRCDIR)/src` \
-	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiSym`
-  unitTest_LDADD += $(OSIOBJDIR)/src/OsiSym/libOsiSym.la \
-	$(SYMPHONYOBJDIR)/src/libSym.la
-  LIBS += `cat $(SYMPHONYOBJDIR)/sym_addlibs.txt`
-endif
-
-if COIN_HAS_VOL
-  AM_CPPFLAGS += -I`$(CYGPATH_W) $(VOLSRCDIR)/src` \
-	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiVol`
-  unitTest_LDADD += $(OSIOBJDIR)/src/OsiVol/libOsiVol.la \
-	$(VOLOBJDIR)/src/libVol.la
-  LIBS += `cat $(VOLOBJDIR)/vol_addlibs.txt`
-endif
-
-if COIN_HAS_XPR
-  AM_CPPFLAGS += -I`$(CYGPATH_W) $(XPRINCDIR)` \
-	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiXpr`
-  unitTest_LDADD += $(OSIOBJDIR)/src/OsiXpr/libOsiXpr.la
-endif
-
-# Finally the Coin library (many of the above need it)
-unitTest_LDADD += \
-	$(OSIOBJDIR)/src/libOsi.la \
-	$(COINUTILSOBJDIR)/src/libCoinUtils.la
-
-# List additional libraries
-LIBS += `cat $(OSIOBJDIR)/osi_addlibs.txt`\
-	`cat $(COINUTILSOBJDIR)/coinutils_addlibs.txt` \
-	$(ADDLIBS)
+AM_CPPFLAGS           += $(OSICLP_CFLAGS)       $(OSICPX_CFLAGS)       $(OSIDYLP_CFLAGS)       $(OSIGLPK_CFLAGS)       $(OSIMSK_CFLAGS)       $(OSIVOL_CFLAGS)       $(OSIXPR_CFLAGS)
+unitTest_LDADD        += $(OSICLP_LIBS)         $(OSICPX_LIBS)         $(OSIDYLP_LIBS)         $(OSIGLPK_LIBS)         $(OSIMSK_LIBS)         $(OSIVOL_LIBS)         $(OSIXPR_LIBS)
+unitTest_DEPENDENCIES += $(OSICLP_DEPENDENCIES) $(OSICPX_DEPENDENCIES) $(OSIDYLP_DEPENDENCIES) $(OSIGLPK_DEPENDENCIES) $(OSIMSK_DEPENDENCIES) $(OSIVOL_DEPENDENCIES) $(OSIXPR_DEPENDENCIES)
 
 test: unitTest$(EXEEXT)
 	./unitTest$(EXEEXT)

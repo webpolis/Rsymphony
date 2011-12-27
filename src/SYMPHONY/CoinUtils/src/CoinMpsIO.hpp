@@ -1,6 +1,8 @@
-/* $Id: CoinMpsIO.hpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinMpsIO.hpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #ifndef CoinMpsIO_H
 #define CoinMpsIO_H
 
@@ -17,10 +19,6 @@
 #include "CoinMessageHandler.hpp"
 #include "CoinFileIO.hpp"
 class CoinModel;
-// Plus infinity
-#ifndef COIN_DBL_MAX
-#define COIN_DBL_MAX DBL_MAX
-#endif
 
 /// The following lengths are in decreasing order (for 64 bit etc)
 /// Large enough to contain element index
@@ -781,15 +779,15 @@ public:
   void newLanguage(CoinMessages::Language language);
 
   /// Set the language for messages.
-  void setLanguage(CoinMessages::Language language) {newLanguage(language);}
+  inline void setLanguage(CoinMessages::Language language) {newLanguage(language);}
 
   /// Return the message handler
-  CoinMessageHandler * messageHandler() const {return handler_;}
+  inline CoinMessageHandler * messageHandler() const {return handler_;}
 
   /// Return the messages
-  CoinMessages messages() {return messages_;}
+  inline CoinMessages messages() {return messages_;}
   /// Return the messages pointer
-  CoinMessages * messagesPointer() {return & messages_;}
+  inline CoinMessages * messagesPointer() {return & messages_;}
 //@}
 
 

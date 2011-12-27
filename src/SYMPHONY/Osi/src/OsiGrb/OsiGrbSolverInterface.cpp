@@ -3,12 +3,13 @@
 // template: OSI Cplex Interface written by T. Achterberg
 // author:   Stefan Vigerske
 //           Humboldt University Berlin
+// license:  this file may be freely distributed under the terms of EPL
 // comments: please scan this file for '???' and 'TODO' and read the comments
 //-----------------------------------------------------------------------------
 // Copyright (C) 2009 Humboldt University Berlin and others.
 // All Rights Reserved.
 
-// $Id: OsiGrbSolverInterface.cpp 1475 2010-02-25 12:05:41Z stefan $
+// $Id: OsiGrbSolverInterface.cpp 1754 2011-06-19 16:07:57Z stefan $
 
 #include <iostream>
 #include <cassert>
@@ -63,6 +64,12 @@ while( false )
 
 template <bool> struct CompileTimeAssert;
 template<> struct CompileTimeAssert<true> {};
+
+#if GRB_VERSION_MAJOR < 4
+#define GRB_METHOD_DUAL    GRB_LPMETHOD_DUAL
+#define GRB_METHOD_PRIMAL  GRB_LPMETHOD_PRIMAL
+#define GRB_INT_PAR_METHOD GRB_INT_PAR_LPMETHOD
+#endif
 
 //#############################################################################
 // A couple of helper functions
@@ -252,25 +259,25 @@ void OsiGrbSolverInterface::initialSolve()
   debugMessage("OsiGrbSolverInterface::initialSolve()\n");
   bool takeHint, gotHint;
   OsiHintStrength strength;
+  int prevalgorithm = -1;
 
   switchToLP();
   
   GRBmodel* lp = getLpPtr( OsiGrbSolverInterface::FREECACHED_RESULTS );
 
-  /* set whether dual or primal */
-  int algorithm = GRB_LPMETHOD_PRIMAL;
+  /* set whether dual or primal, if hint has been given */
   gotHint = getHintParam(OsiDoDualInInitial,takeHint,strength);
-  assert (gotHint);
-  if (strength!=OsiHintIgnore)
-  	algorithm = takeHint ? GRB_LPMETHOD_DUAL : GRB_LPMETHOD_PRIMAL;
-
-	GUROBI_CALL( "initialSolve", GRBsetintparam(GRBgetenv(lp), GRB_INT_PAR_LPMETHOD, algorithm) );
+  assert(gotHint);
+  if (strength != OsiHintIgnore) {
+  	GUROBI_CALL( "initialSolve", GRBgetintparam(GRBgetenv(lp), GRB_INT_PAR_METHOD, &prevalgorithm) );
+  	GUROBI_CALL( "initialSolve", GRBsetintparam(GRBgetenv(lp), GRB_INT_PAR_METHOD, takeHint ? GRB_METHOD_DUAL : GRB_METHOD_PRIMAL) );
+  }
 
 	/* set whether presolve or not */
   int presolve = GRB_PRESOLVE_AUTO;
-  gotHint = (getHintParam(OsiDoPresolveInInitial,takeHint,strength));
+  gotHint = getHintParam(OsiDoPresolveInInitial,takeHint,strength);
   assert (gotHint);
-  if (strength!=OsiHintIgnore)
+  if (strength != OsiHintIgnore)
   	presolve = takeHint ? GRB_PRESOLVE_AUTO : GRB_PRESOLVE_OFF;
 
   GUROBI_CALL( "initialSolve", GRBsetintparam(GRBgetenv(lp), GRB_INT_PAR_PRESOLVE, presolve) );
@@ -290,6 +297,10 @@ void OsiGrbSolverInterface::initialSolve()
     GUROBI_CALL( "initialSolve", GRBoptimize(lp) );
     GUROBI_CALL( "initialSolve", GRBsetintparam(GRBgetenv(lp), GRB_INT_PAR_PRESOLVE, presolve) );
   }
+
+  /* reset method parameter, if changed */
+  if( prevalgorithm != -1 )
+  	GUROBI_CALL( "initialSolve", GRBsetintparam(GRBgetenv(lp), GRB_INT_PAR_METHOD, prevalgorithm) );
 }
 
 //-----------------------------------------------------------------------------
@@ -298,19 +309,19 @@ void OsiGrbSolverInterface::resolve()
   debugMessage("OsiGrbSolverInterface::resolve()\n");
   bool takeHint, gotHint;
   OsiHintStrength strength;
+  int prevalgorithm = -1;
 
   switchToLP();
   
   GRBmodel* lp = getLpPtr( OsiGrbSolverInterface::FREECACHED_RESULTS );
 
   /* set whether primal or dual */
-  int algorithm = GRB_LPMETHOD_DUAL;
   gotHint = getHintParam(OsiDoDualInResolve,takeHint,strength);
   assert (gotHint);
-  if (strength != OsiHintIgnore)
-  	algorithm = takeHint ? GRB_LPMETHOD_DUAL : GRB_LPMETHOD_PRIMAL;
-
-  GUROBI_CALL( "resolve", GRBsetintparam(GRBgetenv(lp), GRB_INT_PAR_LPMETHOD, algorithm) );
+  if (strength != OsiHintIgnore) {
+  	GUROBI_CALL( "resolve", GRBgetintparam(GRBgetenv(lp), GRB_INT_PAR_METHOD, &prevalgorithm) );
+  	GUROBI_CALL( "resolve", GRBsetintparam(GRBgetenv(lp), GRB_INT_PAR_METHOD, takeHint ? GRB_METHOD_DUAL : GRB_METHOD_PRIMAL) );
+  }
 
 	/* set whether presolve or not */
   int presolve = GRB_PRESOLVE_OFF;
@@ -336,6 +347,10 @@ void OsiGrbSolverInterface::resolve()
     GUROBI_CALL( "resolve", GRBoptimize(lp) );
     GUROBI_CALL( "resolve", GRBsetintparam(GRBgetenv(lp), GRB_INT_PAR_PRESOLVE, presolve) );
   }
+
+  /* reset method parameter, if changed */
+  if( prevalgorithm != -1 )
+  	GUROBI_CALL( "initialSolve", GRBsetintparam(GRBgetenv(lp), GRB_INT_PAR_METHOD, prevalgorithm) );
 }
 
 //-----------------------------------------------------------------------------
@@ -344,6 +359,11 @@ void OsiGrbSolverInterface::branchAndBound()
   debugMessage("OsiGrbSolverInterface::branchAndBound()\n");
 
   switchToMIP();
+
+  if( colsol_ != NULL && domipstart )
+  {
+    GUROBI_CALL( "branchAndBound", GRBsetdblattrarray(getMutableLpPtr(), GRB_DBL_ATTR_START, 0, getNumCols(), colsol_) );
+  }
 
   GRBmodel* lp = getLpPtr( OsiGrbSolverInterface::FREECACHED_RESULTS );
 
@@ -825,6 +845,9 @@ bool OsiGrbSolverInterface::setWarmStart(const CoinWarmStart* warmstart)
   		case CoinWarmStartBasis::atUpperBound:
   			stat[i] = GRB_NONBASIC_LOWER;
   			break;
+      case CoinWarmStartBasis::isFree:
+         stat[i] = GRB_SUPERBASIC;
+         break;
   		default:  // unknown row status
   			delete[] stat;
   			return false;
@@ -850,6 +873,8 @@ bool OsiGrbSolverInterface::setWarmStart(const CoinWarmStart* warmstart)
           stat[i] = GRB_NONBASIC_UPPER;
           break;
         case CoinWarmStartBasis::isFree:
+          stat[i] = GRB_SUPERBASIC;
+          break;
         default:  // unknown col status
           delete[] stat;
           return false;
@@ -869,6 +894,8 @@ bool OsiGrbSolverInterface::setWarmStart(const CoinWarmStart* warmstart)
           stat[i] = GRB_NONBASIC_UPPER;
           break;
         case CoinWarmStartBasis::isFree:
+           stat[i] = GRB_SUPERBASIC;
+           break;
         default:  // unknown col status
           delete[] stat;
           return false;
@@ -1457,7 +1484,17 @@ const double * OsiGrbSolverInterface::getRowPrice() const
   		
   		GUROBI_CALL( "getRowPrice", GRBupdatemodel(getMutableLpPtr()) );
   	  
-  		GUROBI_CALL( "getRowPrice", GRBgetdblattrarray(getMutableLpPtr(), GRB_DBL_ATTR_PI, 0, nrows, rowsol_) );
+      if ( GRBgetdblattrelement(getMutableLpPtr(), GRB_DBL_ATTR_PI, 0, rowsol_) == 0 )
+      {
+    		GUROBI_CALL( "getRowPrice", GRBgetdblattrarray(getMutableLpPtr(), GRB_DBL_ATTR_PI, 0, nrows, rowsol_) );
+      }
+      else
+      {
+        *messageHandler() << "Warning: OsiGrbSolverInterface::getRowPrice() called, but no solution available! Returning 0.0. Be aware!" << CoinMessageEol;
+        if (OsiGrbSolverInterface::globalenv_)
+          *messageHandler() << "\t GUROBI error message: " << GRBgeterrormsg(OsiGrbSolverInterface::globalenv_) << CoinMessageEol;
+        CoinZeroN(rowsol_, nrows);
+      }
 
   		//??? what is the dual value for a ranged row?
   	}
@@ -1477,13 +1514,23 @@ const double * OsiGrbSolverInterface::getReducedCost() const
   	if( ncols > 0 )
   	{
   		redcost_ = new double[ncols];
-  		
+
   		GUROBI_CALL( "getReducedCost", GRBupdatemodel(getMutableLpPtr()) );
 
-  		if( nauxcols )
-  		  GUROBI_CALL( "getReducedCost", GRBgetdblattrlist(getMutableLpPtr(), GRB_DBL_ATTR_RC, ncols, colmap_O2G, redcost_) );
-  		else
-        GUROBI_CALL( "getReducedCost", GRBgetdblattrarray(getMutableLpPtr(), GRB_DBL_ATTR_RC, 0, ncols, redcost_) );
+      if ( GRBgetdblattrelement(getMutableLpPtr(), GRB_DBL_ATTR_RC, 0, redcost_) == 0 )
+      { // if reduced costs are available, get them
+    		if( nauxcols )
+    		  GUROBI_CALL( "getReducedCost", GRBgetdblattrlist(getMutableLpPtr(), GRB_DBL_ATTR_RC, ncols, colmap_O2G, redcost_) );
+    		else
+          GUROBI_CALL( "getReducedCost", GRBgetdblattrarray(getMutableLpPtr(), GRB_DBL_ATTR_RC, 0, ncols, redcost_) );
+      }
+      else
+      {
+        *messageHandler() << "Warning: OsiGrbSolverInterface::getReducedCost() called, but no solution available! Returning 0.0. Be aware!" << CoinMessageEol;
+        if (OsiGrbSolverInterface::globalenv_)
+          *messageHandler() << "\t GUROBI error message: " << GRBgeterrormsg(OsiGrbSolverInterface::globalenv_) << CoinMessageEol;
+        CoinZeroN(redcost_, ncols);
+      }
   	}
   }
   
@@ -1501,13 +1548,23 @@ const double * OsiGrbSolverInterface::getRowActivity() const
   	if( nrows > 0 )
   	{
   		rowact_ = new double[nrows];
-  		
+
   		GUROBI_CALL( "getRowActivity", GRBupdatemodel(getMutableLpPtr()) );
 
-      if ( GRBgetdblattrelement(getMutableLpPtr(), GRB_DBL_ATTR_SLACK, 0, rowact_) == 0 )
-      {
-        GUROBI_CALL( "getRowActivity", GRBgetdblattrarray(getMutableLpPtr(), GRB_DBL_ATTR_SLACK, 0, nrows, rowact_) );
-      }
+  		if ( GRBgetdblattrelement(getMutableLpPtr(), GRB_DBL_ATTR_SLACK, 0, rowact_) == 0 )
+  		{
+  			GUROBI_CALL( "getRowActivity", GRBgetdblattrarray(getMutableLpPtr(), GRB_DBL_ATTR_SLACK, 0, nrows, rowact_) );
+
+  			for( int r = 0; r < nrows; ++r )
+  			{
+  				if( nauxcols && auxcolind[r] >= 0 )
+  				{
+  					GUROBI_CALL( "getRowActivity", GRBgetdblattrelement(getMutableLpPtr(), GRB_DBL_ATTR_X, auxcolind[r], &rowact_[r]) );
+  				}
+  				else
+  					rowact_[r] = getRightHandSide()[r] - rowact_[r];
+  			}
+  		}
       else
       {
         *messageHandler() << "Warning: OsiGrbSolverInterface::getRowActivity() called, but no solution available! Returning 0.0. Be aware!" << CoinMessageEol;
@@ -1515,16 +1572,6 @@ const double * OsiGrbSolverInterface::getRowActivity() const
           *messageHandler() << "\t GUROBI error message: " << GRBgeterrormsg(OsiGrbSolverInterface::globalenv_) << CoinMessageEol;
         CoinZeroN(rowact_, nrows);
       }
-	  	
-  		for( int r = 0; r < nrows; ++r )
-  		{
-  		  if( nauxcols && auxcolind[r] >= 0 )
-  		  {
-  	      GUROBI_CALL( "getRowActivity", GRBgetdblattrelement(getMutableLpPtr(), GRB_DBL_ATTR_X, auxcolind[r], &rowact_[r]) );
-  		  }
-  		  else
-  		    rowact_[r] = getRightHandSide()[r] - rowact_[r];
-  		}
   	}
   }
   return rowact_;
@@ -1571,9 +1618,16 @@ int OsiGrbSolverInterface::getIterationCount() const
 }
 
 //------------------------------------------------------------------
-std::vector<double*> OsiGrbSolverInterface::getDualRays(int maxNumRays) const
+std::vector<double*> OsiGrbSolverInterface::getDualRays(int maxNumRays,
+							bool fullRay) const
 {
-  debugMessage("OsiGrbSolverInterface::getDualRays(%d)\n", maxNumRays);
+  debugMessage("OsiGrbSolverInterface::getDualRays(%d,%s)\n", maxNumRays,
+	       fullRay?"true":"false");
+  
+  if (fullRay == true) {
+    throw CoinError("Full dual rays not yet implemented.","getDualRays",
+		    "OsiGrbSolverInterface");
+  }
 
   OsiGrbSolverInterface solver(*this);
 
@@ -2158,7 +2212,7 @@ void OsiGrbSolverInterface::setColSolution(const double * cs)
   	// Copy in new col solution.
   	CoinDisjointCopyN( cs, nc, colsol_ );
 
-  	*messageHandler() << "OsiGrb::setColSolution: Gurobi does not allow setting the column solution. Command is ignored." << CoinMessageEol;
+  	//*messageHandler() << "OsiGrb::setColSolution: Gurobi does not allow setting the column solution. Command is ignored." << CoinMessageEol;
   }
 }
 
@@ -2615,7 +2669,7 @@ OsiGrbSolverInterface::deleteRows(const int num, const int * rowIndices)
     for( int i = 0; i < num; ++i )
     {
       if( auxcolind[rowIndices[i]] >= 0 )
-        convertToNormalRow(rowIndices[i], 0.0, 0.0);
+        convertToNormalRow(rowIndices[i], 'E', 0.0);
     }
   }
 
@@ -2841,10 +2895,11 @@ OsiGrbSolverInterface::loadProblem( const CoinPackedMatrix& matrix,
   
 	GUROBI_CALL( "loadProblem", GRBgetintattr(getMutableLpPtr(), GRB_INT_ATTR_MODELSENSE, &modelsense) );
 
-	gutsOfDestructor(); // kill old LP, if any
-
 	std::string pn;
 	getStrParam(OsiProbName, pn);
+
+	gutsOfDestructor(); // kill old LP, if any
+
 	GUROBI_CALL( "loadProblem", GRBloadmodel(getEnvironmentPtr(), &lp_, const_cast<char*>(pn.c_str()),
 			nc, nr,
 			modelsense,
@@ -3039,10 +3094,11 @@ OsiGrbSolverInterface::loadProblem(const int numcols, const int numrows,
 	int modelsense;
 	GUROBI_CALL( "loadProblem", GRBgetintattr(getMutableLpPtr(), GRB_INT_ATTR_MODELSENSE, &modelsense) );
 
-	gutsOfDestructor(); // kill old LP, if any
-
 	std::string pn;
 	getStrParam(OsiProbName, pn);
+
+	gutsOfDestructor(); // kill old LP, if any
+
 	GUROBI_CALL( "loadProblem", GRBloadmodel(getEnvironmentPtr(), &lp_, const_cast<char*>(pn.c_str()),
 			nc, nr,
 			modelsense,
@@ -3255,6 +3311,7 @@ OsiGrbSolverInterface::OsiGrbSolverInterface(bool use_local_env)
     matrixByRow_(NULL),
     matrixByCol_(NULL),
     probtypemip_(false),
+    domipstart(false),
     colspace_(0),
     coltype_(NULL),
     nauxcols(0),
@@ -3305,6 +3362,7 @@ OsiGrbSolverInterface::OsiGrbSolverInterface(GRBenv* localgrbenv)
     matrixByRow_(NULL),
     matrixByCol_(NULL),
     probtypemip_(false),
+    domipstart(false),
     colspace_(0),
     coltype_(NULL),
     nauxcols(0),
@@ -3367,6 +3425,7 @@ OsiGrbSolverInterface::OsiGrbSolverInterface( const OsiGrbSolverInterface & sour
     matrixByRow_(NULL),
     matrixByCol_(NULL),
     probtypemip_(false),
+    domipstart(false),
     colspace_(0),
     coltype_(NULL),
     nauxcols(0),
@@ -3571,6 +3630,8 @@ void OsiGrbSolverInterface::gutsOfConstructor()
 //-------------------------------------------------------------------
 void OsiGrbSolverInterface::gutsOfDestructor()
 {  
+  debugMessage("OsiGrbSolverInterface::gutsOfDestructor()\n");
+
   if ( lp_ != NULL )
   {
     GUROBI_CALL( "gutsOfDestructor", GRBfreemodel(lp_) );
@@ -3901,6 +3962,9 @@ void OsiGrbSolverInterface::getBasisStatus(int* cstat, int* rstat) const {
 	  {
 	    switch (rstat[i])
 	    {
+         case GRB_SUPERBASIC:
+	        rstat[i] = 0;
+	        break;
 	      case GRB_BASIC:
 	        rstat[i] = 1;
 	        break;

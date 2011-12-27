@@ -1,6 +1,8 @@
-/* $Id: CoinPresolveForcing.cpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinPresolveForcing.cpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #include <stdio.h>
 #include <math.h>
 
@@ -12,6 +14,7 @@
 #include "CoinPresolveUseless.hpp"
 #include "CoinPresolveForcing.hpp"
 #include "CoinMessage.hpp"
+#include "CoinFinite.hpp"
 
 #if PRESOLVE_DEBUG || PRESOLVE_CONSISTENCY
 #include "CoinPresolvePsdebug.hpp"
@@ -422,6 +425,7 @@ const CoinPresolveAction
 
 	action *f = &actions[nactions];
 	nactions++;
+	PRESOLVE_DETAIL_PRINT(printf("pre_forcing %dR E\n",irow));
 
 	f->row = irow;
 	f->nlo = lk-krs;
@@ -773,8 +777,8 @@ static void implied_bounds1(CoinPresolveMatrix * prob, const double *rowels,
 
 	if (ilbound[jcol] < ilb1) {
 	  ilbound[jcol] = ilb1;
-	  if (jcol == 278001)
-	    printf("JCOL LB %g\n", ilb1);
+	  //if (jcol == 278001)
+	  //printf("JCOL LB %g\n", ilb1);
 	}
       }
     }
@@ -812,8 +816,8 @@ static void implied_bounds1(CoinPresolveMatrix * prob, const double *rowels,
 
 	if (iub1 < iubound[jcol]) {
 	  iubound[jcol] = iub1;
-	  if (jcol == 278001)
-	    printf("JCOL UB %g\n", iub1);
+	  //if (jcol == 278001)
+	  //printf("JCOL UB %g\n", iub1);
 	}
       }
     }

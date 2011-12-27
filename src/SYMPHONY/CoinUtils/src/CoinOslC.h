@@ -1,7 +1,11 @@
-/* $Id: CoinOslC.h 1202 2009-09-25 15:27:15Z forrest $ */
+/* $Id: CoinOslC.h 1374 2011-01-04 00:08:33Z lou $ */
 #ifndef COIN_OSL_C_INCLUDE
-/* Copyright (C) 1987, 2009, International Business Machines
-   Corporation and others.  All Rights Reserved. */
+/*
+  Copyright (C) 1987, 2009, International Business Machines Corporation
+  and others.  All Rights Reserved.
+
+  This code is licensed under the terms of the Eclipse Public License (EPL).
+*/
 #define COIN_OSL_C_INCLUDE
 
 #ifndef CLP_OSL

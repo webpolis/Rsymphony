@@ -1,8 +1,8 @@
 # Copyright (C) 2006, 2007 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: Makemain.inc 927 2008-01-30 21:03:18Z andreasw $
+## $Id: Makemain.inc 2107 2011-02-20 20:07:36Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -11,7 +11,7 @@
 ########################################################################
 
 DocFiles =  README AUTHORS LICENSE
-DocInstallDir = $(prefix)/share/doc/coin/$(PACKAGE_NAME)
+DocInstallDir = $(datadir)/coin/doc/$(PACKAGE_NAME)
 
 install-doc: $(DocFiles)
 	test -z "$(DocInstallDir)" || $(mkdir_p) "$(DESTDIR)$(DocInstallDir)"
@@ -54,15 +54,15 @@ $(AUX_DIR)/depcomp: $(BUILDTOOLSDIR)/depcomp
 $(AUX_DIR)/ltmain.sh: $(BUILDTOOLSDIR)/ltmain.sh
 	cp $< $@
 
-# Take care of updating externals (if Externals file exists)
+# Take care of updating externals (if Dependencies file exists)
 if HAVE_EXTERNALS
-$(top_builddir)/Makefile: .Externals-stamp
+$(top_builddir)/Makefile: .Dependencies-stamp
 
-.Externals-stamp: $(srcdir)/Externals
-	cd $(srcdir); svn propset svn:externals -F Externals .
-	touch .Externals-stamp
+.Dependencies-stamp: $(srcdir)/Dependencies
+	cd $(srcdir); BuildTools/set_externals Dependencies
+	touch .Dependencies-stamp
 
-update-externals: .Externals-stamp
+update-externals: .Dependencies-stamp
 	cd $(srcdir); svn update
 
 endif
@@ -70,8 +70,8 @@ endif
 endif
 
 if HAVE_EXTERNALS
-EXTRA_DIST += Externals
-DISTCLEANFILES += .Externals-stamp
+EXTRA_DIST += Dependencies
+DISTCLEANFILES += .Dependencies-stamp
 endif
 
 DISTCLEANFILES += $(VPATH_DISTCLEANFILES)

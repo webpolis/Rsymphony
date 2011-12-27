@@ -1,19 +1,19 @@
-/* $Id: CoinDenseFactorization.cpp 1191 2009-07-25 08:38:12Z forrest $ */
+/* $Id: CoinDenseFactorization.cpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #include "CoinUtilsConfig.h"
+#include "CoinPragma.hpp"
 
 #include <cassert>
+#include <cstdio>
+
 #include "CoinDenseFactorization.hpp"
 #include "CoinIndexedVector.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedMatrix.hpp"
-#include <stdio.h>
+#include "CoinFinite.hpp"
 #if COIN_BIG_DOUBLE==1
 #undef DENSE_CODE
 #endif
@@ -208,7 +208,7 @@ CoinDenseFactorization::factor ( )
       solveMode_=1+10*(solveMode_/10);
       numberGoodU_=numberRows_;
       CoinZeroN(workArea_,2*numberRows_);
-#ifndef NDEBUG
+#if 0 //ndef NDEBUG
       const CoinFactorizationDouble * column = elements_;
       double smallest=COIN_DBL_MAX;
       for (int i=0;i<numberRows_;i++) {

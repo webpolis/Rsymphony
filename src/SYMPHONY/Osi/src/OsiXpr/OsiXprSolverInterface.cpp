@@ -1,5 +1,6 @@
 // copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 
 /* OPEN: have a look at the OPEN tags */
@@ -50,6 +51,7 @@ void XPRS_CC OsiXprMessageCallback(XPRSprob prob, void *vUserDat, const char *ms
 	}
 }
 
+static
 void reporterror(const char *fname, int iline, int ierr)
 {
   fprintf( stdout, "ERROR: %s in line %d error %d occured\n",
@@ -71,31 +73,45 @@ void reporterror(const char *fname, int iline, int ierr)
 //#############################################################################
 
 void
-OsiXprSolverInterface::initialSolve(){
+OsiXprSolverInterface::initialSolve() {
 
   freeSolution();
 
+#if XPVERSION <= 20
    if ( objsense_ == 1.0 ) {
        XPRS_CHECKED( XPRSminim, (prob_,"l") );
    }
    else if ( objsense_ == -1.0 ) {
      XPRS_CHECKED( XPRSmaxim, (prob_,"l"));
    }
+#else
+
+   XPRS_CHECKED( XPRSlpoptimize, (prob_, "l") );
+#endif
+
+   lastsolvewasmip = false;
 }
 
 //-----------------------------------------------------------------------------
 
 void
-OsiXprSolverInterface::resolve(){
+OsiXprSolverInterface::resolve() {
 
    freeSolution();
 
+#if XPVERSION <= 20
    if ( objsense_ == 1.0 ) {
        XPRS_CHECKED( XPRSminim, (prob_,"dl") );
    }
    else if ( objsense_ == -1.0 ) {
        XPRS_CHECKED( XPRSmaxim, (prob_,"dl") ) ;
    }
+#else
+
+   XPRS_CHECKED( XPRSlpoptimize, (prob_, "dl") );
+#endif
+
+   lastsolvewasmip = false;
 }
 
 //-----------------------------------------------------------------------------
@@ -104,8 +120,19 @@ void
 OsiXprSolverInterface::branchAndBound(){
   int status;
 
+  if( colsol_ != NULL && domipstart )
+  {
+  	XPRS_CHECKED( XPRSloadmipsol, (prob_, colsol_, &status) );
+  	/* status = 0 .. accepted
+  	 *        = 1 .. infeasible
+  	 *        = 2 .. cutoff
+  	 *        = 3 .. LP reoptimization interrupted
+  	 */
+  }
+
   freeSolution();
 
+#if XPVERSION <= 20
   /* XPRSglobal cannot be called if there is no LP relaxation available yet
    * -> solve LP relaxation first, if no LP solution available */
   XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
@@ -117,9 +144,12 @@ OsiXprSolverInterface::branchAndBound(){
   	messageHandler()->message(0, "XPRS", "XPRESS failed to solve LP relaxation; cannot call XPRSglobal", ' ') << CoinMessageEol;
   	return;
   }
+#else
 
-  XPRS_CHECKED( XPRSglobal, (prob_) );
+  XPRS_CHECKED( XPRSmipoptimize, (prob_, "") );
+#endif
 
+  lastsolvewasmip = true;
 }
 
 //#############################################################################
@@ -529,7 +559,7 @@ OsiXprSolverInterface::getNumCols() const
   if ( !isDataLoaded() ) return 0;
 
   int	  ncols;
-  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_COLS, &ncols) );
+  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_ORIGINALCOLS, &ncols) );
 
   return ncols;
 }
@@ -541,7 +571,7 @@ OsiXprSolverInterface::getNumRows() const
 
    int	   nrows;
 
-   XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_ROWS, &nrows) );
+   XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_ORIGINALROWS, &nrows) );
 
    return nrows;
 }
@@ -858,17 +888,32 @@ OsiXprSolverInterface::getInfinity() const
 const double *
 OsiXprSolverInterface::getColSolution() const
 {
-   if ( colsol_ == NULL ) {
-      if ( isDataLoaded() ) {
+	if ( colsol_ == NULL ) {
+		if ( isDataLoaded() ) {
+			int status;
+			int nc = getNumCols();
 
-	 int nc = getNumCols();
+			if ( nc > 0 ) {
+				colsol_ = new double[nc];
+				if( lastsolvewasmip ) {
 
-	 if ( nc > 0 ) {
-	    colsol_ = new double[nc];
-	    XPRS_CHECKED( XPRSgetsol, (prob_,colsol_, NULL, NULL, NULL) );
-	 }
-      }
-   }
+				  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_MIPSTATUS, &status) );
+				  if( status == XPRS_MIP_SOLUTION || status == XPRS_MIP_OPTIMAL )
+				  	XPRS_CHECKED( XPRSgetmipsol, (prob_,colsol_, NULL) );
+				  else
+				  	XPRS_CHECKED( XPRSgetlb, (prob_,colsol_, 0, nc-1) );
+
+				} else {
+
+				  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
+				  if( status == XPRS_LP_OPTIMAL )
+				  	XPRS_CHECKED( XPRSgetlpsol, (prob_,colsol_, NULL, NULL, NULL) );
+				  else
+				  	XPRS_CHECKED( XPRSgetlb, (prob_,colsol_, 0, nc-1) );
+				}
+			}
+		}
+	}
 
    return colsol_;
 }
@@ -878,18 +923,25 @@ OsiXprSolverInterface::getColSolution() const
 const double *
 OsiXprSolverInterface::getRowPrice() const
 {
-    if ( rowprice_ == NULL ) {
-       if ( isDataLoaded() ) {
-	  int nr = getNumRows();
-	
-	  if ( nr > 0 ) {
-	     rowprice_ = new double[nr];
-	     XPRS_CHECKED( XPRSgetsol, (prob_,NULL, NULL, rowprice_, NULL) );
-	  }
-       }
-    }
+	if ( rowprice_ == NULL ) {
+		if ( isDataLoaded() ) {
+			int nr = getNumRows();
 
-    return rowprice_;
+			if ( nr > 0 ) {
+	    	int status;
+
+				rowprice_ = new double[nr];
+
+			  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
+			  if( status == XPRS_LP_OPTIMAL )
+			  	XPRS_CHECKED( XPRSgetlpsol, (prob_,NULL, NULL, rowprice_, NULL) );
+			  else
+			  	memset(rowprice_, 0, nr * sizeof(double));
+			}
+		}
+	}
+
+	return rowprice_;
 }
 
 //-----------------------------------------------------------------------------
@@ -897,13 +949,17 @@ OsiXprSolverInterface::getRowPrice() const
 const double * OsiXprSolverInterface::getReducedCost() const
 {
   if ( colprice_ == NULL ) {
-    int nc = getNumCols();
-
     if ( isDataLoaded() ) {
+    	int status;
+      int nc = getNumCols();
 
       colprice_ = new double[nc];
 
-      XPRS_CHECKED( XPRSgetsol, (prob_,NULL, NULL, NULL, colprice_) );
+		  XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
+		  if( status == XPRS_LP_OPTIMAL )
+		  	XPRS_CHECKED( XPRSgetlpsol, (prob_,NULL, NULL,NULL, colprice_) );
+		  else
+		  	memset(colprice_, 0, nc * sizeof(double));
     }
   }
   return colprice_;
@@ -913,32 +969,57 @@ const double * OsiXprSolverInterface::getReducedCost() const
 
 const double * OsiXprSolverInterface::getRowActivity() const
 {
-  if( rowact_ == NULL ) {
-    if ( isDataLoaded() ) {
-      int nrows = getNumRows();
-      const double *rhs = getRightHandSide();
-      if( nrows > 0 ) {
-	int status;
+	if( rowact_ == NULL ) {
+		if ( isDataLoaded() ) {
+			int nrows = getNumRows();
+			if( nrows > 0 ) {
+				int status;
+				int i;
+				const double* rhs = getRightHandSide();
 
-	rowact_ = new double[nrows];
+				rowact_ = new double[nrows];
 
-	/* OPEN: why do we need the presolve state here ??? */
-	XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_PRESOLVESTATE, &status) );
+				if( lastsolvewasmip ) {
 
-	if ( status == 7 ) {
-	  int i;
+					XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_MIPSTATUS, &status) );
+					if( status == XPRS_MIP_SOLUTION || status == XPRS_MIP_OPTIMAL ) {
+						XPRS_CHECKED( XPRSgetmipsol, (prob_,NULL,rowact_) );
+						for ( i = 0;	i < nrows;  i++ )
+							rowact_[i] = rhs[i] - rowact_[i];
+					} else
+						memset(rowact_, 0, nrows * sizeof(double));
 
-	  XPRS_CHECKED( XPRSgetsol, (prob_,NULL, rowact_, NULL, NULL) );
+				} else {
 
-	  for ( i = 0;	i < nrows;  i++ )
-	    rowact_[i] = rhs[i] - rowact_[i];
-	} else {
-	  CoinFillN(rowact_, nrows, 0.0);
+					XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
+					if( status == XPRS_LP_OPTIMAL ) {
+						XPRS_CHECKED( XPRSgetlpsol, (prob_,NULL, rowact_, NULL, NULL) );
+						for ( i = 0;	i < nrows;  i++ )
+							rowact_[i] = rhs[i] - rowact_[i];
+					} else
+						memset(rowact_, 0, nrows * sizeof(double));
+				}
+
+#if 0
+				/* OPEN: why do we need the presolve state here ??? */
+				XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_PRESOLVESTATE, &status) );
+
+				if ( status == 7 ) {
+					int i;
+
+					XPRS_CHECKED( XPRSgetsol, (prob_,NULL, rowact_, NULL, NULL) );
+
+					for ( i = 0;	i < nrows;  i++ )
+						rowact_[i] = rhs[i] - rowact_[i];
+				} else {
+					CoinFillN(rowact_, nrows, 0.0);
+				}
+#endif
+			}
+		}
 	}
-      }
-    }
-  }
-  return rowact_;
+
+	return rowact_;
 }
 
 //-----------------------------------------------------------------------------
@@ -946,21 +1027,36 @@ const double * OsiXprSolverInterface::getRowActivity() const
 double
 OsiXprSolverInterface::getObjValue() const
 {
-   double  objvalue = 0;
-   double  objconstant = 0;
+	double  objvalue = 0;
+	double  objconstant = 0;
 
-   if ( isDataLoaded() ) {
-  	 if ( getNumIntVars() ) {
-  		 XPRS_CHECKED( XPRSgetdblattrib, (prob_,XPRS_MIPOBJVAL, &objvalue) );
-  	 } else {
-  		 XPRS_CHECKED( XPRSgetdblattrib, (prob_,XPRS_LPOBJVAL, &objvalue) );
-  	 }
-       OsiSolverInterface::getDblParam(OsiObjOffset, objconstant);	
-       		// Constant offset is not saved with the xpress representation,
-       		// but it has to be returned from here anyway.
-   }
+	if ( isDataLoaded() ) {
+		int status;
 
-   return objvalue - objconstant;
+		if( lastsolvewasmip ) {
+
+			XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_MIPSTATUS, &status) );
+			if( status == XPRS_MIP_SOLUTION || status == XPRS_MIP_OPTIMAL )
+				XPRS_CHECKED( XPRSgetdblattrib, (prob_, XPRS_MIPOBJVAL, &objvalue) );
+			else
+				objvalue = CoinPackedVector(getNumCols(), getObjCoefficients()).dotProduct(getColSolution());
+
+		} else {
+
+			XPRS_CHECKED( XPRSgetintattrib, (prob_,XPRS_LPSTATUS, &status) );
+			if( status == XPRS_LP_OPTIMAL )
+				XPRS_CHECKED( XPRSgetdblattrib, (prob_, XPRS_LPOBJVAL, &objvalue) );
+			else
+				objvalue = CoinPackedVector(getNumCols(), getObjCoefficients()).dotProduct(getColSolution());
+
+		}
+
+		OsiSolverInterface::getDblParam(OsiObjOffset, objconstant);
+		// Constant offset is not saved with the xpress representation,
+		// but it has to be returned from here anyway.
+	}
+
+	return objvalue - objconstant;
 }
 
 //-----------------------------------------------------------------------------
@@ -976,7 +1072,8 @@ int OsiXprSolverInterface::getIterationCount() const
 
 //-----------------------------------------------------------------------------
 
-std::vector<double*> OsiXprSolverInterface::getDualRays(int maxNumRays) const
+std::vector<double*> OsiXprSolverInterface::getDualRays(int maxNumRays,
+							bool fullRay) const
 {
   // *FIXME* : must write the method -LL
   throw CoinError("method is not yet written", "getDualRays",
@@ -1308,7 +1405,6 @@ OsiXprSolverInterface::setInteger(int index)
 	qctype = 'B';
       else
 	qctype = 'I';
-
       XPRS_CHECKED( XPRSchgcoltype, (prob_,1, &index, &qctype) );
       freeCachedResults();
     }
@@ -1367,7 +1463,11 @@ OsiXprSolverInterface::setInteger(const int* indices, int len)
 void
 OsiXprSolverInterface::setObjSense(double s) 
 {
+   assert(s == 1.0 || s == -1.0);
+
    objsense_ = s;
+
+   XPRS_CHECKED( XPRSchgobjsense, (prob_, (int)s) );
 }
 
 //-----------------------------------------------------------------------------
@@ -1597,14 +1697,15 @@ OsiXprSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
 				   const char* rowsen, const double* rowrhs,   
 				   const double* rowrng)
 {
-  assert( rowsen != NULL );
-  assert( rowrhs != NULL );
-
   freeCachedResults();
   int i;
+
+  char*   rsen;
+  double* rrhs;
  
   // Set column values to defaults if NULL pointer passed
   int nc=matrix.getNumCols();
+  int nr=matrix.getNumRows();
   double * clb;	 
   double * cub;
   double * ob;
@@ -1627,7 +1728,19 @@ OsiXprSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
     ob = new double[nc];
     for( i=0; i<nc; i++ ) ob[i]=0.0;
   }
-  
+  if ( rowsen != NULL )
+  	rsen = const_cast<char*>(rowsen);
+  else {
+  	rsen = new char[nr];
+  	for( i = 0; i < nr; ++i ) rsen[i] = 'G';
+  }
+  if ( rowrhs != NULL )
+  	rrhs = const_cast<double*>(rowrhs);
+  else {
+  	rrhs = new double[nr];
+  	for( i = 0; i < nr; ++i ) rrhs[i] = 0.0;
+  }
+
   bool freeMatrixRequired = false;
   CoinPackedMatrix * m = NULL;
   if ( !matrix.isColOrdered() ) {
@@ -1641,25 +1754,24 @@ OsiXprSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
   // Generate a problem name
   char probName[256];
   sprintf(probName, "Prob%i", osiSerial_);
-
   
   nc = m->getNumCols();
-  int nr =  m->getNumRows();
+  nr = m->getNumRows();
   
   if ( getLogFilePtr()!=NULL ) {   
     fprintf(getLogFilePtr(),"{\n"); 
 
     fprintf(getLogFilePtr(),"  char rowsen[%d];\n",nr);
     for ( i=0; i<nr; i++ )
-      fprintf(getLogFilePtr(),"  rowsen[%d]='%c';\n",i,rowsen[i]);
+      fprintf(getLogFilePtr(),"  rowsen[%d]='%c';\n",i,rsen[i]);
 
     fprintf(getLogFilePtr(),"  double rowrhs[%d];\n",nr);
     for ( i=0; i<nr; i++ )
-      fprintf(getLogFilePtr(),"  rowrhs[%d]=%f;\n",i,rowrhs[i]);
+      fprintf(getLogFilePtr(),"  rowrhs[%d]=%f;\n",i,rrhs[i]);
     
     fprintf(getLogFilePtr(),"  double rowrng[%d];\n",nr);
     for ( i=0; i<nr; i++ )
-      fprintf(getLogFilePtr(),"  rowrng[%d]=%f;\n",i,rowrng[i]);
+      fprintf(getLogFilePtr(),"  rowrng[%d]=%f;\n",i,rowrng ? rowrng[i] : 0.0);
 
     fprintf(getLogFilePtr(),"  double ob[%d];\n",nc);
     for ( i=0; i<nc; i++ )
@@ -1695,8 +1807,8 @@ OsiXprSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
 			 probName,
 			 nc,
 			 nr,
-			 const_cast<char*>(rowsen),
-			 const_cast<double*>(rowrhs),
+			 const_cast<char*>(rsen),
+			 const_cast<double*>(rrhs),
 			 const_cast<double*>(rowrng),
 			 ob,
 			 const_cast<int*>(m->getVectorStarts()),
@@ -1719,6 +1831,8 @@ OsiXprSolverInterface::loadProblem(const CoinPackedMatrix& matrix,
   if ( collb==NULL ) delete[] clb;
   if ( colub==NULL ) delete[] cub;
   if ( obj  ==NULL ) delete[] ob;
+  if ( rowsen==NULL ) delete[] rsen;
+  if ( rowrhs==NULL ) delete[] rrhs;
   
   if (freeMatrixRequired) {
     delete m;
@@ -1785,9 +1899,6 @@ OsiXprSolverInterface::loadProblem(const int numcols, const int numrows,
 				   const char* rowsen, const double* rowrhs,
 				   const double* rowrng )
 {
-  assert( rowsen != NULL );
-  assert( rowrhs != NULL );
-
   freeCachedResults();
   int i;
  
@@ -1798,6 +1909,8 @@ OsiXprSolverInterface::loadProblem(const int numcols, const int numrows,
   double * clb;  
   double * cub;
   double * ob;
+  char*   rsen;
+  double* rrhs;
 
   std::adjacent_difference(start, start + (nc+1), len);
   
@@ -1820,6 +1933,18 @@ OsiXprSolverInterface::loadProblem(const int numcols, const int numrows,
     ob = new double[nc];
     for( i=0; i<nc; i++ ) ob[i]=0.0;
   }
+  if ( rowsen != NULL )
+  	rsen = const_cast<char*>(rowsen);
+  else {
+  	rsen = new char[nr];
+  	for( i = 0; i < nr; ++i ) rsen[i] = 'G';
+  }
+  if ( rowrhs != NULL )
+  	rrhs = const_cast<double*>(rowrhs);
+  else {
+  	rrhs = new double[nr];
+  	for( i = 0; i < nr; ++i ) rrhs[i] = 0.0;
+  }
 
   // Generate a problem name
   char probName[256];
@@ -1830,15 +1955,15 @@ OsiXprSolverInterface::loadProblem(const int numcols, const int numrows,
 
     fprintf(getLogFilePtr(),"  char rowsen[%d];\n",nr);
     for ( i=0; i<nr; i++ )
-      fprintf(getLogFilePtr(),"  rowsen[%d]='%c';\n",i,rowsen[i]);
+      fprintf(getLogFilePtr(),"  rowsen[%d]='%c';\n",i,rsen[i]);
 
     fprintf(getLogFilePtr(),"  double rowrhs[%d];\n",nr);
     for ( i=0; i<nr; i++ )
-      fprintf(getLogFilePtr(),"  rowrhs[%d]=%f;\n",i,rowrhs[i]);
+      fprintf(getLogFilePtr(),"  rowrhs[%d]=%f;\n",i,rrhs[i]);
     
     fprintf(getLogFilePtr(),"  double rowrng[%d];\n",nr);
     for ( i=0; i<nr; i++ )
-      fprintf(getLogFilePtr(),"  rowrng[%d]=%f;\n",i,rowrng[i]);
+      fprintf(getLogFilePtr(),"  rowrng[%d]=%f;\n",i,rowrng ? rowrng[i] : 0.0);
 
     fprintf(getLogFilePtr(),"  double ob[%d];\n",nc);
     for ( i=0; i<nc; i++ )
@@ -1873,8 +1998,8 @@ OsiXprSolverInterface::loadProblem(const int numcols, const int numrows,
   int iret = XPRSloadlp(prob_,probName,
 			nc,
 			nr,
-			const_cast<char*>(rowsen),
-			const_cast<double*>(rowrhs),
+			const_cast<char*>(rsen),
+			const_cast<double*>(rrhs),
 			const_cast<double*>(rowrng),
 			ob,
 			const_cast<int*>(start),
@@ -1896,6 +2021,8 @@ OsiXprSolverInterface::loadProblem(const int numcols, const int numrows,
   if ( collb == NULL ) delete[] clb;
   if ( colub == NULL ) delete[] cub;
   if ( obj   == NULL ) delete[] ob;
+  if ( rowsen== NULL ) delete[] rsen;
+  if ( rowrhs== NULL ) delete[] rrhs;
   delete[] len;
 }
 
@@ -2019,12 +2146,20 @@ void OsiXprSolverInterface::writeMps(const char *filename,
 				     const char *extension,
 				     double objSense) const
 {
-  // Note: XPRESS insists on ignoring the extension and 
-  // adding ".mat" instead.  Forewarned is forearmed.
-  // Note: Passing an empty filename produces a file named after 
+	// Note: XPRESS insists on ignoring the extension and
+  // adding ".mat" instead.  Forewarned is forearmed.  NOTE: that does not happen for me (Xpress 21).
+  // Note: Passing an empty filename produces a file named after
   // the problem.
 
-  XPRS_CHECKED( XPRSwriteprob, (prob_,filename, "") );
+	assert(filename != NULL);
+	assert(extension != NULL);
+
+	char* fullname = new char[strlen(filename) + strlen(extension) + 2];
+	sprintf(fullname, "%s.%s", filename, extension);
+
+  XPRS_CHECKED( XPRSwriteprob, (prob_,fullname, "") );
+
+  delete[] fullname;
 }
 
 //-----------------------------------------------------------------------------
@@ -2050,8 +2185,10 @@ OsiXprSolverInterface::incrementInstanceCounter()
 	     numInstances_);
 #endif
     if ( numInstances_ == 0 ) {          
-	
-	XPRS_CHECKED( XPRSinit, (NULL) );
+
+       if( XPRSinit(NULL) != 0 ) {
+         throw CoinError("failed to init XPRESS, maybe no license", "incrementInstanceCounter", "OsiXprSolverInterface");
+       }
     }
 
     numInstances_++;
@@ -2169,7 +2306,8 @@ rowprice_(NULL),
 colprice_(NULL),
 ivarind_(NULL),
 ivartype_(NULL),
-vartype_(NULL)
+vartype_(NULL),
+domipstart(false)
 {
     incrementInstanceCounter();
     
@@ -2213,7 +2351,7 @@ OsiXprSolverInterface (const OsiXprSolverInterface & source) :
    rhs_(NULL),
    rowrange_(NULL),
    objcoeffs_(NULL),
-   objsense_(1),
+   objsense_(source.objsense_),
    colsol_(NULL),
    rowsol_(NULL),
    rowact_(NULL),
@@ -2221,7 +2359,8 @@ OsiXprSolverInterface (const OsiXprSolverInterface & source) :
    colprice_(NULL),
    ivarind_(NULL),
    ivartype_(NULL),
-   vartype_(NULL)
+   vartype_(NULL),
+   domipstart(false)
 {
     incrementInstanceCounter();
     xprProbname_ = "";
@@ -2397,6 +2536,7 @@ OsiXprSolverInterface::gutsOfConstructor()
     XPRS_CHECKED( XPRSloadlp, ( prob_, "empty", 0, 0, NULL, NULL, NULL, NULL,
 				&istart,
 				NULL, NULL, NULL, NULL, NULL) );
+    XPRS_CHECKED( XPRSchgobjsense, (prob_, (int)objsense_) );
 
     XPRS_CHECKED( XPRSsetintcontrol, (prob_, XPRS_OUTPUTLOG, outputlog) );
 
@@ -2409,6 +2549,7 @@ OsiXprSolverInterface::gutsOfConstructor()
     
     //    XPRS_CHECKED( XPRSsetintcontrol, ( prob_, XPRS_PRESOLVE, 0) );
 
+    lastsolvewasmip = false;
 
 }
 //-------------------------------------------------------------------
