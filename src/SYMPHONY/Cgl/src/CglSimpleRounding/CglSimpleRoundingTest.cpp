@@ -1,8 +1,5 @@
-// $Id: CglSimpleRoundingTest.cpp 1033 2011-06-19 16:49:13Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -96,7 +93,7 @@ CglSimpleRoundingUnitTest(
     double solCoefs[solSize]={5.0, 4.0};
     OsiRowCut solRowCut;
     solRowCut.setRow(solSize,solCols,solCoefs);
-    solRowCut.setLb(-COIN_DBL_MAX);
+    solRowCut.setLb(-DBL_MAX);
     solRowCut.setUb(2.0);
 
     // Test for equality between the derived cut and the solution cut

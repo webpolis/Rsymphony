@@ -1,7 +1,7 @@
-/* $Id: CoinModel.cpp 1373 2011-01-03 23:57:44Z lou $ */
+/* $Id: CoinModel.cpp 1240 2009-12-10 17:07:20Z ladanyi $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 
 #include "CoinUtilsConfig.h"
 #include "CoinHelperFunctions.hpp"

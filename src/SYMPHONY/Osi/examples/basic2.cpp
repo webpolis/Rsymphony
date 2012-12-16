@@ -1,7 +1,8 @@
 // Bare bones example of using COIN-OR OSI
 
 #include <iostream>
-#include OSIXXXhpp
+#include "OsiClpSolverInterface.hpp"
+//#include "OsiGlpkSolverInterface.hpp"
 
 int
 main(void)
@@ -10,15 +11,11 @@ main(void)
    OsiSolverInterface *si;
 
    // When we instantiate the object, we need a specific derived class.
-   si = new OSIXXX;
+   si = new OsiClpSolverInterface;
+   //   si = new OsiGlpkSolverInterface;  
 
    // Read in an mps file.  This one's from the MIPLIB library.
-#if defined(SAMPLEDIR)
-   si->readMps(SAMPLEDIR "/p0033");
-#else
-   fprintf(stderr, "Do not know where to find sample MPS files.\n");
-   exit(1);
-#endif
+   si->readMps("../../Data/Sample/p0033");
 
    // Solve the (relaxation of the) problem
    si->initialSolve();

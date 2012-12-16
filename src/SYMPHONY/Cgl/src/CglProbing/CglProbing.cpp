@@ -1,8 +1,6 @@
-// $Id: CglProbing.cpp 1033 2011-06-19 16:49:13Z stefan $
+
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -477,8 +475,8 @@ CglProbing::tighten(double *colLower, double * colUpper,
 	     * where the singleton in question is the row slack.
 	     */
 	    ++nchange;
-	    rowLower[i]=-COIN_DBL_MAX;
-	    rowUpper[i]=COIN_DBL_MAX;
+	    rowLower[i]=-DBL_MAX;
+	    rowUpper[i]=DBL_MAX;
 	  } else {
 	    if (dmaxup < rowLower[i] -tolerance || dmaxdown > rowUpper[i]+tolerance) {
 	      ninfeas++;
@@ -774,8 +772,8 @@ CglProbing::tighten(double *colLower, double * colUpper,
 	   * where the singleton in question is the row slack.
 	   */
 	  ++nrwdrp;
-	  rowLower[i]=-COIN_DBL_MAX;
-	  rowUpper[i]=COIN_DBL_MAX;
+	  rowLower[i]=-DBL_MAX;
+	  rowUpper[i]=DBL_MAX;
 	} else {
 	  if (dmaxup < rowLower[i] -tolerance || dmaxdown > rowUpper[i]+tolerance) {
 	    ninfeas++;
@@ -1282,7 +1280,7 @@ void CglProbing::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
   if (ninfeas) {
     // generate infeasible cut and return
     OsiRowCut rc;
-    rc.setLb(COIN_DBL_MAX);
+    rc.setLb(DBL_MAX);
     rc.setUb(0.0);   
     cs.insert(rc);
 #ifdef CGL_DEBUG
@@ -1358,7 +1356,7 @@ int CglProbing::generateCutsAndModify(const OsiSolverInterface & si,
   if (ninfeas) {
     // generate infeasible cut and return
     OsiRowCut rc;
-    rc.setLb(COIN_DBL_MAX);
+    rc.setLb(DBL_MAX);
     rc.setUb(0.0);   
     cs.insert(rc);
 #ifdef CGL_DEBUG
@@ -1777,7 +1775,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
       delete [] elements;
       CoinMemcpyN(si.getRowLower(),nRows,rowLower);
       CoinMemcpyN(si.getRowUpper(),nRows,rowUpper);
-      rowLower[nRows]=-COIN_DBL_MAX;
+      rowLower[nRows]=-DBL_MAX;
       rowUpper[nRows]=cutoff+offset;
       nRows++;
     } else {
@@ -1796,7 +1794,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
     CoinMemcpyN(rowLower_,nRows,rowLower);
     CoinMemcpyN(rowUpper_,nRows,rowUpper);
     if (usingObjective_>0) {
-      rowLower[nRows-1]=-COIN_DBL_MAX;
+      rowLower[nRows-1]=-DBL_MAX;
       rowUpper[nRows-1]=cutoff+offset;
     }
   }
@@ -2011,7 +2009,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
 	  if (value<0.0) {
 	    elements[newSize]=value;
 	    column[newSize++]=iColumn;
-	  } else if (value>0.0) {
+	  } else {
 	    elements2[nOther]=value;
 	    column2[nOther++]=iColumn;
 	  }
@@ -2262,7 +2260,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
             continue;
         }
         int other = indices[1-which];
-	if (lb==-COIN_DBL_MAX) {
+	if (lb==-DBL_MAX) {
           if (!rcut.ub()) {
             // UB
             if (elements[which]<0.0) {
@@ -2366,7 +2364,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
         }
         int other = indices[1-which];
         int j = other ? backward[other] : -1;
-	if (lb==-COIN_DBL_MAX) {
+	if (lb==-DBL_MAX) {
           if (!rcut.ub()) {
             // UB
             if (elements[which]<0.0) {
@@ -2377,7 +2375,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
                 setAffectedInDisaggregation(cutVector_[i].index[iput],other);
               setWhenAtUBInDisaggregation(cutVector_[i].index[iput],false);
               setAffectedToUBInDisaggregation(cutVector_[i].index[iput],false);
-	      setZeroOneInDisaggregation(cutVector_[i].index[iput],onList[other]!=0);
+              setZeroOneInDisaggregation(cutVector_[i].index[iput],onList[other]!=0);
               cutVector_[i].length++;
             } else { 
               if (elements[1-which]<0.0&&fabs(elements[which]/elements[1-which]-
@@ -2783,7 +2781,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
                   // delta -> 0 => x to lb (at present just 0)
                   infeasibility = solValue - upper * solInt;
                   if (infeasibility > 1.0e-3) {
-                    rc.setLb(-COIN_DBL_MAX);
+                    rc.setLb(-DBL_MAX);
                     rc.setUb(0.0);
                     index[0]=icol;
                     element[0]=1.0;
@@ -2807,7 +2805,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
                   if (!colLower[icol]) {
                     infeasibility = upper * solInt - solValue;
                     if (infeasibility > 1.0e-3) {
-                      rc.setLb(-COIN_DBL_MAX);
+                      rc.setLb(-DBL_MAX);
                       rc.setUb(0.0);
                       index[0]=icol;
                       element[0]=-1.0;
@@ -2832,7 +2830,7 @@ int CglProbing::gutsOfGenerateCuts(const OsiSolverInterface & si,
                     if (!colLower[icol]) {
                       infeasibility = solInt + solValue - 1.0;
                       if (infeasibility > 1.0e-3) {
-                        rc.setLb(-COIN_DBL_MAX);
+                        rc.setLb(-DBL_MAX);
                         rc.setUb(1.0);
                         index[0]=icol;
                         element[0]=1.0;
@@ -4653,7 +4651,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                      + boundChange*solMove+primalTolerance_)) {
                   // create cut
                   OsiRowCut rc;
-                  rc.setLb(-COIN_DBL_MAX);
+                  rc.setLb(-DBL_MAX);
                   rc.setUb(colUpper[icol]-down*boundChange);
                   index[0]=icol;
                   element[0]=1.0;
@@ -4681,7 +4679,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                   // create cut
                   OsiRowCut rc;
                   rc.setLb(colLower[icol]-down*boundChange);
-                  rc.setUb(COIN_DBL_MAX);
+                  rc.setUb(DBL_MAX);
                   index[0]=icol;
                   element[0]=1.0;
                   index[1]=j;
@@ -4806,7 +4804,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      sum2 -= colsol[j]*gap;
                     }
                     OsiRowCut rc;
-                    rc.setLb(-COIN_DBL_MAX);
+                    rc.setLb(-DBL_MAX);
 		    double ub =rowUpper[irow]-gap*(colLower[j]+1.0);
                     rc.setUb(ub);
                     double effectiveness=sum2-ub;
@@ -4961,7 +4959,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                     OsiRowCut rc;
 		    double lb = rowLower[irow]+gap*(colLower[j]+1.0);
                     rc.setLb(lb);
-                    rc.setUb(COIN_DBL_MAX);
+                    rc.setUb(DBL_MAX);
                     // effectiveness
                     double effectiveness=lb-sum2;
                     effectiveness = CoinMax(effectiveness,
@@ -5247,7 +5245,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                      + boundChange*solMove+primalTolerance_)) {
                   // create cut
                   OsiRowCut rc;
-                  rc.setLb(-COIN_DBL_MAX);
+                  rc.setLb(-DBL_MAX);
                   rc.setUb(colUpper[icol]+up*boundChange);
                   index[0]=icol;
                   element[0]=1.0;
@@ -5275,7 +5273,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                   // create cut
                   OsiRowCut rc;
                   rc.setLb(colLower[icol]+up*boundChange);
-                  rc.setUb(COIN_DBL_MAX);
+                  rc.setUb(DBL_MAX);
                   index[0]=icol;
                   element[0]=1.0;
                   index[1]=j;
@@ -5353,7 +5351,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
 		      sum2 += colsol[j]*gap;
                     }
                     OsiRowCut rc;
-                    rc.setLb(-COIN_DBL_MAX);
+                    rc.setLb(-DBL_MAX);
 		    double ub = rowUpper[irow]+gap*(colUpper[j]-1.0);
                     rc.setUb(ub);
                     // effectiveness
@@ -5458,7 +5456,7 @@ int CglProbing::probe( const OsiSolverInterface & si,
                     OsiRowCut rc;
                     double lb = rowLower[irow]-gap*(colUpper[j]-1);
                     rc.setLb(lb);
-                    rc.setUb(COIN_DBL_MAX);
+                    rc.setUb(DBL_MAX);
 		    double effectiveness=lb-sum2;
                     effectiveness = CoinMax(effectiveness,
 					    (rowLower[irow]-
@@ -5757,14 +5755,12 @@ int CglProbing::probe( const OsiSolverInterface & si,
     } else {
       for (int i=0;i<nRows;i++) {
 	int realRow=realRows[i];
-	if (realRow>=0) {
-	  OsiRowCut * cut = info->strengthenRow[realRow];
-	  if (cut) {
+	OsiRowCut * cut = info->strengthenRow[realRow];
+	if (realRow>=0&&cut) {
 #ifdef CLP_INVESTIGATE
-	    printf("Row %d, real row %d effectiveness %g\n",i,realRow,cut->effectiveness());
+	  printf("Row %d, real row %d effectiveness %g\n",i,realRow,cut->effectiveness());
 #endif
-	    cs.insert(cut);
-	  }
+	  cs.insert(cut);
 	}
       }
     }
@@ -5910,7 +5906,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
   double current = si.getObjValue();
   // make irrelevant if mode is 0
   if (!mode_)
-    cutoff=COIN_DBL_MAX;
+    cutoff=DBL_MAX;
   /* for both way coding */
   int nstackC0=-1;
   int * stackC0 = new int[maxStack];
@@ -6714,7 +6710,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		      + boundChange*solMove+primalTolerance_)) {
 		    // create cut
 		    OsiRowCut rc;
-		    rc.setLb(-COIN_DBL_MAX);
+		    rc.setLb(-DBL_MAX);
 		    rc.setUb(colUpper[icol]-down*boundChange);
 		    index[0]=icol;
 		    element[0]=1.0;
@@ -6743,7 +6739,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		    // create cut
 		    OsiRowCut rc;
 		    rc.setLb(colLower[icol]-down*boundChange);
-		    rc.setUb(COIN_DBL_MAX);
+		    rc.setUb(DBL_MAX);
 		    index[0]=icol;
 		    element[0]=1.0;
 		    index[1]=j;
@@ -6824,7 +6820,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 			element[n++]=-gap;
 		      }
 		      OsiRowCut rc;
-		      rc.setLb(-COIN_DBL_MAX);
+		      rc.setLb(-DBL_MAX);
 		      rc.setUb(rowUpper[irow]-gap*(colLower[j]+1.0));
 		      // effectiveness is how far j moves
 		      rc.setEffectiveness((sum-gap*colsol[j]-maxR[irow])/gap);
@@ -6905,7 +6901,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		      }
 		      OsiRowCut rc;
 		      rc.setLb(rowLower[irow]+gap*(colLower[j]+1.0));
-		      rc.setUb(COIN_DBL_MAX);
+		      rc.setUb(DBL_MAX);
 		      // effectiveness is how far j moves
 		      rc.setEffectiveness((minR[irow]-sum-gap*colsol[j])/gap);
 		      if (rc.effectiveness()>needEffectiveness) {
@@ -7070,7 +7066,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		      + boundChange*solMove+primalTolerance_)) {
 		    // create cut
 		    OsiRowCut rc;
-		    rc.setLb(-COIN_DBL_MAX);
+		    rc.setLb(-DBL_MAX);
 		    rc.setUb(colUpper[icol]+up*boundChange);
 		    index[0]=icol;
 		    element[0]=1.0;
@@ -7099,7 +7095,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		    // create cut
 		    OsiRowCut rc;
 		    rc.setLb(colLower[icol]+up*boundChange);
-		    rc.setUb(COIN_DBL_MAX);
+		    rc.setUb(DBL_MAX);
 		    index[0]=icol;
 		    element[0]=1.0;
 		    index[1]=j;
@@ -7178,7 +7174,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 			element[n++]=gap;
 		      }
 		      OsiRowCut rc;
-		      rc.setLb(-COIN_DBL_MAX);
+		      rc.setLb(-DBL_MAX);
 		      rc.setUb(rowUpper[irow]+gap*(colUpper[j]-1.0));
 		      // effectiveness is how far j moves
 		      rc.setEffectiveness((sum+gap*colsol[j]-rowUpper[irow])/gap);
@@ -7258,7 +7254,7 @@ int CglProbing::probeCliques( const OsiSolverInterface & si,
 		      }
 		      OsiRowCut rc;
 		      rc.setLb(rowLower[irow]-gap*(colUpper[j]-1));
-		      rc.setUb(COIN_DBL_MAX);
+		      rc.setUb(DBL_MAX);
 		      // effectiveness is how far j moves
 		      rc.setEffectiveness((rowLower[irow]-sum+gap*colsol[j])/gap);
 		      if (rc.effectiveness()>needEffectiveness) {
@@ -8133,7 +8129,7 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
                       element[n++]=-gap;
                     }
                     OsiRowCut rc;
-                    rc.setLb(-COIN_DBL_MAX);
+                    rc.setLb(-DBL_MAX);
                     rc.setUb(rowUpper[irow]-gap*(colLower[j]+1.0));
                     // effectiveness is how far j moves
                     rc.setEffectiveness((sum-gap*colsol[j]-maxR[irow])/gap);
@@ -8211,7 +8207,7 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
                     }
                     OsiRowCut rc;
                     rc.setLb(rowLower[irow]+gap*(colLower[j]+1.0));
-                    rc.setUb(COIN_DBL_MAX);
+                    rc.setUb(DBL_MAX);
                     // effectiveness is how far j moves
                     rc.setEffectiveness((minR[irow]-sum-gap*colsol[j])/gap);
                     if (rc.effectiveness()>needEffectiveness) {
@@ -8376,7 +8372,7 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
 			element[n++]=gap;
 		      }
 		      OsiRowCut rc;
-		      rc.setLb(-COIN_DBL_MAX);
+		      rc.setLb(-DBL_MAX);
 		      rc.setUb(rowUpper[irow]+gap*(colUpper[j]-1.0));
 		      // effectiveness is how far j moves
 		      rc.setEffectiveness((sum+gap*colsol[j]-rowUpper[irow])/gap);
@@ -8453,7 +8449,7 @@ CglProbing::probeSlacks( const OsiSolverInterface & si,
 		      }
 		      OsiRowCut rc;
 		      rc.setLb(rowLower[irow]-gap*(colUpper[j]-1));
-		      rc.setUb(COIN_DBL_MAX);
+		      rc.setUb(DBL_MAX);
 		      // effectiveness is how far j moves
 		      rc.setEffectiveness((rowLower[irow]-sum+gap*colsol[j])/gap);
 		      if (rc.effectiveness()>needEffectiveness) {
@@ -8551,8 +8547,8 @@ int CglProbing::snapshot ( const OsiSolverInterface & si,
   if (possible) {
     for (i=0;i<numberRows_;i++) {
       if (!possible[i]) {
-	rowLower_[i]=-COIN_DBL_MAX;
-	rowUpper_[i]=COIN_DBL_MAX;
+	rowLower_[i]=-DBL_MAX;
+	rowUpper_[i]=DBL_MAX;
       }
     }
   }

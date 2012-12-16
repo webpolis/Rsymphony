@@ -1,7 +1,5 @@
-/* $Id: CoinFileIO.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinFileIO.cpp 1239 2009-12-10 16:16:11Z ladanyi $ */
 // Copyright (C) 2005, COIN-OR.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -301,24 +299,6 @@ private:
 
 
 // ----- implementation of CoinFileInput's methods
-
-/// indicates whether CoinFileInput supports gzip'ed files
-bool CoinFileInput::haveGzipSupport() {
-#ifdef COIN_HAS_ZLIB
-  return true;
-#else
-  return false;
-#endif
-}
-
-/// indicates whether CoinFileInput supports bzip2'ed files
-bool CoinFileInput::haveBzip2Support() {
-#ifdef COIN_HAS_BZLIB
-  return true;
-#else
-  return false;
-#endif
-}
 
 CoinFileInput *CoinFileInput::create (const std::string &fileName)
 {

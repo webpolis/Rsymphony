@@ -1,8 +1,5 @@
-// $Id: CglKnapsackCoverTest.cpp 1033 2011-06-19 16:49:13Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -239,7 +236,7 @@ CglKnapsackCoverUnitTest(
     double sampleElems[sampleSize]={1.0, -1.0, -1.0};
     OsiRowCut sampleRowCut;
     sampleRowCut.setRow(sampleSize,sampleCols,sampleElems);
-    sampleRowCut.setLb(-COIN_DBL_MAX);
+    sampleRowCut.setLb(-DBL_MAX);
     sampleRowCut.setUb(-1.0);
     
     // test for 'close enough'
@@ -452,7 +449,7 @@ CglKnapsackCoverUnitTest(
       int sampleCols[sampleSize]={0,1,2,3,4,5};
       double sampleElems[sampleSize]={1.0,1.0,1.0,0.25,1.0,2.0};
       sampleRowCut.setRow(sampleSize,sampleCols,sampleElems);
-      sampleRowCut.setLb(-COIN_DBL_MAX);
+      sampleRowCut.setLb(-DBL_MAX);
       sampleRowCut.setUb(3.0);
       assert(testRowPV.isEquivalent(sampleRowCut.row(),CoinRelFltEq(1.0e-05)));
     }
@@ -545,9 +542,7 @@ CglKnapsackCoverUnitTest(
     if (fp) {
       int ncol,nel;
       double up;
-      int x = fscanf(fp,"%d %d %lg",&ncol,&nel,&up);
-      if (x<=0)
-	throw("bad fscanf");
+      fscanf(fp,"%d %d %lg",&ncol,&nel,&up);
       printf("%d columns, %d elements, upper %g\n",ncol,nel,up);
       double * sol1 = new double[nel];
       double * el1 = new double[nel];
@@ -557,9 +552,7 @@ CglKnapsackCoverUnitTest(
       int * row = new int[nel];
       int i;
       for (i=0;i<nel;i++) {
-	x=fscanf(fp,"%d %lg %lg",col1+i,el1+i,sol1+i);
-	if (x<=0)
-	  throw("bad fscanf");
+	fscanf(fp,"%d %lg %lg",col1+i,el1+i,sol1+i);
 	printf("[%d, e=%g, v=%g] ",col1[i],el1[i],sol1[i]);
 	start[col1[i]]=1;
 	row[i]=0;

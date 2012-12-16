@@ -5,9 +5,9 @@
 /* SYMPHONY was jointly developed by Ted Ralphs (ted@lehigh.edu) and         */
 /* Laci Ladanyi (ladanyi@us.ibm.com).                                        */
 /*                                                                           */
-/* (c) Copyright 2000-2011 Ted Ralphs. All Rights Reserved.                  */
+/* (c) Copyright 2000-2010 Ted Ralphs. All Rights Reserved.                  */
 /*                                                                           */
-/* This software is licensed under the Eclipse Public License. Please see    */
+/* This software is licensed under the Common Public License. Please see     */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -619,6 +619,7 @@ void send_node_desc(lp_prob *p, int node_type)
 	 write_pruned_nodes(tm, n);
       if (tm->par.keep_description_of_pruned == DISCARD ||
 	  tm->par.keep_description_of_pruned == KEEP_ON_DISK_VBC_TOOL){
+#pragma omp critical (tree_update)
 	 if (tm->par.vbc_emulation == VBC_EMULATION_FILE_NEW) {
 	    int vbc_node_pr_reason;
 	    switch (node_type) {
@@ -634,10 +635,8 @@ void send_node_desc(lp_prob *p, int node_type)
 	     default:
 	       vbc_node_pr_reason = VBC_PRUNED;
 	    }
-#pragma omp critical (tree_update)
 	    purge_pruned_nodes(tm, n, vbc_node_pr_reason);
 	 } else {
-#pragma omp critical (tree_update)
 	    purge_pruned_nodes(tm, n, node_type == FEASIBLE_PRUNED ?
 		  VBC_FEAS_SOL_FOUND : VBC_PRUNED);
 	 }
@@ -650,7 +649,6 @@ void send_node_desc(lp_prob *p, int node_type)
    if (node_type == INTERRUPTED_NODE){
       n->node_status = NODE_STATUS__INTERRUPTED;
       n->lower_bound = lp_data->objval;
-#pragma omp critical (tree_update)
       insert_new_node(tm, n);
       if (!repricing)
 	 return;

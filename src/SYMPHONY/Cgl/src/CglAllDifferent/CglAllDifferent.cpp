@@ -1,7 +1,5 @@
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -31,7 +29,7 @@ namespace { int nPath = 0 ; }
 // Generate cuts
 //------------------------------------------------------------------- 
 void CglAllDifferent::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-			      const CglTreeInfo ) const
+			      const CglTreeInfo info) const
 {
 #ifndef NDEBUG
   int nCols=si.getNumCols();
@@ -362,7 +360,7 @@ void CglAllDifferent::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
   if (infeasible) {
     // create infeasible cut
     OsiRowCut rc;
-    rc.setLb(COIN_DBL_MAX);
+    rc.setLb(DBL_MAX);
     rc.setUb(0.0);   
     cs.insert(rc);
   } else {
@@ -555,7 +553,7 @@ CglAllDifferent::operator=(
 
 /// This can be used to refresh any inforamtion
 void 
-CglAllDifferent::refreshSolver(OsiSolverInterface * )
+CglAllDifferent::refreshSolver(OsiSolverInterface * solver)
 {
 }
 // Create C++ lines to get to current state

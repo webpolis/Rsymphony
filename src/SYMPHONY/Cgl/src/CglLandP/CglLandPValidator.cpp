@@ -1,24 +1,12 @@
-// Copyright (C) 2005-2009, Pierre Bonami and others.  All Rights Reserved.
+// Copyright (C) 2005, Pierre Bonami and others.  All Rights Reserved.
 // Author:   Pierre Bonami
 //           Tepper School of Business
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     11/22/05
-//
-// $Id$
-//
-// This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------
 #include "CglLandPValidator.hpp"
 #include "CoinPackedMatrix.hpp"
 #include "OsiRowCut.hpp"
-
-#ifdef HAVE_CMATH
-# include <cmath>
-#else
-# ifdef HAVE_MATH_H
-#  include <math.h>
-# endif
-#endif
 
 
 namespace LAP
@@ -41,7 +29,7 @@ Validator::cleanCut(OsiRowCut & aCut, const double * solCut, const OsiSolverInte
     const double * colLower = (origColLower) ? origColLower : si.getColLower();
     const double * colUpper = (origColUpper) ? origColUpper : si.getColUpper();
 
-    int maxNnz = static_cast<int> (maxFillIn_ * static_cast<double> (numcols));
+    int maxNnz = (int) (maxFillIn_ * (double) numcols);
 
     double rhs = aCut.lb();
     assert (aCut.ub()> 1e50);
@@ -61,38 +49,29 @@ Validator::cleanCut(OsiRowCut & aCut, const double * solCut, const OsiSolverInte
     rhs -= 1e-8;
     double smallest = 1e100;
     double biggest = 0;
-    for (int i = 0 ; i < n ; i++)
-    {
+    for (int i = 0 ; i < n ; i++) {
         double val = fabs(elems[i]);
-        if (val <= par.getEPS())   //try to remove coef
-        {
-            if (val>0 && val<1e-20)
-            {
+        if (val <= par.getEPS()) { //try to remove coef
+            if (val>0 && val<1e-20) {
                 offset++;
                 continue;
                 throw;
             }
-            if (val==0)
-            {
+            if (val==0) {
                 offset++;
                 continue;
             }
 
             int & iCol = indices[i];
-            if (elems[i]>0. && colUpper[iCol] < 10000.)
-            {
+            if (elems[i]>0. && colUpper[iCol] < 10000.) {
                 offset++;
                 rhs -= elems[i] * colUpper[iCol];
                 elems[i]=0;
-            }
-            else if (elems[i]<0. && colLower[iCol] > -10000.)
-            {
+            } else if (elems[i]<0. && colLower[iCol] > -10000.) {
                 offset++;
                 rhs -= elems[i] * colLower[iCol];
                 elems[i]=0.;
-            }
-            else
-            {
+            } else {
 #ifdef DEBUG
                 std::cout<<"Small coefficient : "<<elems[i]<<" bounds : ["<<colLower[iCol]<<", "<<colUpper[iCol]<<std::endl;
 #endif
@@ -101,33 +80,25 @@ Validator::cleanCut(OsiRowCut & aCut, const double * solCut, const OsiSolverInte
             }
         }
 
-        else   //Not a small coefficient keep it
-        {
+        else { //Not a small coefficient keep it
             smallest = std::min(val,smallest);
             biggest = std::max (val,biggest);
-            if (biggest > maxRatio_ * smallest)
-            {
-#ifdef DEBUG
-                std::cout<<"Whaooo "<<biggest/smallest<<std::endl;
-#endif
+            if (biggest > maxRatio_ * smallest) {
                 numRejected_[BigDynamic]++;
                 return BigDynamic;
             }
-            if (offset)   //if offset is zero current values are ok otherwise translate
-            {
+            if (offset) { //if offset is zero current values are ok otherwise translate
                 int i2 = i - offset;
                 indices[i2] = indices[i];
                 elems[i2] = elems[i];
             }
         }
     }
-    if ((n - offset) > maxNnz)
-    {
+    if ((n - offset) > maxNnz) {
         numRejected_[DenseCut] ++;
         return DenseCut;
     }
-    if (offset == n)
-    {
+    if (offset == n) {
         numRejected_[EmptyCut]++;
         return EmptyCut;
     }
@@ -141,8 +112,7 @@ Validator::cleanCut(OsiRowCut & aCut, const double * solCut, const OsiSolverInte
 
     aCut.setLb(rhs);
     violation = aCut.violated(solCut);
-    if (violation < minViolation_)
-    {
+    if (violation < minViolation_) {
         numRejected_[SmallViolation]++;
         return SmallViolation;
     }
@@ -153,7 +123,7 @@ Validator::cleanCut(OsiRowCut & aCut, const double * solCut, const OsiSolverInte
 /**Clean cut 2, different algorithm. First check the dynamic of the cut if < maxRatio scale to a biggest coef of 1
    otherwise scale it so that biggest coeff is 1 and try removing tinys ( < 1/maxRatio) either succeed or fail */
 int
-Validator::cleanCut2(OsiRowCut & aCut, const double * solCut, const OsiSolverInterface &si, const CglParam &/* par */,
+Validator::cleanCut2(OsiRowCut & aCut, const double * solCut, const OsiSolverInterface &si, const CglParam &par,
                      const double * origColLower, const double * origColUpper) const
 {
     /** Compute fill-in in si */
@@ -162,7 +132,7 @@ Validator::cleanCut2(OsiRowCut & aCut, const double * solCut, const OsiSolverInt
     const double * colLower = (origColLower) ? origColLower : si.getColLower();
     const double * colUpper = (origColUpper) ? origColUpper : si.getColUpper();
 
-    int maxNnz = static_cast<int> ( maxFillIn_ * static_cast<double> (numcols));
+    int maxNnz = (int) ( maxFillIn_ * (double) numcols);
 
     double rhs = aCut.lb();
     assert (aCut.ub()> 1e50);
@@ -173,8 +143,7 @@ Validator::cleanCut2(OsiRowCut & aCut, const double * solCut, const OsiSolverInt
     int * indices = vec->getIndices();
     double * elems = vec->getElements();
     int n = vec->getNumElements();
-    if (n==0)
-    {
+    if (n==0) {
         numRejected_[EmptyCut]++;
         return EmptyCut;
     }
@@ -189,21 +158,15 @@ Validator::cleanCut2(OsiRowCut & aCut, const double * solCut, const OsiSolverInt
     double smallest = fabs(rhs);
     double biggest = smallest;
     double veryTiny = 1e-20;
-    for (int i = 0 ; i < n ; i++)
-    {
+    for (int i = 0 ; i < n ; i++) {
         double val = fabs(elems[i]);
-        if (val > veryTiny)   //tiny should be very very small
-        {
+        if (val > veryTiny) { //tiny should be very very small
             smallest = std::min(val,smallest);
             biggest = std::max (val,biggest);
         }
     }
 
-    if (biggest > 1e9)
-    {
-#ifdef DEBUG
-        std::cout<<"Whaooo "<<biggest/smallest<<std::endl;
-#endif
+    if (biggest > 1e9) {
         numRejected_[BigDynamic]++;
         return BigDynamic;
     }
@@ -212,49 +175,36 @@ Validator::cleanCut2(OsiRowCut & aCut, const double * solCut, const OsiSolverInt
     double toBeBiggest = rhsScale_;
     rhs *= (toBeBiggest / biggest);
     toBeBiggest /= biggest;
-    for (int i = 0 ; i < n ; i++)
-    {
+    for (int i = 0 ; i < n ; i++) {
         elems[i] *= toBeBiggest;
     }
 
 
-    if (biggest > maxRatio_ * smallest)   //we have to remove some small coefficients
-    {
+    if (biggest > maxRatio_ * smallest) { //we have to remove some small coefficients
         double myTiny = biggest * toBeBiggest / maxRatio_;
         veryTiny *= toBeBiggest ;
-        for (int i = 0 ; i < n ; i++)
-        {
+        for (int i = 0 ; i < n ; i++) {
             double val = fabs(elems[i]);
-            if (val < myTiny)
-            {
-                if (val< veryTiny)
-                {
+            if (val < myTiny) {
+                if (val< veryTiny) {
                     offset++;
                     continue;
                 }
                 int & iCol = indices[i];
-                if (elems[i]>0. && colUpper[iCol] < 1000.)
-                {
+                if (elems[i]>0. && colUpper[iCol] < 1000.) {
                     offset++;
                     rhs -= elems[i] * colUpper[iCol];
                     elems[i]=0;
-                }
-                else if (elems[i]<0. && colLower[iCol] > -1000.)
-                {
+                } else if (elems[i]<0. && colLower[iCol] > -1000.) {
                     offset++;
                     rhs -= elems[i] * colLower[iCol];
                     elems[i]=0.;
-                }
-                else
-                {
+                } else {
                     numRejected_[SmallCoefficient]++;
                     return SmallCoefficient;
                 }
-            }
-            else   //Not a small coefficient keep it
-            {
-                if (offset)   //if offset is zero current values are ok
-                {
+            } else { //Not a small coefficient keep it
+                if (offset) { //if offset is zero current values are ok
                     int i2 = i - offset;
                     indices[i2] = indices[i];
                     elems[i2] = elems[i];
@@ -262,8 +212,7 @@ Validator::cleanCut2(OsiRowCut & aCut, const double * solCut, const OsiSolverInt
             }
         }
     }
-    if ((n - offset) > maxNnz)
-    {
+    if ((n - offset) > maxNnz) {
         numRejected_[DenseCut] ++;
         return DenseCut;
     }
@@ -272,8 +221,7 @@ Validator::cleanCut2(OsiRowCut & aCut, const double * solCut, const OsiSolverInt
     if (offset)
         vec->truncate(n - offset);
 
-    if (vec->getNumElements() == 0 )
-    {
+    if (vec->getNumElements() == 0 ) {
         numRejected_[EmptyCut]++;
         return EmptyCut;
     }
@@ -281,8 +229,7 @@ Validator::cleanCut2(OsiRowCut & aCut, const double * solCut, const OsiSolverInt
     /** recheck violation */
     aCut.setLb(rhs);
     violation = aCut.violated(solCut);
-    if (violation < minViolation_)
-    {
+    if (violation < minViolation_) {
         numRejected_[SmallViolation]++;
         return SmallViolation;
     }
@@ -312,8 +259,7 @@ Validator::Validator(double maxFillIn,
 void
 Validator::fillRejectionReasons()
 {
-    if (rejections_.size() == 0)
-    {
+    if (rejections_.size() == 0) {
         rejections_.resize(DummyEnd) ;
         rejections_[NoneAccepted] = "Cut was accepted";
         rejections_[SmallViolation] = "Violation of the cut is too small ";

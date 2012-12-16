@@ -1,8 +1,6 @@
-/* $Id: CoinPresolveSubst.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinPresolveSubst.cpp 1215 2009-11-05 11:03:04Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #include <stdio.h>
 #include <math.h>
 
@@ -16,7 +14,6 @@
 #include "CoinHelperFunctions.hpp"
 #include "CoinSort.hpp"
 #include "CoinError.hpp"
-#include "CoinFinite.hpp"
 
 #if PRESOLVE_DEBUG || PRESOLVE_CONSISTENCY
 #include "CoinPresolvePsdebug.hpp"
@@ -401,7 +398,7 @@ subst_constraint_action::presolve(CoinPresolveMatrix *prob,
       
       // we don't clean up zeros in the middle of the routine.
       // if there is one, skip this candidate.
-      if (fabs(coeffj) <= ZTOLDP2 || prob->rowUsed(row)) {
+      if (fabs(coeffj) <= ZTOLDP2) {
 	bestrowy_size = 0;
 	break;
       }
@@ -540,7 +537,6 @@ subst_constraint_action::presolve(CoinPresolveMatrix *prob,
 	int irow = hrow[k];
 	ntotels += hinrow[irow];
 	// mark row as contaminated
-	assert (!prob->rowUsed(irow));
 	prob->setRowUsed(irow);
 	rowsUsed[nRowsUsed++]=irow;
       }
@@ -551,7 +547,6 @@ subst_constraint_action::presolve(CoinPresolveMatrix *prob,
 	
 	ap->col = jcoly;
 	ap->rowy = rowy;
-	PRESOLVE_DETAIL_PRINT(printf("pre_subst %dC %dR E\n",jcoly,rowy));
 	
 	ap->nincol = nincol;
 	ap->rows = new int[nincol];
@@ -573,25 +568,7 @@ subst_constraint_action::presolve(CoinPresolveMatrix *prob,
 	  for (CoinBigIndex k=kcs; k<kce; ++k) {
 	    int irow = hrow[k];
 	    CoinBigIndex krs = mrstrt[irow];
-	    //#define COIN_SAFE_SUBST
-#ifdef COIN_SAFE_SUBST
-	    CoinBigIndex kre = krs + hinrow[irow];
-	    for (CoinBigIndex k1=krs; k1<kre; ++k1) {
-	      int jcol = hcol[k1];
-	      if (jcol != jcoly) {
-		CoinBigIndex kcs = mcstrt[jcol];
-		CoinBigIndex kce = kcs + hincol[jcol];
-		for (CoinBigIndex k2=kcs; k2<kce; ++k2) {
-		  int irow = hrow[k2];
-		  if (!prob->rowUsed(irow)) {
-		    // mark row as contaminated
-		    prob->setRowUsed(irow);
-		    rowsUsed[nRowsUsed++]=irow;
-		  }
-		}
-	      }
-	    }
-#endif
+	    //	      CoinBigIndex kre = krs + hinrow[irow];
 	    
 	    prob->addRow(irow);
 	    ap->rows[k-kcs] = irow;
@@ -949,22 +926,21 @@ void subst_constraint_action::postsolve(CoinPostsolveMatrix *prob) const
     PRESOLVEASSERT(rdone[jrowy]==DROP_ROW);
 
     // DEBUG CHECK
-#if	1 && PRESOLVE_DEBUG
+#if	0 && PRESOLVE_DEBUG
     {
       double actx = 0.0;
-      const double ztolzb	= prob->ztolzb_;
-      for (int j=0; j<prob->ncols_; ++j)
+      for (int j=0; j<ncols; ++j)
 	if (hincol[j] > 0 && cdone[j]) {
-	  CoinBigIndex krow = presolve_find_row1(jrowy, mcstrt[j], mcstrt[j] + hincol[j], hrow);
+	  CoinBigIndex krow = presolve_find_row1(jrowx, mcstrt[j], mcstrt[j] + hincol[j], hrow);
 	  if (krow < mcstrt[j] + hincol[j])
 	    actx += colels[krow] * sol[j];
       }
-      if (! (fabs(acts[jrowy] - actx) < 100*ztolzb))
+      if (! (fabs(acts[jrowx] - actx) < 100*ztolzb))
 	printf("BAD ACTSX:  acts[%d]==%g != %g\n",
-	       jrowy, acts[jrowy], actx);
-      if (! (rlo[jrowy] - 100*ztolzb <= actx && actx <= rup[jrowy] + 100*ztolzb))
+	       jrowx, acts[jrowx], actx);
+      if (! (rlo[jrowx] - 100*ztolzb <= actx && actx <= rup[jrowx] + 100*ztolzb))
 	printf("ACTSX NOT IN RANGE:  %d %g %g %g\n",
-	       jrowy, rlo[jrowy], actx, rup[jrowy]);
+	       jrowx, rlo[jrowx], actx, rup[jrowx]);
     }
 #endif
 

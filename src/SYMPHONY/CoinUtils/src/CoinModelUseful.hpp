@@ -1,13 +1,10 @@
-/* $Id: CoinModelUseful.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinModelUseful.hpp 1215 2009-11-05 11:03:04Z forrest $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #ifndef CoinModelUseful_H
 #define CoinModelUseful_H
 
 
-#include <cstdlib>
 #include <cmath>
 #include <cassert>
 #include <cfloat>
@@ -17,6 +14,7 @@
 
 
 #include "CoinPragma.hpp"
+#include "CoinFinite.hpp"
 
 /**
    This is for various structures/classes needed by CoinModel.

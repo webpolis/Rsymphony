@@ -1,10 +1,6 @@
-/* $Id: CoinOslFactorization2.cpp 1448 2011-06-19 15:34:41Z stefan $ */
-/*
-  Copyright (C) 1987, 2009, International Business Machines
-  Corporation and others.  All Rights Reserved.
-
-  This code is licensed under the terms of the Eclipse Public License (EPL).
-*/
+/* $Id: CoinOslFactorization2.cpp 1207 2009-10-10 10:37:10Z forrest $ */
+/* Copyright (C) 1987, 2009, International Business Machines
+   Corporation and others.  All Rights Reserved. */
 /*
   CLP_OSL - if defined use osl
   0 - don't unroll 2 and 3 - don't use in Gomory
@@ -12,9 +8,7 @@
   2 - unroll - don't use in Gomory
   3 - unroll and use in Gomory
 */
-#include "CoinOslFactorization.hpp"
 #include "CoinOslC.h"
-#include "CoinFinite.hpp"
 
 #ifndef NDEBUG
 extern int ets_count;
@@ -1694,14 +1688,7 @@ static void c_ekketju_aux(COIN_REGISTER2 EKKfactinfo * COIN_RESTRICT2 fact,int s
 	--nel;
 	hrowi[kx] = nel;
 	hrowi[iel] = hrowi[kce];
-#ifdef CLP_REUSE_ETAS
-	double temp=dluval[iel];
 	dluval[iel] = dluval[kce];
-	hrowi[kce]=jpivrw;
-	dluval[kce]=temp;
-#else
-	dluval[iel] = dluval[kce];
-#endif
 	kce--;
       } else {
 	/* we can't delete an entry from a dense column,
@@ -1801,23 +1788,6 @@ int c_ekketsj(COIN_REGISTER2 /*const*/ EKKfactinfo * COIN_RESTRICT2 fact,
   int first_dense_mcstrt,last_dense_mcstrt;
   int nnentl;			/* includes row stuff */
   int doSparse=(fact->if_sparse_update>0);
-#ifdef MORE_DEBUG
-  {
-    const int * COIN_RESTRICT hrowi = fact->R_etas_index;
-    const int * COIN_RESTRICT mcstrt = fact->R_etas_start;
-    int ndo=fact->nR_etas;
-    int knext;
-  
-    knext = mcstrt[ndo + 1];
-    for (int i = ndo; i > 0; --i) {
-      int k1 = knext;
-      knext = mcstrt[i];
-      for (int j = k1+1; j < knext; j++) {
-	assert (hrowi[j]>0&&hrowi[j]<100000);
-      }
-    }
-  }
-#endif
   
   int mcstrt_piv;
   int nincol=0;
@@ -1837,7 +1807,7 @@ int c_ekketsj(COIN_REGISTER2 /*const*/ EKKfactinfo * COIN_RESTRICT2 fact,
     fact->num_resets=0;
   }
   kpivrw = mpermu[ipivrw];
-#if 0 //ndef NDEBUG
+#ifndef NDEBUG
   ets_count++;
   if (ets_check>=0&&ets_count>=ets_check) {
     printf("trouble\n");
@@ -1864,9 +1834,6 @@ int c_ekketsj(COIN_REGISTER2 /*const*/ EKKfactinfo * COIN_RESTRICT2 fact,
   fact->demark=fact->nnentu+nnentl;
   jpivrw = SHIFT_INDEX(kpivrw);
   
-#ifdef CLP_REUSE_ETAS
-  double del3Orig=0.0;
-#endif
   if (nuspik < 0) {
     goto L7000;
   } else if (nuspik == 0) {
@@ -1926,9 +1893,6 @@ int c_ekketsj(COIN_REGISTER2 /*const*/ EKKfactinfo * COIN_RESTRICT2 fact,
       }
     }
   }
-#ifdef CLP_REUSE_ETAS
-  del3Orig=del3;
-#endif
   
   /*      OLD COLUMN POINTERS */
   /* **************************************************************** */
@@ -1960,6 +1924,10 @@ int c_ekketsj(COIN_REGISTER2 /*const*/ EKKfactinfo * COIN_RESTRICT2 fact,
 	int nel = hinrow[irow]-1;
 	hinrow[irow]=nel;
 	
+	//int iel = c_ekkfrst2(&hcoli[kx], nel, kpivrw);
+	//assert (iel>=0);
+	//iel += kx;
+	//int iel;
 	int jlast = kx + nel;
 	for (int iel=kx;iel<jlast;iel++) {
 	  if (kpivrw==hcoli[iel]) {
@@ -1968,6 +1936,7 @@ int c_ekketsj(COIN_REGISTER2 /*const*/ EKKfactinfo * COIN_RESTRICT2 fact,
 	    break;
 	  }
 	}
+	//assert (iel<=jlast);
       }
     } else if (ifRowCopy) {
       /* still take out */
@@ -2087,7 +2056,7 @@ int c_ekketsj(COIN_REGISTER2 /*const*/ EKKfactinfo * COIN_RESTRICT2 fact,
 	      k=jput+iput;
 	    } else {
 	      /* shuffle down */
-	      int spare=(fact->nnetas-fact->nnentu-fact->nnentl-3);
+	      int spare=(fact->nnetas-fact->nnentu-fact->nnentl);
 	      if (spare>nrow<<1) {
 		/* presumbly, this compacts the rows */
 		int jrow,jput;
@@ -2198,10 +2167,6 @@ int c_ekketsj(COIN_REGISTER2 /*const*/ EKKfactinfo * COIN_RESTRICT2 fact,
 	    j=1;
 	    hrowi[iel]=hrowi[kx+nel];
 	    dluval[iel]=dluval[kx+nel];
-#ifdef CLP_REUSE_ETAS
-	    hrowi[kx+nel]=jpivrw;
-	    dluval[kx+nel]=dwork1[icol];
-#endif
 	  }
 	}
 	if (j != 0) {
@@ -2229,10 +2194,6 @@ int c_ekketsj(COIN_REGISTER2 /*const*/ EKKfactinfo * COIN_RESTRICT2 fact,
 	    /* not packing - presumably column isn't sorted */
 	    hrowi[iel] = hrowi[j];
 	    dluval[iel] = dluval[j];
-#ifdef CLP_REUSE_ETAS
-	    hrowi[j]=jpivrw;
-	    dluval[j]=dwork1[icol];
-#endif
 	  } else {
 	    /* dense element - just zero it */
 	    dluval[iel]=0.0;
@@ -2270,6 +2231,7 @@ int c_ekketsj(COIN_REGISTER2 /*const*/ EKKfactinfo * COIN_RESTRICT2 fact,
     fact->first_dense=0;
     fact->last_dense=-1;
   }
+  
   if (! (ifRowCopy && j==0)) {
     
     /*     increase amount of work on Etas */
@@ -2351,14 +2313,6 @@ int c_ekketsj(COIN_REGISTER2 /*const*/ EKKfactinfo * COIN_RESTRICT2 fact,
   }
   
   mcstrt[kpivrw] = fact->nnentu;
-#ifdef CLP_REUSE_ETAS
-  {
-    int * putSeq = fact->xrsadr+2*fact->nrowmx+2;
-    int * position = putSeq+fact->maxinv;
-    int * putStart = position+fact->maxinv;
-    putStart[fact->nrow+fact->npivots-1]=fact->nnentu;
-  }
-#endif
   dluval[fact->nnentu] = 1. / del3;	/* new pivot */
   hrowi[fact->nnentu] = nuspik;	/* new nelems */
 #ifndef NDEBUG
@@ -2452,39 +2406,8 @@ int c_ekketsj(COIN_REGISTER2 /*const*/ EKKfactinfo * COIN_RESTRICT2 fact,
     }
 #endif
   }
+  
   fact->nnentu += nuspik;
-#ifdef CLP_REUSE_ETAS
-  if (fact->first_dense>=fact->last_dense) {
-    // save
-    fact->nnentu++;
-    dluval[fact->nnentu]=del3Orig;
-    hrowi[fact->nnentu]=kpivrw;
-    int * putSeq = fact->xrsadr+2*fact->nrowmx+2;
-    int * position = putSeq+fact->maxinv;
-    int * putStart = position+fact->maxinv;
-    int nnentu_at_factor=putStart[fact->nrow]&0x7fffffff;
-    //putStart[fact->nrow+fact->npivots]=fact->nnentu+1;
-    int where;
-    if (mcstrt_piv<nnentu_at_factor) {
-      // original LU
-      where=kpivrw-1;
-    } else {
-      // could do binary search
-      int * look = putStart+fact->nrow;
-      for (where=fact->npivots-1;where>=0;where--) {
-	if (mcstrt_piv==(look[where]&0x7fffffff))
-	  break;
-      }
-      assert (where>=0);
-      where += fact->nrow;
-    }
-    position[fact->npivots-1]=where;
-    if (orig_nincol == 0) {
-      // flag
-      putStart[fact->nrow+fact->npivots-1] |= 0x80000000;
-    }
-  }
-#endif
   {
     int kdnspt = fact->nnetas - fact->nnentl;
     
@@ -2647,18 +2570,6 @@ int c_ekketsj(COIN_REGISTER2 /*const*/ EKKfactinfo * COIN_RESTRICT2 fact,
  L8000:
   
   *nuspikp = nuspik;
-#ifdef MORE_DEBUG
-  for (int i=1;i<=fact->nrow;i++) {
-    int kx=mcstrt[i];
-    int nel=hrowi[kx];
-    for (int j=0;j<nel;j++) {
-      assert (i!=hrowi[j+kx+1]);
-    }
-  }
-#endif
-#ifdef CLP_REUSE_ETAS
-  fact->save_nnentu=fact->nnentu;
-#endif
   return (irtcod);
 } /* c_ekketsj */
 static void c_ekkftj4p(COIN_REGISTER2 const EKKfactinfo * COIN_RESTRICT2 fact, 
@@ -2758,6 +2669,12 @@ static int c_ekkftj4_sparse(COIN_REGISTER2 const EKKfactinfo * COIN_RESTRICT2 fa
   int check=jpiv+ndo+1;
   const int * COIN_RESTRICT mcstrt2 = mcstrt-jpiv;
   
+#if 0
+  for (k=0;k<nincol;k++) {
+    iPivot=mpt[k];
+    nonzero[iPivot]=0;
+  }
+#endif
   for (k=0;k<nincol;k++) {
     nStack=1;
     iPivot=mpt[k];
@@ -2869,7 +2786,9 @@ static int c_ekkftjl_sparse3(COIN_REGISTER2 const EKKfactinfo * COIN_RESTRICT2 f
       int iel;
       ipiv = hpivco[i];
       dv = dwork1[ipiv];
-      bool onList = (dv!=0.0);
+      /* put on list if not there */
+      if (!dv)
+	mpt[nincol++]=ipiv;
       knext = mcstrt[i + 1];
       
       for (iel = knext ; iel < k1; ++iel) {
@@ -2879,18 +2798,10 @@ static int c_ekkftjl_sparse3(COIN_REGISTER2 const EKKfactinfo * COIN_RESTRICT2 f
       /* (1) if dwork[ipiv] == 0.0, then this may add a non-zero.
        * (2) if dwork[ipiv] != 0.0, then this may cancel out a non-zero.
        */
-      if (onList) {
-	if (fabs(dv) > tolerance) {
-	  dwork1[ipiv]=dv;
-	} else {
-	  dwork1[ipiv] = 1.0e-128;
-	}
+      if (fabs(dv) > tolerance) {
+	dwork1[ipiv]=dv;
       } else {
-	if (fabs(dv) > tolerance) {
-	  /* put on list if not there */
-	  mpt[nincol++]=ipiv;
-	  dwork1[ipiv]=dv;
-	} 
+	dwork1[ipiv] = 1.0e-128;
       }
     }
   }
@@ -2936,7 +2847,9 @@ static int c_ekkftjl_sparse2(COIN_REGISTER2 const EKKfactinfo * COIN_RESTRICT2 f
       int iel;
       ipiv = hpivco[i];
       dv = dwork1[ipiv];
-      bool onList = (dv!=0.0);
+      /* put on list if not there */
+      if (!dv)
+	mpt[nincol++]=ipiv;
       knext = mcstrt[i + 1];
       
       for (iel = knext ; iel < k1; ++iel) {
@@ -2946,18 +2859,10 @@ static int c_ekkftjl_sparse2(COIN_REGISTER2 const EKKfactinfo * COIN_RESTRICT2 f
       /* (1) if dwork[ipiv] == 0.0, then this may add a non-zero.
        * (2) if dwork[ipiv] != 0.0, then this may cancel out a non-zero.
        */
-      if (onList) {
-	if (fabs(dv) > tolerance) {
-	  dwork1[ipiv]=dv;
-	} else {
-	  dwork1[ipiv] = 1.0e-128;
-	}
+      if (fabs(dv) > tolerance) {
+	dwork1[ipiv]=dv;
       } else {
-	if (fabs(dv) > tolerance) {
-	  /* put on list if not there */
-	  mpt[nincol++]=ipiv;
-	  dwork1[ipiv]=dv;
-	} 
+	dwork1[ipiv] = 1.0e-128;
       }
     }
   }
@@ -3035,7 +2940,7 @@ static void c_ekkftjl(COIN_REGISTER2 const EKKfactinfo * COIN_RESTRICT2 fact,
 	int irow1 = hrowi[iel+1];
 	double dval1 = dluval[iel+1];
 	dv += SHIFT_REF(dwork1, irow0) * dval0;
-	dv += SHIFT_REF(dwork1, irow1) * dval1; 
+	dv += SHIFT_REF(dwork1, irow1) * dval1;
       }
 #endif
       /* (1) if dwork[ipiv] == 0.0, then this may add a non-zero.
@@ -3861,7 +3766,7 @@ int c_ekkftrn_ft(COIN_REGISTER EKKfactinfo * COIN_RESTRICT2 fact,
   int lastSlack;
   
   int kdnspt = fact->nnetas - fact->nnentl;
-  bool isRoom = (fact->nnentu + (nrow << 1) < (kdnspt - 2) 
+  bool isRoom = (fact->nnentu + (nrow << 1) < (kdnspt - 1) 
 		 + fact->R_etas_start[fact->nR_etas + 1]);
   
   /* say F-T will be sorted */
@@ -3869,63 +3774,10 @@ int c_ekkftrn_ft(COIN_REGISTER EKKfactinfo * COIN_RESTRICT2 fact,
   
   assert (fact->numberSlacks!=0||!fact->lastSlack);
   lastSlack=fact->lastSlack;
-#ifdef CLP_REUSE_ETAS
-  bool skipStuff = (fact->reintro>=0);
   
-  int save_nR_etas=fact->nR_etas;
-  int * save_hpivcoR=fact->hpivcoR;
-  int * save_R_etas_start=fact->R_etas_start;
-  if (skipStuff) {
-    // just move
-    int * putSeq = fact->xrsadr+2*fact->nrowmx+2;
-    int * position = putSeq+fact->maxinv;
-    int * putStart = position+fact->maxinv;
-    memset(dwork1_ft,0,nincol*sizeof(double));
-    int iPiv=fact->reintro;
-    int start=putStart[iPiv]&0x7fffffff;
-    int end=putStart[iPiv+1]&0x7fffffff;
-    double * COIN_RESTRICT dluval	= fact->xeeadr;
-    int * COIN_RESTRICT hrowi	= fact->xeradr;
-    double dValue;
-    if (fact->reintro<fact->nrow) {
-      iPiv++;
-      dValue=1.0/dluval[start++];
-    } else {
-      iPiv=hrowi[--end];
-      dValue=dluval[end];
-      start++;
-      int ndoSkip=0;
-      for (int i=fact->nrow;i<fact->reintro;i++) {
-	if ((putStart[i]&0x80000000)==0)
-	ndoSkip++;
-      }
-      fact->nR_etas-=ndoSkip;
-      fact->hpivcoR+=ndoSkip;
-      fact->R_etas_start+=ndoSkip;
-    }
-    dpermu_ft[iPiv]=dValue;
-    if (fact->if_sparse_update>0 &&  DENSE_THRESHOLD<nrow) {
-      nincol=0;
-      if (dValue)
-	mpt_ft[nincol++]=iPiv;
-      for (int i=start;i<end;i++) {
-	int iRow=hrowi[i];
-	dpermu_ft[iRow]=dluval[i];
-	mpt_ft[nincol++]=iRow;
-      }
-    } else {
-      for (int i=start;i<end;i++) {
-	int iRow=hrowi[i];
-	dpermu_ft[iRow]=dluval[i];
-      }
-    }
-  }
-#else
-  bool skipStuff = false;
-#endif
   if (fact->if_sparse_update>0 &&  DENSE_THRESHOLD<nrow) {
-    if (!skipStuff) {
-      /* iterating so c_ekkgtcl will have list */
+    /* iterating so c_ekkgtcl will have list */
+    {
       /* in order for this to make sense, nonzero[1..nrow] must already be zeroed */
       c_ekkshfpi_list3(mpermu+1, dwork1_ft, dpermu_ft, mpt_ft, nincol);
       
@@ -3936,51 +3788,50 @@ int c_ekkftrn_ft(COIN_REGISTER EKKfactinfo * COIN_RESTRICT2 fact,
 			 dpermu_ft,  mpt_ft,
 			 nincol,spare);
       }
-    }
-    /*       DO ROW ETAS IN L */
-    if (isRoom) {
-      ++fact->nnentu;
-      nincol=
-	c_ekkftjl_sparse3(fact,
+      /*       DO ROW ETAS IN L */
+      if (isRoom) {
+	++fact->nnentu;
+	nincol=
+	  c_ekkftjl_sparse3(fact,
 			  dpermu_ft, 
 			  mpt_ft, hrowiPut,
 			  dluvalPut,nincol);
-      nuspik = nincol;
-      /* temporary */
-      /* say not sorted */
-      fact->sortedEta=0;
-    } else {
-      /* no room */
-      nuspik=-3;
-      nincol=
-	c_ekkftjl_sparse2(fact,
+	nuspik = nincol;
+        /* temporary */
+	/* say not sorted */
+	fact->sortedEta=0;
+      } else {
+	/* no room */
+	nuspik=-3;
+	nincol=
+	  c_ekkftjl_sparse2(fact,
 			  dpermu_ft, 
 			  mpt_ft,  nincol);
-    }
-    /*         DO U */
-    if (DENSE_THRESHOLD>nrow-fact->numberSlacks) {
-      nincol = c_ekkftjup_pack(fact, 
+      }
+      /*         DO U */
+      if (DENSE_THRESHOLD>nrow-fact->numberSlacks) {
+	nincol = c_ekkftjup_pack(fact, 
 			       dpermu_ft,lastSlack, dwork1_ft, 
 			       mpt_ft);
-    } else {
-      nincol= c_ekkftju_sparse_a(fact,
+      } else {
+	nincol= c_ekkftju_sparse_a(fact,
 				 mpt_ft,
 				 nincol, spare);
-      nincol = c_ekkftju_sparse_b(fact,
+	nincol = c_ekkftju_sparse_b(fact,
 				  dpermu_ft, 
 				  dwork1_ft , mpt_ft,
 				  nincol, spare);
-    }
-  } else {
-    if (!skipStuff) {
-      int lastNonZero;
-      int firstNonZero = c_ekkshfpi_list(mpermu+1, dwork1_ft, dpermu_ft, 
-				       mpt_ft, nincol,&lastNonZero);
-      if (fact->nnentl&&lastNonZero>=fact->firstLRow) {
-	/* dpermu_ft = (L^-1)dpermu_ft */
-	c_ekkftj4p(fact, dpermu_ft, firstNonZero);
       }
     }
+  } else {
+    int lastNonZero;
+    int firstNonZero = c_ekkshfpi_list(mpermu+1, dwork1_ft, dpermu_ft, 
+				       mpt_ft, nincol,&lastNonZero);
+    if (fact->nnentl&&lastNonZero>=fact->firstLRow) {
+      /* dpermu_ft = (L^-1)dpermu_ft */
+      c_ekkftj4p(fact, dpermu_ft, firstNonZero);
+    }
+    
     
     /* dpermu_ft = (R^-1) dpermu_ft */
     c_ekkftjl(fact, dpermu_ft);
@@ -4011,11 +3862,6 @@ int c_ekkftrn_ft(COIN_REGISTER EKKfactinfo * COIN_RESTRICT2 fact,
     nincol = c_ekkftjup_pack(fact, 
 			   dpermu_ft, lastSlack, dwork1_ft, mpt_ft);
   }
-#ifdef CLP_REUSE_ETAS
-  fact->nR_etas=save_nR_etas;
-  fact->hpivcoR=save_hpivcoR;
-  fact->R_etas_start=save_R_etas_start;
-#endif
   
   *nincolp_ft = nincol;
   return (nuspik);
@@ -4041,8 +3887,9 @@ void c_ekkftrn2(COIN_REGISTER EKKfactinfo * COIN_RESTRICT2 fact, double * COIN_R
   int * spare = reinterpret_cast<int *>(fact->kp1adr);
   
   int kdnspt = fact->nnetas - fact->nnentl;
-  bool isRoom = (fact->nnentu + (nrow << 1) < (kdnspt - 2) 
+  bool isRoom = (fact->nnentu + (nrow << 1) < (kdnspt - 1) 
 		 + fact->R_etas_start[fact->nR_etas + 1]);
+  
   /* say F-T will be sorted */
   fact->sortedEta=1;
   int lastNonZero;
@@ -4052,63 +3899,11 @@ void c_ekkftrn2(COIN_REGISTER EKKfactinfo * COIN_RESTRICT2 fact, double * COIN_R
     /* dpermu1 = (L^-1)dpermu1 */
     c_ekkftj4p(fact, dpermu1, firstNonZero);
   }
-
-#ifdef CLP_REUSE_ETAS
-  bool skipStuff = (fact->reintro>=0);
-  int save_nR_etas=fact->nR_etas;
-  int * save_hpivcoR=fact->hpivcoR;
-  int * save_R_etas_start=fact->R_etas_start;
-  if (skipStuff) {
-    // just move
-    int * putSeq = fact->xrsadr+2*fact->nrowmx+2;
-    int * position = putSeq+fact->maxinv;
-    int * putStart = position+fact->maxinv;
-    memset(dwork1_ft,0,nincol*sizeof(double));
-    int iPiv=fact->reintro;
-    int start=putStart[iPiv]&0x7fffffff;
-    int end=putStart[iPiv+1]&0x7fffffff;
-    double * COIN_RESTRICT dluval	= fact->xeeadr;
-    int * COIN_RESTRICT hrowi	= fact->xeradr;
-    double dValue;
-    if (fact->reintro<fact->nrow) {
-      iPiv++;
-      dValue=1.0/dluval[start++];
-    } else {
-      iPiv=hrowi[--end];
-      dValue=dluval[end];
-      start++;
-      int ndoSkip=0;
-      for (int i=fact->nrow;i<fact->reintro;i++) {
-	if ((putStart[i]&0x80000000)==0)
-	ndoSkip++;
-      }
-      fact->nR_etas-=ndoSkip;
-      fact->hpivcoR+=ndoSkip;
-      fact->R_etas_start+=ndoSkip;
-    }
-    dwork1[iPiv]=dValue;
-    if (fact->if_sparse_update>0 &&  DENSE_THRESHOLD<nrow) {
-      nincol=0;
-      if (dValue)
-	mpt_ft[nincol++]=iPiv;
-      for (int i=start;i<end;i++) {
-	int iRow=hrowi[i];
-	dwork1[iRow]=dluval[i];
-	mpt_ft[nincol++]=iRow;
-      }
-    } else {
-      for (int i=start;i<end;i++) {
-	int iRow=hrowi[i];
-	dwork1[iRow]=dluval[i];
-      }
-    }
-  }
-#else
-  bool skipStuff = false;
-#endif
+  
+  
   if (fact->if_sparse_update>0 &&  DENSE_THRESHOLD<nrow) {
-    if (!skipStuff) {
-      /* iterating so c_ekkgtcl will have list */
+    /* iterating so c_ekkgtcl will have list */
+    {
       /* in order for this to make sense, nonzero[1..nrow] must already be zeroed */
       c_ekkshfpi_list3(mpermu+1, dwork1_ft, dwork1, mpt_ft, nincol);
       
@@ -4116,40 +3911,41 @@ void c_ekkftrn2(COIN_REGISTER EKKfactinfo * COIN_RESTRICT2 fact, double * COIN_R
       if (fact->nnentl) {
 	nincol = 
 	  c_ekkftj4_sparse(fact,
-			   dwork1, mpt_ft,
-			   nincol,spare);
+			 dwork1, mpt_ft,
+			 nincol,spare);
       }
-    }
-    /*       DO ROW ETAS IN L */
-    if (isRoom) {
-      ++fact->nnentu;
-      nincol=
-	c_ekkftjl_sparse3(fact,
+      /*       DO ROW ETAS IN L */
+      if (isRoom) {
+	++fact->nnentu;
+	nincol=
+	  c_ekkftjl_sparse3(fact,
 			  dwork1, 
 			  mpt_ft, hrowiPut,
 			  dluvalPut,
 			  nincol);
-      fact->nuspike = nincol;
-      /* say not sorted */
-      fact->sortedEta=0;
-    } else {
-      /* no room */
-      fact->nuspike=-3;
-      nincol=
-	c_ekkftjl_sparse2(fact,
+	fact->nuspike = nincol;
+	/* say not sorted */
+	fact->sortedEta=0;
+      } else {
+	/* no room */
+	fact->nuspike=-3;
+	nincol=
+	  c_ekkftjl_sparse2(fact,
 			  dwork1, 
 			  mpt_ft, nincol);
-    }
-  } else {
-    if (!skipStuff) {
-      int lastNonZero;
-      int firstNonZero = c_ekkshfpi_list(mpermu+1, dwork1_ft, dwork1, 
-				       mpt_ft, nincol,&lastNonZero);
-      if (fact->nnentl&&lastNonZero>=fact->firstLRow) {
-	/* dpermu_ft = (L^-1)dpermu_ft */
-	c_ekkftj4p(fact, dwork1, firstNonZero);
       }
     }
+  } else {
+    int lastNonZero;
+    int firstNonZero = c_ekkshfpi_list(mpermu+1, dwork1_ft, dwork1, 
+				       mpt_ft, nincol,&lastNonZero);
+    if (fact->nnentl&&lastNonZero>=fact->firstLRow) {
+      /* dpermu_ft = (L^-1)dpermu_ft */
+      c_ekkftj4p(fact, dwork1, firstNonZero);
+    }
+    
+    
+    /* dpermu_ft = (R^-1) dpermu_ft */
     c_ekkftjl(fact, dwork1);
     
     if (isRoom) {
@@ -4175,12 +3971,7 @@ void c_ekkftrn2(COIN_REGISTER EKKfactinfo * COIN_RESTRICT2 fact, double * COIN_R
       fact->nuspike = -3;
     }
   }
-#ifdef CLP_REUSE_ETAS
-  fact->nR_etas=save_nR_etas;
-  fact->hpivcoR=save_hpivcoR;
-  fact->R_etas_start=save_R_etas_start;
-#endif
-  
+
   
   /* dpermu1 = (R^-1) dpermu1 */
   c_ekkftjl(fact, dpermu1);

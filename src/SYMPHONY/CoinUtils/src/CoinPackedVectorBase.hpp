@@ -1,15 +1,18 @@
-/* $Id: CoinPackedVectorBase.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinPackedVectorBase.hpp 1215 2009-11-05 11:03:04Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #ifndef CoinPackedVectorBase_H
 #define CoinPackedVectorBase_H
 
+#if defined(_MSC_VER)
+// Turn off compiler warning about long names
+#  pragma warning(disable:4786)
+#endif
+
 #include <set>
 #include <map>
-#include "CoinPragma.hpp"
 #include "CoinError.hpp"
+#include "CoinFloatEqual.hpp"
 
 class CoinPackedVector;
 
@@ -171,8 +174,10 @@ public:
       }
       return true;
    }
-
-   bool isEquivalent(const CoinPackedVectorBase& rhs) const;
+   bool isEquivalent(const CoinPackedVectorBase& rhs) const
+   {
+      return isEquivalent(rhs,  CoinRelFltEq());
+   }
    //@}
 
 
@@ -188,7 +193,7 @@ public:
    double normSquare() const;
 
    /// Return the 2-norm of the vector
-   double twoNorm() const;
+   inline double twoNorm() const { return sqrt(normSquare()); }
 
    /// Return the infinity-norm of the vector
    double infNorm() const;

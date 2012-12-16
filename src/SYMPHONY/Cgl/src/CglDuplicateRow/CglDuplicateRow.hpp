@@ -1,8 +1,5 @@
-// $Id: CglDuplicateRow.hpp 934 2011-01-04 23:17:26Z lou $
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #ifndef CglDuplicateRow_H
 #define CglDuplicateRow_H
 
@@ -39,17 +36,6 @@ public:
   */
   virtual void generateCuts( const OsiSolverInterface & si, OsiCuts & cs,
 			     const CglTreeInfo info = CglTreeInfo()) const;
-private:
-  /// Does work for modes 1,2
-  void generateCuts12( const OsiSolverInterface & si, OsiCuts & cs,
-		       const CglTreeInfo info = CglTreeInfo()) const;
-  /// Does work for mode 4
-  void generateCuts4( const OsiSolverInterface & si, OsiCuts & cs,
-		       const CglTreeInfo info = CglTreeInfo()) const;
-  /// Does work for mode 8
-  void generateCuts8( const OsiSolverInterface & si, OsiCuts & cs,
-		       const CglTreeInfo info = CglTreeInfo()) const;
-public:
   /** Fix variables and find duplicate/dominated rows for the model of the 
       solver interface, si.
 

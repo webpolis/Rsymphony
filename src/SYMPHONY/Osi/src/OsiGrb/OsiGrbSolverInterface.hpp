@@ -4,13 +4,13 @@
 // author:   Stefan Vigerske
 //           Humboldt University Berlin
 // date:     09/02/2009
-// license:  this file may be freely distributed under the terms of EPL
+// license:  this file may be freely distributed under the terms of CPL
 // comments: please scan this file for '???' and read the comments
 //-----------------------------------------------------------------------------
 // Copyright (C) 2009 Humboldt University Berlin and others.
 // All Rights Reserved.
 
-// $Id: OsiGrbSolverInterface.hpp 1754 2011-06-19 16:07:57Z stefan $
+// $Id: OsiGrbSolverInterface.hpp 1445 2010-01-09 20:33:43Z stefan $
 
 #ifndef OsiGrbSolverInterface_H
 #define OsiGrbSolverInterface_H
@@ -80,10 +80,6 @@ public:
 	bool getHintParam(OsiHintParam key, bool& yesNo, OsiHintStrength& strength) const;
 	// Get a hint parameter
 	bool getHintParam(OsiHintParam key, bool& yesNo) const;
-  // Set mipstart option (pass column solution to CPLEX before MIP start)
-  void setMipStart(bool value) { domipstart = value; }
-  // Get mipstart option value
-  bool getMipStart() const { return domipstart; }
 	//@}
 
 	//---------------------------------------------------------------------------
@@ -249,12 +245,6 @@ public:
 
 	/** Get as many dual rays as the solver can provide. (In case of proven
 	 primal infeasibility there should be at least one.)
-
-	 The first getNumRows() ray components will always be associated with
-	 the row duals (as returned by getRowPrice()). If \c fullRay is true,
-	 the final getNumCols() entries will correspond to the ray components
-	 associated with the nonbasic variables. If the full ray is requested
-	 and the method cannot provide it, it will throw an exception.
 	 
 	 <strong>NOTE for implementers of solver interfaces:</strong> <br>
 	 The double pointers in the vector should point to arrays of length
@@ -264,8 +254,7 @@ public:
 	 It is the user's responsibility to free the double pointers in the
 	 vector using delete[].
 	 */
-	virtual std::vector<double*> getDualRays(int maxNumRays,
-						 bool fullRay=false) const;
+	virtual std::vector<double*> getDualRays(int maxNumRays) const;
 	/** Get as many primal rays as the solver can provide. (In case of proven
 	 dual infeasibility there should be at least one.)
 	 
@@ -297,12 +286,12 @@ public:
 
 	using OsiSolverInterface::setColLower;
 	/** Set a single column lower bound<br>
-	 Use -COIN_DBL_MAX for -infinity. */
+	 Use -DBL_MAX for -infinity. */
 	virtual void setColLower(int elementIndex, double elementValue);
 
 	using OsiSolverInterface::setColUpper;
 	/** Set a single column upper bound<br>
-	 Use COIN_DBL_MAX for infinity. */
+	 Use DBL_MAX for infinity. */
 	virtual void setColUpper(int elementIndex, double elementValue);
 
 	/** Set a single column lower and upper bound<br>
@@ -321,11 +310,11 @@ public:
 			const double* boundList);
 
 	/** Set a single row lower bound<br>
-	 Use -COIN_DBL_MAX for -infinity. */
+	 Use -DBL_MAX for -infinity. */
 	virtual void setRowLower(int elementIndex, double elementValue);
 
 	/** Set a single row upper bound<br>
-	 Use COIN_DBL_MAX for infinity. */
+	 Use DBL_MAX for infinity. */
 	virtual void setRowUpper(int elementIndex, double elementValue);
 
 	/** Set a single row lower and upper bound<br>
@@ -870,9 +859,6 @@ private:
   /// Stores whether we currently see the problem as a MIP
   mutable bool probtypemip_;
 
-  /// Whether to pass a column solution to CPLEX before starting MIP solve (copymipstart)
-  bool domipstart;
-
 	/// Size of allocated memory for coltype_, colmap_O2G, and (with offset auxcolspace) colmap_G2O.
   int colspace_;
 
@@ -906,7 +892,11 @@ private:
 };
 
 //#############################################################################
-/** A function that tests the methods in the OsiGrbSolverInterface class. */
+/** A function that tests the methods in the OsiGrbSolverInterface class. The
+ only reason for it not to be a member method is that this way it doesn't
+ have to be compiled into the library. And that's a gain, because the
+ library should be compiled with optimization on, but this method should be
+ compiled with debugging. */
 void OsiGrbSolverInterfaceUnitTest(const std::string & mpsDir, const std::string & netlibDir);
 
 #endif

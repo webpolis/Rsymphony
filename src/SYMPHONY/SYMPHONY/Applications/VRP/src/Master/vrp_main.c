@@ -8,7 +8,7 @@
 /*                                                                           */
 /* This application was developed by Ted Ralphs (ted@lehigh.edu)             */
 /*                                                                           */
-/* This software is licensed under the Eclipse Public License. Please see    */
+/* This software is licensed under the Common Public License. Please see     */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -65,7 +65,7 @@ int main(int argc, char **argv)
 
    sym_environment *env = sym_open_environment();
 
-   sym_version();
+   version();
 
    sym_parse_command_line(env, argc, argv);
 

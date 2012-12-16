@@ -1,8 +1,8 @@
 # Copyright (C) 2006, 2007 International Business Machines.
 # All Rights Reserved.
-# This file is distributed under the Eclipse Public License.
+# This file is distributed under the Common Public License.
 
-## $Id: configure.ac 2369 2011-07-16 12:51:47Z stefan $
+## $Id: configure.ac 1342 2009-07-16 18:26:01Z andreasw $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,13 +12,13 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartyBlas],[1.2.0],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartyBlas],[1.0.14],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
 All Rights Reserved.
 This file is part of the open source package Coin which is distributed
-under the Eclipse Public License.])
+under the Common Public License.])
 
 # List one file in the package so that the configure script can test
 # whether the package is actually there
@@ -30,7 +30,7 @@ AC_CONFIG_SRCDIR(dgemm.f)
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
-AC_COIN_PROJECTDIR_INIT(Blas,3:0:2)
+AC_COIN_PROJECTDIR_INIT
 
 #############################################################################
 #                         Standard build tool stuff                         #
@@ -49,19 +49,22 @@ AC_COIN_DEBUG_COMPILE(Blas)
 # Get the name of the Fortran compiler and appropriate compiler options
 AC_COIN_PROG_F77
 
-# Get the linker flags (FLIBS) that are required for linking against this blas library
-AC_COIN_F77_WRAPPERS
-
-# Add FLIBS to BLAS_PCLIBS, so that they get into the .pc files
-BLAS_PCLIBS="$FLIBS"
-AC_SUBST(BLAS_PCLIBS)
-
-# Check if pkg-config is available (to setup addlibs file)
-AC_COIN_HAS_PKGCONFIG
-
 # Initialize automake
 AC_COIN_INIT_AUTO_TOOLS
 
-AC_CONFIG_FILES([Makefile coinblas.pc coinblas-uninstalled.pc])
+# Check if Blas is already available on the system or provided by user
+AC_COIN_HAS_BLAS
+MAKEOKFILE=.MakeOk
+if test $coin_has_blas = yes && test "$use_blas" != BUILD; then
+  rm -f $MAKEOKFILE
+  AC_MSG_NOTICE([The Blas sources don't need to be compiled])
+  MAKEOKFILE=
+else
+  touch $MAKEOKFILE
+fi
+AC_SUBST(MAKEOKFILE)
+AM_CONDITIONAL(SKIPMAKE, test -z "$MAKEOKFILE")
+
+AC_CONFIG_FILES([Makefile])
 
 AC_COIN_FINALIZE

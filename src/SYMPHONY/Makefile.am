@@ -7,14 +7,14 @@
 #                                                                           #
 # The author of this file is Menal Guzelsoy                                 #
 #                                                                           #
-# (c) Copyright 2006-2011 Lehigh University. All Rights Reserved.           #
+# (c) Copyright 2006-2010 Lehigh University. All Rights Reserved.           #
 #                                                                           #
-# This software is licensed under the Eclipse Public License. Please see    #
+# This software is licensed under the Common Public License. Please see     #
 # accompanying file for terms.                                              #
 #                                                                           #
 #===========================================================================#
 
-## $Id: Makefile.am 1869 2011-02-10 00:46:19Z tkr $
+## $Id: Makefile.am 1734 2010-02-03 19:57:31Z tkr $
 
 AUTOMAKE_OPTIONS = foreign
 
@@ -28,6 +28,18 @@ EXTRA_DIST =
 # into
 
 SUBDIRS = $(subdirs)
+
+#if ADD_GLPK
+#   SUBDIRS += ThirdParty/Glpk
+#endif
+
+#SUBDIRS += CoinUtils Data/Sample Data/miplib3 Data/Netlib Osi Cgl 
+
+#if ADD_CLP
+#   SUBDIRS += Clp
+#endif 
+
+#SUBDIRS += SYMPHONY
 
 ########################################################################
 #                           Extra Targets                              #
@@ -65,6 +77,6 @@ unitTests: tests
 ########################################################################
 
 # Files that are generated and should be cleaned with make distclean
-DISTCLEANFILES = coin_subdirs.txt
+DISTCLEANFILES =
 
 include BuildTools/Makemain.inc

@@ -7,9 +7,9 @@
 #                                                                           #
 # The author of this file is Menal Guzelsoy                                 #
 #                                                                           #
-# (c) Copyright 2006-2011 Lehigh University. All Rights Reserved.           #
+# (c) Copyright 2006-2010 Lehigh University. All Rights Reserved.           #
 #                                                                           #
-# This software is licensed under the Eclipse Public License. Please see    #
+# This software is licensed under the Common Public License. Please see     #
 # accompanying file for terms.                                              #
 #                                                                           #
 #===========================================================================#
@@ -22,51 +22,127 @@ AUTOMAKE_OPTIONS = foreign
 #                         unitTest for Symphony                        #
 ########################################################################
 
-AM_CPPFLAGS = $(OSITESTS_CFLAGS) $(SYMPHONYLIB_CFLAGS)
+test_srcdir = $(OSISRCDIR)/test
+
+AM_CPPFLAGS =
 SYMCPPFLAGS =
 SYMPCPPFLAGS =
 APPLCPPFLAGS =
 SYMPALLLDADD =
-LDADD = $(OSITESTS_LIBS) $(SYMPHONYLIB_LIBS)
-DEPENDENCIES = $(OSITESTS_DEPENDENCIES) $(SYMPHONYLIB_DEPENDENCIES)
+LDADD =
 ALLLDADD =
 
 LIBS =
 SYMLIB = 
 SYMPLIB = 
 
+ADDLIBS += `cat $(OSIOBJDIR)/osi_addlibs.txt` \
+	`cat $(COINUTILSOBJDIR)/coinutils_addlibs.txt`
+
+if USE_CGL_CUTS
+LDADD += $(CGLOBJDIR)/src/libCgl.la
+ADDLIBS += \
+	`cat $(CGLOBJDIR)/cgl_addlibs.txt`
+endif
+
 # Add include files
+AM_CPPFLAGS += -I`$(CYGPATH_W) $(SYMINCDIR)` \
+	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiSym`
+
 AM_CPPFLAGS += -DCOIN_HAS_SYMPHONY
 
 # List all additionally required solver and Osi libraries
 
 if CLP_LP_SOLVER
+  AM_CPPFLAGS += -I`$(CYGPATH_W) $(CLPSRCDIR)/src` \
+	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiClp` \
+	-I`$(CYGPATH_W) $(CLPOBJDIR)/inc`
+  LDADD += $(OSIOBJDIR)/src/OsiClp/libOsiClp.la \
+	$(CLPOBJDIR)/src/libClp.la
+  ADDLIBS  += `cat $(CLPOBJDIR)/clp_addlibs.txt`
   AM_CPPFLAGS += -D__OSI_CLP__
 endif
 
 if CPLEX_LP_SOLVER
+  AM_CPPFLAGS += -I`$(CYGPATH_W) $(CPXINCDIR)` \
+	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiCpx`
+  LDADD += $(OSIOBJDIR)/src/OsiCpx/libOsiCpx.la
   AM_CPPFLAGS += -D__OSI_CPLEX__
 endif
 
 if GLPK_LP_SOLVER
+  AM_CPPFLAGS += -I`$(CYGPATH_W) $(GLPKINCDIR)` \
+	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiGlpk`
+  LDADD += $(OSIOBJDIR)/src/OsiGlpk/libOsiGlpk.la 
   AM_CPPFLAGS += -D__OSI_GLPK__
-endif 
+else 
+if USE_GMPL
+  AM_CPPFLAGS += -I`$(CYGPATH_W) $(GLPKINCDIR)`
+endif
+endif
+
+if OSL_LP_SOLVER
+  AM_CPPFLAGS += -I`$(CYGPATH_W) $(OSLINCDIR)` \
+	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiOsl`
+  LDADD += $(OSIOBJDIR)/src/OsiOsl/libOsiOsl.la
+  AM_CPPFLAGS += -D__OSI_OSL__
+endif
 
 if SOPLEX_LP_SOLVER
-  AM_CPPFLAGS += -D__OSI_SOPLEX__
+  AM_CPPFLAGS += -I`$(CYGPATH_W) $(SPXINCDIR)` \
+	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiSpx`
+  LDADD += $(OSIOBJDIR)/src/OsiSpx/libOsiSpx.la
+AM_CPPFLAGS += -D__OSI_SPX__
 endif
 
 if XPRESS_LP_SOLVER
+  AM_CPPFLAGS += -I`$(CYGPATH_W) $(XPRINCDIR)` \
+	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiXpr`
+  LDADD += $(OSIOBJDIR)/src/OsiXpr/libOsiXpr.la
   AM_CPPFLAGS += -D__OSI_XPRESS__
 endif
+
+LDADD += $(OSIOBJDIR)/src/libOsi.la \
+	$(COINUTILSOBJDIR)/src/libCoinUtils.la
+
+LDADD += $(OSIOBJDIR)/src/OsiSym/libOsiSym.la
+
+########################################################################
+#                            Additional flags                          #
+########################################################################
+
+# Here list all include flags, relative to this "srcdir" directory.  This
+# "cygpath" stuff is necessary to compile with native compilers on Windows.
+# "top_srcdir" refers to the basic directory for the main package that is
+# being compiled.
+AM_CPPFLAGS += -I`$(CYGPATH_W) $(CGLSRCDIR)/src` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglClique` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglDuplicateRow` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglFlowCover` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglGomory` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglKnapsackCover` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglLiftAndProject` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglMixedIntegerRounding` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglMixedIntegerRounding2` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglOddHole` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglPreProcess` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglProbing` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglRedSplit` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglSimpleRounding` \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src/CglTwomir` \
+	-I`$(CYGPATH_W) $(COINUTILSSRCDIR)/src` \
+	-I`$(CYGPATH_W) $(COINUTILSOBJDIR)/inc` \
+	-I`$(CYGPATH_W) $(OSISRCDIR)/src` \
+	-I`$(CYGPATH_W) $(OSIOBJDIR)/inc` \
+	-I`$(CYGPATH_W) $(CGLOBJDIR)/inc`
 
 ########################################################################
 #                            Additional Definitions                    #
 ########################################################################
 
-ALLLDADD += $(LDADD)
+ALLLDADD += $(LDADD) $(ADDLIBS)
 SYMCPPFLAGS += $(AM_CPPFLAGS) $(SYMDEFS)
-SYMLIB += ../src/libSym.la ../src/OsiSym/libOsiSym.la
+SYMLIB += $(SYMPHONYOBJDIR)/src/libSym.la
 
 SYMPCPPFLAGS += $(AM_CPPFLAGS) $(SYMPDEFS)
 SYMPALLLDADD += $(ALLLDADD)
@@ -75,14 +151,12 @@ if SYM_PARALLEL
 SYMPCPPFLAGS += -I`$(CYGPATH_W) $(PVM_ROOT)/include`
 SYMPALLLDADD += -L`$(CYGPATH_W) $(PVM_ROOT)/lib/$(ARCH)` \
 	-lgpvm3 -lpvm3
-SYMPLIB += ../src/libSym$(MASTEREXT).la ../src/OsiSym/libOsiSym.la
+SYMPLIB += $(SYMPHONYOBJDIR)/src/libSym$(MASTEREXT).la
 else
 SYMPLIB += $(SYMLIB)
 endif
 
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(top_srcdir)/include` \
-		   -I`$(CYGPATH_W) $(top_builddir)/include` \
-		   -I`$(CYGPATH_W) $(top_srcdir)/src/OsiSym`
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/inc
 
 TestLDADD = $(LDADD)
 TestLINK = 
@@ -91,6 +165,7 @@ TestLINK += cp -f OsiColCutTest.$(OBJEXT) unitTest-OsiColCutTest.$(OBJEXT); \
 	cp -f OsiCutsTest.$(OBJEXT)  unitTest-OsiCutsTest.$(OBJEXT); \
 	cp -f OsiRowCutDebuggerTest.$(OBJEXT) unitTest-OsiRowCutDebuggerTest.$(OBJEXT); \
 	cp -f OsiRowCutTest.$(OBJEXT) unitTest-OsiRowCutTest.$(OBJEXT); \
+	cp -f OsiSolverInterfaceTest.$(OBJEXT) unitTest-OsiSolverInterfaceTest.$(OBJEXT); \
 	cp -f OsiSymSolverInterfaceTest.$(OBJEXT) unitTest-OsiSymSolverInterfaceTest.$(OBJEXT); \
 	cp -f unitTestSym.$(OBJEXT) unitTest-unitTestSym.$(OBJEXT); \
 	$(LIBTOOL) \
@@ -98,7 +173,8 @@ TestLINK += cp -f OsiColCutTest.$(OBJEXT) unitTest-OsiColCutTest.$(OBJEXT); \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 TestLDADD += OsiColCutTest.$(OBJEXT) OsiCutsTest.$(OBJEXT) \
 	OsiRowCutDebuggerTest.$(OBJEXT) OsiRowCutTest.$(OBJEXT) \
-	OsiSymSolverInterfaceTest.$(OBJEXT) unitTestSym.$(OBJEXT)
+	OsiSolverInterfaceTest.$(OBJEXT) OsiSymSolverInterfaceTest.$(OBJEXT) \
+	 unitTestSym.$(OBJEXT)
 else 
 TestLINK += $(CXXLINK)
 endif
@@ -106,73 +182,91 @@ endif
 noinst_PROGRAMS = unitTest punitTest
 
 unitTest_SOURCES = \
+	$(test_srcdir)/OsiColCutTest.cpp \
+	$(test_srcdir)/OsiCutsTest.cpp \
+	$(test_srcdir)/OsiRowCutDebuggerTest.cpp \
+	$(test_srcdir)/OsiRowCutTest.cpp \
+	OsiSolverInterfaceTest.cpp \
 	OsiSymSolverInterfaceTest.cpp \
 	unitTestSym.cpp
 
 punitTest_SOURCES = \
+	$(test_srcdir)/OsiColCutTest.cpp \
+	$(test_srcdir)/OsiCutsTest.cpp \
+	$(test_srcdir)/OsiRowCutDebuggerTest.cpp \
+	$(test_srcdir)/OsiRowCutTest.cpp \
+	OsiSolverInterfaceTest.cpp \
 	OsiSymSolverInterfaceTest.cpp \
 	unitTestSym.cpp
 
-unitTest_CPPFLAGS = $(SYMCPPFLAGS) $(OSIUNITTEST_CFLAGS)
-unitTest_LDADD = $(SYMLIB) $(ALLLDADD) $(OSIUNITTEST_LIBS)
-unitTest_DEPENDENCIES = $(SYMLIB) $(DEPENDENCIES)
+unitTest_DEPENDENCIES = $(TestLDADD) $(SYMLIB)
+unitTest_CPPFLAGS = $(SYMCPPFLAGS)
+unitTest_LDADD = $(SYMLIB) $(ALLLDADD)
+unitTest_LDFLAGS = -rpath $(libdir)
 unitTest_LINK = $(TestLINK)
 
-punitTest_CPPFLAGS = $(SYMPCPPFLAGS) $(OSIUNITTEST_CFLAGS)
-punitTest_LDADD = $(SYMPLIB) $(SYMPALLLDADD) $(OSIUNITTEST_LIBS)
-punitTest_DEPENDENCIES = $(SYMPLIB) $(DEPENDENCIES)
+punitTest_DEPENDENCIES = $(LDADD) $(SYMPLIB)
+punitTest_CPPFLAGS = $(SYMPCPPFLAGS)
+punitTest_LDADD = $(SYMPLIB) $(SYMPALLLDADD)
+punitTest_LDFLAGS = -rpath $(libdir)
 
 
-if COIN_HAS_MIPLIB3
-  MIPLIBDIR = -miplib3Dir=`$(CYGPATH_W) $(MIPLIB3_DATA)`
-check_files:
-	  echo "using MIPLIB3 directory $(MIPLIB3_DATA)"
-
-else
-  MIPLIBDIR = -miplib3Dir=`$(CYGPATH_W) $(top_srcdir)/miplib3`
-  
-check_files:
-	if test -r $(top_srcdir)/miplib3; then \
-	  echo "MIBLIB3 directory found..."; \
-	else \
-	  echo "Downloading required test files to $(top_srcdir)/miplib3"; \
-	  mkdir $(top_srcdir)/miplib3; \
-	  for file in $(testFILES); do \
-	    (echo $$file; svn cat https://projects.coin-or.org/svn/Data/miplib3/stable/1.2/$$file.gz >> $(top_srcdir)/miplib3/$$file.gz) \
-	  done; \
-	  fi; \
-	  echo "Uncompressing files"; \
-	  cd $(top_srcdir)/miplib3; \
-	  for file in $(testFILES); do \
-	    if test -r $$file.gz; then \
-	      (gzip -d $$file.gz) \
-	    fi \
-	  done
-endif
-
-unittestflags =
-if COIN_HAS_NETLIB
-  unittestflags += -netlibDir=`$(CYGPATH_W) $(NETLIB_DATA)` -testOsiSolverInterface
-endif
-if COIN_HAS_SAMPLE
-  unittestflags += -mpsDir=`$(CYGPATH_W) $(SAMPLE_DATA)`
-endif
+# We are using the Cbc solver executable to do the unit test
 
 testFILES = air03 dcmulti egout flugpl khb05250 l152lav \
 	lseu mod010 p0033 p0201 stein27 vpm1
 
-# by passing -miplib3Dir= we can overwrite using a default miplib3 path which would trigger the MIPLIB tests
 test: unitTest$(EXEEXT)
-	./unitTest$(EXEEXT) -miplib3Dir= $(unittestflags)
+	if test x"$(DIRNETLIB)" != x; then \
+		NETLIBARG="-netlibDir $(DIRNETLIB) -testOsiSolverInterface"; \
+	fi;
+	./unitTest$(EXEEXT) $$NETLIBARG
+#-T $(DATAOBJDIR)/miplib3 \
+#	-mpsDir=$(DATASRCDIR)/Sample \
+#	-netlibDir=$(DATAOBJDIR)/Netlib
 
 fulltest: check_files unitTest$(EXEEXT)
-	./unitTest$(EXEEXT) $(MIPLIBDIR) $(unittestflags)
+	if test x"$(DIRNETLIB)" != x; then \
+		NETLIBARG="-netlibDir $(DIRNETLIB) -testOsiSolverInterface"; \
+	fi;
+	./unitTest$(EXEEXT) $$NETLIBARG -T $(DATASRCDIR)/miplib3
+#	-mpsDir=$(DATASRCDIR)/Sample \
+#	-netlibDir=$(DATAOBJDIR)/Netlib
 
 ptest: punitTest$(EXEEXT)
-	./punitTest$(EXEEXT) -miplib3Dir= $(unittestflags)
+	if test x"$(DIRNETLIB)" != x; then \
+		NETLIBARG="-netlibDir $(DIRNETLIB) -testOsiSolverInterface"; \
+	fi;
+	./punitTest$(EXEEXT) $$NETLIBARG -p 2
+#-T $(DATAOBJDIR)/miplib3 \
+#	-mpsDir=$(DATASRCDIR)/Sample \
+#	-netlibDir=$(DATAOBJDIR)/Netlib
 
 pfulltest: check_files punitTest$(EXEEXT)
-	./punitTest$(EXEEXT) $(MIPLIBDIR) $(unittestflags)
+	if test x"$(DIRNETLIB)" != x; then \
+		NETLIBARG="-netlibDir $(DIRNETLIB) -testOsiSolverInterface"; \
+	fi;
+	./punitTest$(EXEEXT) $$NETLIBARG -T $(DATAOBJDIR)/miplib3 -p 2
+#	-mpsDir=$(DATASRCDIR)/Sample \
+#	-netlibDir=$(DATAOBJDIR)/Netlib
+
+check_files:
+	  if test -r $(DATASRCDIR)/miplib3; then \
+	   echo "MIBLIB3 directory found..."; \
+	  else \
+	   echo "Downloading required test files"; \
+	   mkdir $(DATASRCDIR)/miplib3; \
+	   for file in $(testFILES); do \
+	       (echo $$file; svn cat https://projects.coin-or.org/svn/Data/stable/1.0/miplib3/$$file.gz >> $(DATASRCDIR)/miplib3/$$file.gz) \
+	   done; \
+	  fi; \
+	  echo "Uncompressing files"; \
+	  cd $(DATASRCDIR)/miplib3; \
+	  for file in $(testFILES); do \
+	   if test -r $$file.gz; then \
+		(gzip -d $$file.gz) \
+	   fi \
+	  done
 
 .PHONY: test ptest fulltest pfulltest check_files
 

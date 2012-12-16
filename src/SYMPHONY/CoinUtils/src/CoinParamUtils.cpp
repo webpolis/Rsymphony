@@ -1,7 +1,4 @@
-/* $Id: CoinParamUtils.cpp 1469 2011-09-03 18:49:33Z stefan $ */
-// Copyright (C) 2007, International Business Machines
-// Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
+/* $Id: CoinParamUtils.cpp 1191 2009-07-25 08:38:12Z forrest $ */
 
 #include <cassert>
 #include <cerrno>
@@ -57,7 +54,7 @@ std::string nextField (const char *prompt)
   using the readline library, add non-empty lines to the history list.
 */
   if (!where) {
-#ifdef COIN_HAS_READLINE
+#ifdef COIN_USE_READLINE     
     if (readSrc == stdin)
     { where = readline(prompt) ;
       if (where)
@@ -307,7 +304,7 @@ int lookupParam (std::string name, CoinParamVec &paramVec,
   is, while 2 and 4 or more are queries about `?' or `???'.
 */
   int numQuery = 0 ;
-  { int length = static_cast<int>(name.length()) ;
+  { int length = name.length() ;
     int i ;
     for (i = length-1 ; i >= 0 && name[i] == '?' ; i--)
     { numQuery++ ; }
@@ -533,7 +530,7 @@ int matchParam (const CoinParamVec &paramVec, std::string name,
 		int &matchNdx, int &shortCnt)
 
 { 
-  int vecLen = static_cast<int>(paramVec.size()) ;
+  int vecLen = paramVec.size() ;
   int matchCnt = 0 ;
 
   matchNdx = -1 ;
@@ -569,7 +566,7 @@ int matchParam (const CoinParamVec &paramVec, std::string name,
 
 void printIt (const char *msg)
 
-{ int length = static_cast<int>(strlen(msg)) ;
+{ int length = strlen(msg) ;
   char temp[101] ;
   int i ;
   int n = 0 ;
@@ -601,7 +598,7 @@ void shortOrHelpOne (CoinParamVec &paramVec,
 		     int matchNdx, std::string name, int numQuery)
 
 { int i ;
-  int numParams = static_cast<int>(paramVec.size()) ;
+  int numParams = paramVec.size() ;
   int lclNdx = -1 ;
 /*
   For a short match, we need to look up the parameter again. This should find
@@ -659,7 +656,7 @@ void shortOrHelpOne (CoinParamVec &paramVec,
 
 void shortOrHelpMany (CoinParamVec &paramVec, std::string name, int numQuery)
 
-{ int numParams = static_cast<int>(paramVec.size()) ;
+{ int numParams = paramVec.size() ;
 /*
   Scan the parameter list. For each match, print just the name, or the name
   and short help.
@@ -672,7 +669,7 @@ void shortOrHelpMany (CoinParamVec &paramVec, std::string name, int numQuery)
     int match = param->matches(name) ;
     if (match > 0)
     { std::string nme = param->matchName() ;
-      int len = static_cast<int>(nme.length()) ;
+      int len = nme.length() ;
       if (numQuery >= 2) 
       { std::cout << nme << " : " << param->shortHelp() ;
 	std::cout << std::endl ; }
@@ -747,7 +744,7 @@ void printHelp (CoinParamVec &paramVec, int firstParam, int lastParam,
 
 { bool noHelp = !(shortHelp || longHelp) ;
   int i ;
-  int pfxLen = static_cast<int>(prefix.length()) ;
+  int pfxLen = prefix.length() ;
   bool printed = false ;
 
   if (noHelp)
@@ -757,7 +754,7 @@ void printHelp (CoinParamVec &paramVec, int firstParam, int lastParam,
       if (param == 0) continue ;
       if (param->display() || hidden)
       { std::string nme = param->matchName() ;
-	int len = static_cast<int>(nme.length()) ;
+	int len = nme.length() ;
 	if (!printed)
 	{ std::cout << std::endl << prefix ;
 	  lineLen += pfxLen ;

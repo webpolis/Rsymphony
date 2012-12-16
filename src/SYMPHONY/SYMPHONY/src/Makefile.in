@@ -23,9 +23,9 @@
 #                                                                           #
 # The author of this file is Menal Guzelsoy                                 #
 #                                                                           #
-# (c) Copyright 2006-2011 Lehigh University. All Rights Reserved.           #
+# (c) Copyright 2006-2010 Lehigh University. All Rights Reserved.           #
 #                                                                           #
-# This software is licensed under the Eclipse Public License. Please see    #
+# This software is licensed under the Common Public License. Please see     #
 # accompanying file for terms.                                              #
 #                                                                           #
 #===========================================================================#
@@ -71,41 +71,74 @@ host_triplet = @host@
 @PSEUDO_COSTS_FALSE@am__append_12 = LP/lp_branch.c
 @SYM_COMPILE_IN_CG_TRUE@am__append_13 = CutGen/cg_func.c CutGen/cg_wrapper.c
 @SYM_COMPILE_IN_LP_TRUE@am__append_14 = $(QSORT_SRC)
-@CLP_LP_SOLVER_TRUE@am__append_15 = -D__OSI_CLP__
-@CPLEX_LP_SOLVER_TRUE@am__append_16 = -D__OSI_CPLEX__
-@GLPK_LP_SOLVER_TRUE@am__append_17 = -D__OSI_GLPK__
-@GLPK_LP_SOLVER_FALSE@@USE_GMPL_TRUE@am__append_18 = -DUSE_GLPMPL
-@SOPLEX_LP_SOLVER_TRUE@am__append_19 = -D__OSI_SOPLEX__
-@XPRESS_LP_SOLVER_TRUE@am__append_20 = -D__OSI_XPRESS__
+@USE_CGL_CUTS_TRUE@am__append_15 = $(CGLOBJDIR)/src/libCgl.la
+@USE_CGL_CUTS_TRUE@am__append_16 = \
+@USE_CGL_CUTS_TRUE@	`cat $(CGLOBJDIR)/cgl_addlibs.txt`
+
+@CLP_LP_SOLVER_TRUE@am__append_17 = -D__OSI_CLP__
+@CPLEX_LP_SOLVER_TRUE@am__append_18 = -I`$(CYGPATH_W) $(CPXINCDIR)` \
+@CPLEX_LP_SOLVER_TRUE@	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiCpx` \
+@CPLEX_LP_SOLVER_TRUE@	-D__OSI_CPLEX__
+@CPLEX_LP_SOLVER_TRUE@am__append_19 = $(OSIOBJDIR)/src/OsiCpx/libOsiCpx.la
+@GLPK_LP_SOLVER_TRUE@am__append_20 = -I`$(CYGPATH_W) $(GLPKINCDIR)` \
+@GLPK_LP_SOLVER_TRUE@	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiGlpk` \
+@GLPK_LP_SOLVER_TRUE@	-D__OSI_GLPK__
+@GLPK_LP_SOLVER_TRUE@am__append_21 = $(OSIOBJDIR)/src/OsiGlpk/libOsiGlpk.la 
+@GLPK_LP_SOLVER_FALSE@@USE_GMPL_TRUE@am__append_22 = -I`$(CYGPATH_W) $(GLPKINCDIR)`
+@OSL_LP_SOLVER_TRUE@am__append_23 = -I`$(CYGPATH_W) $(OSLINCDIR)` \
+@OSL_LP_SOLVER_TRUE@	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiOsl` \
+@OSL_LP_SOLVER_TRUE@	-D__OSI_OSL__
+@OSL_LP_SOLVER_TRUE@am__append_24 = $(OSIOBJDIR)/src/OsiOsl/libOsiOsl.la
+@SOPLEX_LP_SOLVER_TRUE@am__append_25 = -I`$(CYGPATH_W) $(SPXINCDIR)` \
+@SOPLEX_LP_SOLVER_TRUE@	-I`$(CYGPATH_W) \
+@SOPLEX_LP_SOLVER_TRUE@	$(OSISRCDIR)/src/OsiSpx` \
+@SOPLEX_LP_SOLVER_TRUE@	-D__OSI_SOPLEX__
+@SOPLEX_LP_SOLVER_TRUE@am__append_26 = $(OSIOBJDIR)/src/OsiSpx/libOsiSpx.la
+@XPRESS_LP_SOLVER_TRUE@am__append_27 = -I`$(CYGPATH_W) $(XPRINCDIR)` \
+@XPRESS_LP_SOLVER_TRUE@	-I`$(CYGPATH_W) \
+@XPRESS_LP_SOLVER_TRUE@	$(OSISRCDIR)/src/OsiXpr` \
+@XPRESS_LP_SOLVER_TRUE@	-D__OSI_XPRESS__
+@XPRESS_LP_SOLVER_TRUE@am__append_28 = $(OSIOBJDIR)/src/OsiXpr/libOsiXpr.la
+#	-I`$(CYGPATH_W) $(srcdir)/GMPL`
 
 ########################################################################
 #                            Additional Definitions                    #
 ########################################################################
-@COIN_HAS_READLINE_TRUE@am__append_21 = -DHAS_READLINE
-@SENSITIVITY_ANALYSIS_TRUE@am__append_22 = -DSENSITIVITY_ANALYSIS
-@USE_CGL_CUTS_TRUE@am__append_23 = -DUSE_CGL_CUTS
-@ROOT_NODE_ONLY_TRUE@am__append_24 = -DROOT_NODE_ONLY
-@COMPILE_FRAC_BRANCHING_TRUE@am__append_25 = -DCOMPILE_FRAC_BRANCHING
-@DO_TESTS_TRUE@am__append_26 = -DDO_TESTS
-@TM_BASIS_TESTS_TRUE@am__append_27 = -DTM_BASIS_TESTS
-@TRACE_PATH_TRUE@am__append_28 = -DTRACE_PATH
-@CHECK_CUT_VALIDITY_TRUE@am__append_29 = -DCHECK_CUT_VALIDITY
-@STATISTICS_TRUE@am__append_30 = -DSTATISTICS
-@PSEUDO_COSTS_TRUE@am__append_31 = -DPSEUDO_COSTS
-@DRAWGRAPH_TRUE@am__append_32 = 
-@SIGHANDLER_TRUE@am__append_33 = -DSIGHANDLER
-@SYM_PARALLEL_TRUE@am__append_34 = $(AM_CPPFLAGS) $(SYMPDEFS) -I`$(CYGPATH_W) $(PVM_ROOT)/include`
-@SYM_PARALLEL_TRUE@am__append_35 = $(LDADD) -lgpvm3 -lpvm3
-@SYM_PARALLEL_TRUE@am__append_36 = $(PCPPFLAGS) -DUSE_SYM_APPLICATION
-@STATICEXE_TRUE@am__append_37 = $(STATIC_LINK) 
-@STATICEXE_FALSE@am__append_38 = $(LIBTOOL) --tag=CXX --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-@STATICEXE_FALSE@	$(AM_LDFLAGS) $(LDFLAGS) -o $@ -rpath $(libdir)
+@COIN_HAS_READLINE_TRUE@am__append_29 = -DHAS_READLINE
+@SENSITIVITY_ANALYSIS_TRUE@am__append_30 = -DSENSITIVITY_ANALYSIS
+@USE_CGL_CUTS_TRUE@am__append_31 = -DUSE_CGL_CUTS
+@ROOT_NODE_ONLY_TRUE@am__append_32 = -DROOT_NODE_ONLY
 
-@USE_CL_TRUE@am__append_39 = cp -f main.$(OBJEXT) symphony-main.$(OBJEXT); $(LIBTOOL) \
+#if CCMALLOC
+#AM_CPPFLAGS += 
+#endif
+@COMPILE_FRAC_BRANCHING_TRUE@am__append_33 = -DCOMPILE_FRAC_BRANCHING
+@DO_TESTS_TRUE@am__append_34 = -DDO_TESTS
+@TM_BASIS_TESTS_TRUE@am__append_35 = -DTM_BASIS_TESTS
+@TRACE_PATH_TRUE@am__append_36 = -DTRACE_PATH
+@CHECK_CUT_VALIDITY_TRUE@am__append_37 = -DCHECK_CUT_VALIDITY
+@STATISTICS_TRUE@am__append_38 = -DSTATISTICS
+@PSEUDO_COSTS_TRUE@am__append_39 = -DPSEUDO_COSTS
+@DRAWGRAPH_TRUE@am__append_40 = 
+@SIGHANDLER_TRUE@am__append_41 = -DSIGHANDLER
+
+#FIXME For now, assume that we have gmpl files, later check for GLPK package
+@USE_GMPL_TRUE@am__append_42 = -DUSE_GLPMPL
+@SYM_PARALLEL_TRUE@am__append_43 = $(AM_CPPFLAGS) $(SYMPDEFS) -I`$(CYGPATH_W) $(PVM_ROOT)/include`
+@SYM_PARALLEL_TRUE@am__append_44 = $(ALLLDADD) -L`$(CYGPATH_W) $(PVM_ROOT)/lib/$(ARCH)` \
+@SYM_PARALLEL_TRUE@	-lgpvm3 -lpvm3
+
+@SYM_PARALLEL_TRUE@am__append_45 = $(PCPPFLAGS) -DUSE_SYM_APPLICATION
+@STATICEXE_TRUE@am__append_46 = $(STATIC_LINK) 
+@STATICEXE_FALSE@am__append_47 = $(LIBTOOL) --tag=CXX --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+@STATICEXE_FALSE@	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+
+@USE_CL_TRUE@am__append_48 = cp -f main.$(OBJEXT) symphony-main.$(OBJEXT); $(LIBTOOL) \
 @USE_CL_TRUE@	--tag=CXX --mode=link $(CCLD) $(AM_CFLAGS) $(CCLCFLAGS) \
 @USE_CL_TRUE@	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 
-@USE_CL_FALSE@am__append_40 = $(LINK)
+@USE_CL_TRUE@am__append_49 = main.$(OBJEXT) 
+@USE_CL_FALSE@am__append_50 = $(LINK)
 EXTRA_PROGRAMS = symphony$(EXEEXT) symphony_m$(EXEEXT) \
 	symphony_m_tm$(EXEEXT) symphony_m_tm_lp$(EXEEXT) \
 	symphony_m_tm_cp$(EXEEXT) symphony_m_tm_lp_cg$(EXEEXT) \
@@ -124,8 +157,7 @@ am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/include/config.h \
-	$(top_builddir)/include/config_sym.h
+CONFIG_HEADER = $(top_builddir)/include/config_sym.h
 CONFIG_CLEAN_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -2200,12 +2232,35 @@ am__objects_416 = symphony-main.$(OBJEXT)
 am__objects_417 = $(am__objects_416)
 am_symphony_OBJECTS = $(am__objects_417)
 symphony_OBJECTS = $(am_symphony_OBJECTS)
-am__DEPENDENCIES_1 =
-am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
+@USE_CGL_CUTS_TRUE@am__DEPENDENCIES_1 = $(CGLOBJDIR)/src/libCgl.la
+@CPLEX_LP_SOLVER_TRUE@am__DEPENDENCIES_2 =  \
+@CPLEX_LP_SOLVER_TRUE@	$(OSIOBJDIR)/src/OsiCpx/libOsiCpx.la
+@GLPK_LP_SOLVER_TRUE@am__DEPENDENCIES_3 =  \
+@GLPK_LP_SOLVER_TRUE@	$(OSIOBJDIR)/src/OsiGlpk/libOsiGlpk.la
+@OSL_LP_SOLVER_TRUE@am__DEPENDENCIES_4 =  \
+@OSL_LP_SOLVER_TRUE@	$(OSIOBJDIR)/src/OsiOsl/libOsiOsl.la
+@SOPLEX_LP_SOLVER_TRUE@am__DEPENDENCIES_5 =  \
+@SOPLEX_LP_SOLVER_TRUE@	$(OSIOBJDIR)/src/OsiSpx/libOsiSpx.la
+@XPRESS_LP_SOLVER_TRUE@am__DEPENDENCIES_6 =  \
+@XPRESS_LP_SOLVER_TRUE@	$(OSIOBJDIR)/src/OsiXpr/libOsiXpr.la
+am__DEPENDENCIES_7 = $(am__DEPENDENCIES_1) \
+	$(OSIOBJDIR)/src/OsiClp/libOsiClp.la \
+	$(CLPOBJDIR)/src/libClp.la $(am__DEPENDENCIES_2) \
+	$(am__DEPENDENCIES_3) $(am__DEPENDENCIES_4) \
+	$(am__DEPENDENCIES_5) $(am__DEPENDENCIES_6) \
+	$(OSIOBJDIR)/src/libOsi.la \
+	$(COINUTILSOBJDIR)/src/libCoinUtils.la
+@USE_CGL_CUTS_TRUE@am__DEPENDENCIES_8 = `cat \
+@USE_CGL_CUTS_TRUE@	$(CGLOBJDIR)/cgl_addlibs.txt`
+am__DEPENDENCIES_9 = `cat $(OSIOBJDIR)/osi_addlibs.txt` `cat \
+	$(COINUTILSOBJDIR)/coinutils_addlibs.txt` \
+	$(am__DEPENDENCIES_8) `cat $(CLPOBJDIR)/clp_addlibs.txt`
+am__DEPENDENCIES_10 = $(am__DEPENDENCIES_7) $(am__DEPENDENCIES_9)
 am_symphony_cp_OBJECTS =
 symphony_cp_OBJECTS = $(am_symphony_cp_OBJECTS)
-@SYM_PARALLEL_TRUE@am__DEPENDENCIES_3 = $(am__DEPENDENCIES_2)
-am__DEPENDENCIES_4 = $(am__DEPENDENCIES_3)
+@SYM_PARALLEL_TRUE@am__DEPENDENCIES_11 = $(am__DEPENDENCIES_10) \
+@SYM_PARALLEL_TRUE@	$(PVM_ROOT)/lib/$(ARCH)`
+am__DEPENDENCIES_12 = $(am__DEPENDENCIES_11)
 am_symphony_lp_OBJECTS =
 symphony_lp_OBJECTS = $(am_symphony_lp_OBJECTS)
 am_symphony_lp_cg_OBJECTS =
@@ -2246,7 +2301,7 @@ am_symphony_tm_lp_cg_OBJECTS =
 symphony_tm_lp_cg_OBJECTS = $(am_symphony_tm_lp_cg_OBJECTS)
 am_symphony_tm_lp_cg_cp_OBJECTS =
 symphony_tm_lp_cg_cp_OBJECTS = $(am_symphony_tm_lp_cg_cp_OBJECTS)
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -2332,8 +2387,10 @@ ETAGS = etags
 CTAGS = ctags
 DIST_SUBDIRS = $(SUBDIRS)
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ABSBUILDDIR = @ABSBUILDDIR@
 ACLOCAL = @ACLOCAL@
+ADDLIBS = @ADDLIBS@ `cat $(OSIOBJDIR)/osi_addlibs.txt` `cat \
+	$(COINUTILSOBJDIR)/coinutils_addlibs.txt` $(am__append_16) \
+	`cat $(CLPOBJDIR)/clp_addlibs.txt`
 ADD_CFLAGS = @ADD_CFLAGS@
 ADD_CXXFLAGS = @ADD_CXXFLAGS@
 ALWAYS_FALSE_FALSE = @ALWAYS_FALSE_FALSE@
@@ -2358,71 +2415,47 @@ CC = $(CXX)
 CCDEPMODE = @CCDEPMODE@
 CDEFS = @CDEFS@
 CFLAGS = @CFLAGS@
-CGL_CFLAGS = @CGL_CFLAGS@
-CGL_CFLAGS_INSTALLED = @CGL_CFLAGS_INSTALLED@
-CGL_DATA = @CGL_DATA@
-CGL_DATA_INSTALLED = @CGL_DATA_INSTALLED@
-CGL_DEPENDENCIES = @CGL_DEPENDENCIES@
-CGL_LIBS = @CGL_LIBS@
-CGL_LIBS_INSTALLED = @CGL_LIBS_INSTALLED@
+CGLDOCDIR = @CGLDOCDIR@
+CGLOBJDIR = @CGLOBJDIR@
+CGLSRCDIR = @CGLSRCDIR@
 CHECK_CUT_VALIDITY_FALSE = @CHECK_CUT_VALIDITY_FALSE@
 CHECK_CUT_VALIDITY_TRUE = @CHECK_CUT_VALIDITY_TRUE@
 CLLCFLAGS = @CLLCFLAGS@
-CLP_CFLAGS = @CLP_CFLAGS@
-CLP_CFLAGS_INSTALLED = @CLP_CFLAGS_INSTALLED@
-CLP_DATA = @CLP_DATA@
-CLP_DATA_INSTALLED = @CLP_DATA_INSTALLED@
-CLP_DEPENDENCIES = @CLP_DEPENDENCIES@
-CLP_LIBS = @CLP_LIBS@
-CLP_LIBS_INSTALLED = @CLP_LIBS_INSTALLED@
+CLPDOCDIR = @CLPDOCDIR@
+CLPOBJDIR = @CLPOBJDIR@
+CLPSRCDIR = @CLPSRCDIR@
 CLP_LP_SOLVER_FALSE = @CLP_LP_SOLVER_FALSE@
 CLP_LP_SOLVER_TRUE = @CLP_LP_SOLVER_TRUE@
-COINDEPEND_CFLAGS = @COINDEPEND_CFLAGS@
-COINDEPEND_CFLAGS_INSTALLED = @COINDEPEND_CFLAGS_INSTALLED@
-COINDEPEND_DATA = @COINDEPEND_DATA@
-COINDEPEND_DATA_INSTALLED = @COINDEPEND_DATA_INSTALLED@
-COINDEPEND_DEPENDENCIES = @COINDEPEND_DEPENDENCIES@
-COINDEPEND_LIBS = @COINDEPEND_LIBS@
-COINDEPEND_LIBS_INSTALLED = @COINDEPEND_LIBS_INSTALLED@
-COIN_CC_IS_CL_FALSE = @COIN_CC_IS_CL_FALSE@
-COIN_CC_IS_CL_TRUE = @COIN_CC_IS_CL_TRUE@
-COIN_CXX_IS_CL_FALSE = @COIN_CXX_IS_CL_FALSE@
-COIN_CXX_IS_CL_TRUE = @COIN_CXX_IS_CL_TRUE@
+COINUTILSDOCDIR = @COINUTILSDOCDIR@
+COINUTILSOBJDIR = @COINUTILSOBJDIR@
+COINUTILSSRCDIR = @COINUTILSSRCDIR@
+COIN_BUILD_GLPK_FALSE = @COIN_BUILD_GLPK_FALSE@
+COIN_BUILD_GLPK_TRUE = @COIN_BUILD_GLPK_TRUE@
 COIN_HAS_CGL_FALSE = @COIN_HAS_CGL_FALSE@
 COIN_HAS_CGL_TRUE = @COIN_HAS_CGL_TRUE@
 COIN_HAS_CLP = @COIN_HAS_CLP@
 COIN_HAS_CLP_FALSE = @COIN_HAS_CLP_FALSE@
 COIN_HAS_CLP_TRUE = @COIN_HAS_CLP_TRUE@
-COIN_HAS_COINDEPEND_FALSE = @COIN_HAS_COINDEPEND_FALSE@
-COIN_HAS_COINDEPEND_TRUE = @COIN_HAS_COINDEPEND_TRUE@
+COIN_HAS_COINUTILS_FALSE = @COIN_HAS_COINUTILS_FALSE@
+COIN_HAS_COINUTILS_TRUE = @COIN_HAS_COINUTILS_TRUE@
 COIN_HAS_CPX_FALSE = @COIN_HAS_CPX_FALSE@
 COIN_HAS_CPX_TRUE = @COIN_HAS_CPX_TRUE@
-COIN_HAS_DYLP_FALSE = @COIN_HAS_DYLP_FALSE@
-COIN_HAS_DYLP_TRUE = @COIN_HAS_DYLP_TRUE@
+COIN_HAS_DATA_FALSE = @COIN_HAS_DATA_FALSE@
+COIN_HAS_DATA_TRUE = @COIN_HAS_DATA_TRUE@
 COIN_HAS_GLPK_FALSE = @COIN_HAS_GLPK_FALSE@
 COIN_HAS_GLPK_TRUE = @COIN_HAS_GLPK_TRUE@
-COIN_HAS_MIPLIB3_FALSE = @COIN_HAS_MIPLIB3_FALSE@
-COIN_HAS_MIPLIB3_TRUE = @COIN_HAS_MIPLIB3_TRUE@
-COIN_HAS_MSK_FALSE = @COIN_HAS_MSK_FALSE@
-COIN_HAS_MSK_TRUE = @COIN_HAS_MSK_TRUE@
-COIN_HAS_NETLIB_FALSE = @COIN_HAS_NETLIB_FALSE@
-COIN_HAS_NETLIB_TRUE = @COIN_HAS_NETLIB_TRUE@
-COIN_HAS_OSITESTS_FALSE = @COIN_HAS_OSITESTS_FALSE@
-COIN_HAS_OSITESTS_TRUE = @COIN_HAS_OSITESTS_TRUE@
-COIN_HAS_PKGCONFIG_FALSE = @COIN_HAS_PKGCONFIG_FALSE@
-COIN_HAS_PKGCONFIG_TRUE = @COIN_HAS_PKGCONFIG_TRUE@
-COIN_HAS_PVM_FALSE = @COIN_HAS_PVM_FALSE@
-COIN_HAS_PVM_TRUE = @COIN_HAS_PVM_TRUE@
+COIN_HAS_OSI_FALSE = @COIN_HAS_OSI_FALSE@
+COIN_HAS_OSI_TRUE = @COIN_HAS_OSI_TRUE@
+COIN_HAS_OSL_FALSE = @COIN_HAS_OSL_FALSE@
+COIN_HAS_OSL_TRUE = @COIN_HAS_OSL_TRUE@
 COIN_HAS_READLINE_FALSE = @COIN_HAS_READLINE_FALSE@
 COIN_HAS_READLINE_TRUE = @COIN_HAS_READLINE_TRUE@
-COIN_HAS_SAMPLE_FALSE = @COIN_HAS_SAMPLE_FALSE@
-COIN_HAS_SAMPLE_TRUE = @COIN_HAS_SAMPLE_TRUE@
-COIN_HAS_VOL_FALSE = @COIN_HAS_VOL_FALSE@
-COIN_HAS_VOL_TRUE = @COIN_HAS_VOL_TRUE@
+COIN_HAS_SPX_FALSE = @COIN_HAS_SPX_FALSE@
+COIN_HAS_SPX_TRUE = @COIN_HAS_SPX_TRUE@
+COIN_HAS_SYMPHONY_FALSE = @COIN_HAS_SYMPHONY_FALSE@
+COIN_HAS_SYMPHONY_TRUE = @COIN_HAS_SYMPHONY_TRUE@
 COIN_HAS_XPR_FALSE = @COIN_HAS_XPR_FALSE@
 COIN_HAS_XPR_TRUE = @COIN_HAS_XPR_TRUE@
-COIN_PKG_CONFIG_PATH = @COIN_PKG_CONFIG_PATH@
-COIN_PKG_CONFIG_PATH_UNINSTALLED = @COIN_PKG_CONFIG_PATH_UNINSTALLED@
 COMPILE_FRAC_BRANCHING_FALSE = @COMPILE_FRAC_BRANCHING_FALSE@
 COMPILE_FRAC_BRANCHING_TRUE = @COMPILE_FRAC_BRANCHING_TRUE@
 CPEXT = @CPEXT@
@@ -2430,19 +2463,17 @@ CPLEX_LP_SOLVER_FALSE = @CPLEX_LP_SOLVER_FALSE@
 CPLEX_LP_SOLVER_TRUE = @CPLEX_LP_SOLVER_TRUE@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CPX_CFLAGS = @CPX_CFLAGS@
-CPX_CFLAGS_INSTALLED = @CPX_CFLAGS_INSTALLED@
-CPX_DATA = @CPX_DATA@
-CPX_DATA_INSTALLED = @CPX_DATA_INSTALLED@
-CPX_DEPENDENCIES = @CPX_DEPENDENCIES@
-CPX_LIBS = @CPX_LIBS@
-CPX_LIBS_INSTALLED = @CPX_LIBS_INSTALLED@
+CPXINCDIR = @CPXINCDIR@
+CPXLIB = @CPXLIB@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEFS = @CXXDEFS@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
+DATADOCDIR = @DATADOCDIR@
+DATAOBJDIR = @DATAOBJDIR@
+DATASRCDIR = @DATASRCDIR@
 DBG_CFLAGS = @DBG_CFLAGS@
 DBG_CXXFLAGS = @DBG_CXXFLAGS@
 DEFS = @DEFS@
@@ -2451,13 +2482,6 @@ DO_TESTS_FALSE = @DO_TESTS_FALSE@
 DO_TESTS_TRUE = @DO_TESTS_TRUE@
 DRAWGRAPH_FALSE = @DRAWGRAPH_FALSE@
 DRAWGRAPH_TRUE = @DRAWGRAPH_TRUE@
-DYLP_CFLAGS = @DYLP_CFLAGS@
-DYLP_CFLAGS_INSTALLED = @DYLP_CFLAGS_INSTALLED@
-DYLP_DATA = @DYLP_DATA@
-DYLP_DATA_INSTALLED = @DYLP_DATA_INSTALLED@
-DYLP_DEPENDENCIES = @DYLP_DEPENDENCIES@
-DYLP_LIBS = @DYLP_LIBS@
-DYLP_LIBS_INSTALLED = @DYLP_LIBS_INSTALLED@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
@@ -2465,14 +2489,11 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
+FADDLIBS = @FADDLIBS@
 FFLAGS = @FFLAGS@
-GLPK_CFLAGS = @GLPK_CFLAGS@
-GLPK_CFLAGS_INSTALLED = @GLPK_CFLAGS_INSTALLED@
-GLPK_DATA = @GLPK_DATA@
-GLPK_DATA_INSTALLED = @GLPK_DATA_INSTALLED@
-GLPK_DEPENDENCIES = @GLPK_DEPENDENCIES@
-GLPK_LIBS = @GLPK_LIBS@
-GLPK_LIBS_INSTALLED = @GLPK_LIBS_INSTALLED@
+GLPKINCDIR = @GLPKINCDIR@
+GLPKLIB = @GLPKLIB@
+GLPKOBJDIR = @GLPKOBJDIR@
 GLPK_LP_SOLVER_FALSE = @GLPK_LP_SOLVER_FALSE@
 GLPK_LP_SOLVER_TRUE = @GLPK_LP_SOLVER_TRUE@
 HAVE_EXTERNALS_FALSE = @HAVE_EXTERNALS_FALSE@
@@ -2484,53 +2505,30 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
 LIBEXT = @LIBEXT@
 LIBOBJS = @LIBOBJS@
-LIBS = @LIBS@
+LIBS = 
 LIBTOOL = @LIBTOOL@
 LIBTOOLM4 = @LIBTOOLM4@
 LN_S = @LN_S@
 LPEXT = @LPEXT@
 LTLIBOBJS = @LTLIBOBJS@
-LT_LDFLAGS = @LT_LDFLAGS@
+LT_LDFLAGS = @LT_LDFLAGS@ -rpath $(libdir)
 MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
 MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MASTEREXT = @MASTEREXT@
-MIPLIB3_CFLAGS = @MIPLIB3_CFLAGS@
-MIPLIB3_CFLAGS_INSTALLED = @MIPLIB3_CFLAGS_INSTALLED@
-MIPLIB3_DATA = @MIPLIB3_DATA@
-MIPLIB3_DATA_INSTALLED = @MIPLIB3_DATA_INSTALLED@
-MIPLIB3_DEPENDENCIES = @MIPLIB3_DEPENDENCIES@
-MIPLIB3_LIBS = @MIPLIB3_LIBS@
-MIPLIB3_LIBS_INSTALLED = @MIPLIB3_LIBS_INSTALLED@
 MPICC = @MPICC@
 MPICXX = @MPICXX@
-MSK_CFLAGS = @MSK_CFLAGS@
-MSK_CFLAGS_INSTALLED = @MSK_CFLAGS_INSTALLED@
-MSK_DATA = @MSK_DATA@
-MSK_DATA_INSTALLED = @MSK_DATA_INSTALLED@
-MSK_DEPENDENCIES = @MSK_DEPENDENCIES@
-MSK_LIBS = @MSK_LIBS@
-MSK_LIBS_INSTALLED = @MSK_LIBS_INSTALLED@
-NETLIB_CFLAGS = @NETLIB_CFLAGS@
-NETLIB_CFLAGS_INSTALLED = @NETLIB_CFLAGS_INSTALLED@
-NETLIB_DATA = @NETLIB_DATA@
-NETLIB_DATA_INSTALLED = @NETLIB_DATA_INSTALLED@
-NETLIB_DEPENDENCIES = @NETLIB_DEPENDENCIES@
-NETLIB_LIBS = @NETLIB_LIBS@
-NETLIB_LIBS_INSTALLED = @NETLIB_LIBS_INSTALLED@
 OBJEXT = @OBJEXT@
 OPENMP_FALSE = @OPENMP_FALSE@
 OPENMP_TRUE = @OPENMP_TRUE@
 OPT_CFLAGS = @OPT_CFLAGS@
 OPT_CXXFLAGS = @OPT_CXXFLAGS@
-OSITESTS_CFLAGS = @OSITESTS_CFLAGS@
-OSITESTS_CFLAGS_INSTALLED = @OSITESTS_CFLAGS_INSTALLED@
-OSITESTS_DATA = @OSITESTS_DATA@
-OSITESTS_DATA_INSTALLED = @OSITESTS_DATA_INSTALLED@
-OSITESTS_DEPENDENCIES = @OSITESTS_DEPENDENCIES@
-OSITESTS_LIBS = @OSITESTS_LIBS@
-OSITESTS_LIBS_INSTALLED = @OSITESTS_LIBS_INSTALLED@
+OSIDOCDIR = @OSIDOCDIR@
+OSIOBJDIR = @OSIOBJDIR@
+OSISRCDIR = @OSISRCDIR@
+OSLINCDIR = @OSLINCDIR@
+OSLLIB = @OSLLIB@
 OSL_LP_SOLVER_FALSE = @OSL_LP_SOLVER_FALSE@
 OSL_LP_SOLVER_TRUE = @OSL_LP_SOLVER_TRUE@
 PACKAGE = @PACKAGE@
@@ -2540,22 +2538,12 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 PSEUDO_COSTS_FALSE = @PSEUDO_COSTS_FALSE@
 PSEUDO_COSTS_TRUE = @PSEUDO_COSTS_TRUE@
-PVMINCDIR = @PVMINCDIR@
-PVMLIB = @PVMLIB@
 RANLIB = @RANLIB@
 ROOT_NODE_ONLY_FALSE = @ROOT_NODE_ONLY_FALSE@
 ROOT_NODE_ONLY_TRUE = @ROOT_NODE_ONLY_TRUE@
 RPATH_FLAGS = @RPATH_FLAGS@
-SAMPLE_CFLAGS = @SAMPLE_CFLAGS@
-SAMPLE_CFLAGS_INSTALLED = @SAMPLE_CFLAGS_INSTALLED@
-SAMPLE_DATA = @SAMPLE_DATA@
-SAMPLE_DATA_INSTALLED = @SAMPLE_DATA_INSTALLED@
-SAMPLE_DEPENDENCIES = @SAMPLE_DEPENDENCIES@
-SAMPLE_LIBS = @SAMPLE_LIBS@
-SAMPLE_LIBS_INSTALLED = @SAMPLE_LIBS_INSTALLED@
 SENSITIVITY_ANALYSIS_FALSE = @SENSITIVITY_ANALYSIS_FALSE@
 SENSITIVITY_ANALYSIS_TRUE = @SENSITIVITY_ANALYSIS_TRUE@
 SET_MAKE = @SET_MAKE@
@@ -2564,6 +2552,8 @@ SIGHANDLER_FALSE = @SIGHANDLER_FALSE@
 SIGHANDLER_TRUE = @SIGHANDLER_TRUE@
 SOPLEX_LP_SOLVER_FALSE = @SOPLEX_LP_SOLVER_FALSE@
 SOPLEX_LP_SOLVER_TRUE = @SOPLEX_LP_SOLVER_TRUE@
+SPXINCDIR = @SPXINCDIR@
+SPXLIB = @SPXLIB@
 STATICEXE_FALSE = @STATICEXE_FALSE@
 STATICEXE_TRUE = @STATICEXE_TRUE@
 STATISTICS_FALSE = @STATISTICS_FALSE@
@@ -2573,14 +2563,9 @@ SYMAPPLDIR = @SYMAPPLDIR@
 SYMDEFS = @SYMDEFS@
 SYMINCDIR = @SYMINCDIR@
 SYMPDEFS = @SYMPDEFS@
-SYMPHONYLIB_CFLAGS = @SYMPHONYLIB_CFLAGS@
-SYMPHONYLIB_CFLAGS_INSTALLED = @SYMPHONYLIB_CFLAGS_INSTALLED@
-SYMPHONYLIB_DEPENDENCIES = @SYMPHONYLIB_DEPENDENCIES@
-SYMPHONYLIB_LIBS = @SYMPHONYLIB_LIBS@
-SYMPHONYLIB_LIBS_INSTALLED = @SYMPHONYLIB_LIBS_INSTALLED@
-SYMPHONYLIB_PCLIBS = @SYMPHONYLIB_PCLIBS@
-SYMPHONYLIB_PCREQUIRES = @SYMPHONYLIB_PCREQUIRES@
-SYMPHONY_SVN_REV = @SYMPHONY_SVN_REV@
+SYMPHONYDOCDIR = @SYMPHONYDOCDIR@
+SYMPHONYOBJDIR = @SYMPHONYOBJDIR@
+SYMPHONYSRCDIR = @SYMPHONYSRCDIR@
 SYMSRCDIR = @SYMSRCDIR@
 SYM_COMPILE_IN_CG_FALSE = @SYM_COMPILE_IN_CG_FALSE@
 SYM_COMPILE_IN_CG_TRUE = @SYM_COMPILE_IN_CG_TRUE@
@@ -2606,25 +2591,13 @@ USE_CL_TRUE = @USE_CL_TRUE@
 USE_GMPL_FALSE = @USE_GMPL_FALSE@
 USE_GMPL_TRUE = @USE_GMPL_TRUE@
 VERSION = @VERSION@
-VOL_CFLAGS = @VOL_CFLAGS@
-VOL_CFLAGS_INSTALLED = @VOL_CFLAGS_INSTALLED@
-VOL_DATA = @VOL_DATA@
-VOL_DATA_INSTALLED = @VOL_DATA_INSTALLED@
-VOL_DEPENDENCIES = @VOL_DEPENDENCIES@
-VOL_LIBS = @VOL_LIBS@
-VOL_LIBS_INSTALLED = @VOL_LIBS_INSTALLED@
 VPATH_DISTCLEANFILES = @VPATH_DISTCLEANFILES@
 WHATTOMAKEBINS = @WHATTOMAKEBINS@
 WHATTOMAKELIBS = @WHATTOMAKELIBS@
 XPRESS_LP_SOLVER_FALSE = @XPRESS_LP_SOLVER_FALSE@
 XPRESS_LP_SOLVER_TRUE = @XPRESS_LP_SOLVER_TRUE@
-XPR_CFLAGS = @XPR_CFLAGS@
-XPR_CFLAGS_INSTALLED = @XPR_CFLAGS_INSTALLED@
-XPR_DATA = @XPR_DATA@
-XPR_DATA_INSTALLED = @XPR_DATA_INSTALLED@
-XPR_DEPENDENCIES = @XPR_DEPENDENCIES@
-XPR_LIBS = @XPR_LIBS@
-XPR_LIBS_INSTALLED = @XPR_LIBS_INSTALLED@
+XPRINCDIR = @XPRINCDIR@
+XPRLIB = @XPRLIB@
 abs_bin_dir = @abs_bin_dir@
 abs_include_dir = @abs_include_dir@
 abs_lib_dir = @abs_lib_dir@
@@ -2637,7 +2610,6 @@ ac_ct_F77 = @ac_ct_F77@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
 ac_cxx_preproc_warn_flag = @ac_cxx_preproc_warn_flag@
-ac_pt_PKG_CONFIG = @ac_pt_PKG_CONFIG@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -2658,7 +2630,6 @@ exec_prefix = @exec_prefix@
 have_autoconf = @have_autoconf@
 have_automake = @have_automake@
 have_svn = @have_svn@
-have_svnversion = @have_svnversion@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -2681,7 +2652,20 @@ sol_cc_compiler = @sol_cc_compiler@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 AUTOMAKE_OPTIONS = foreign
-SUBDIRS = OsiSym
+SUBDIRS = 
+#FIXME! Doesn't work for appl library!
+# SYMSOURCES  = \
+# 	$(SYMSRCDIR)/Common      :\
+# 	$(SYMSRCDIR)/LP          :\
+# 	$(SYMSRCDIR)/CutGen      :\
+# 	$(SYMSRCDIR)/CutPool     :\
+# 	$(SYMSRCDIR)/DrawGraph   :\
+# 	$(SYMSRCDIR)/Master      :\
+# 	$(SYMSRCDIR)/../include     :\
+# 	$(SYMSRCDIR)/ :\
+# 	$(SYMSRCDIR)/TreeManager
+
+#VPATH  = $(vpath)
 
 ##############################################################################
 ##############################################################################
@@ -2707,7 +2691,7 @@ SYMHEADERS = ../include/sym_constants.h ../include/sym_macros.h \
 	../include/sym_prep.h ../include/sym_prep_params.h \
 	$(am__append_1)
 
-#Add SymConfig.h
+#Add SymConfig.h even though it is not used - for COIN compability
 SYMINCFILES = ../include/SymConfig.h $(SYMHEADERS)
 SYM_MASTER_SRC = Master/master.c Master/master_wrapper.c Master/master_io.c \
 	Master/master_func.c Master/master_prep.c Master/master_prep_base.c Master/master_prep_sr.c 
@@ -2800,24 +2784,65 @@ MAIN_SRC = $(MASTER_MAIN_SRC)
 ########################################################################
 #                           Common Flags                               #
 ########################################################################
-SYMCPPFLAGS = $(AM_CPPFLAGS) $(SYMDEFS)
-PCPPFLAGS = $(am__append_34)
-APPLCPPFLAGS = $(SYMCPPFLAGS) -DUSE_SYM_APPLICATION
-APPLPCPPFLAGS = $(am__append_36)
-ALLLDADD = 
-PLDADD = $(am__append_35)
-LDADD = $(SYMPHONYLIB_LIBS)
-DEPENDENCIES = $(SYMPHONYLIB_DEPENDENCIES)
-AM_CPPFLAGS = $(SYMPHONYLIB_CFLAGS) $(am__append_15) $(am__append_16) \
-	$(am__append_17) $(am__append_18) $(am__append_19) \
-	$(am__append_20) $(am__append_21) $(am__append_22) \
-	$(am__append_23) $(am__append_24) $(am__append_25) \
-	$(am__append_26) $(am__append_27) $(am__append_28) \
-	$(am__append_29) $(am__append_30) $(am__append_31) \
-	$(am__append_32) $(am__append_33)
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(top_srcdir)/include` \
-                   -I`$(CYGPATH_W) $(top_builddir)/include`
 
+# Add include files
+
+# List all additionally required solver and Osi libraries
+
+#if CLP_LP_SOLVER
+
+########################################################################
+#                            Additional flags                          #
+########################################################################
+
+# Here list all include flags, relative to this "srcdir" directory.  This
+# "cygpath" stuff is necessary to compile with native compilers on Windows.
+# "top_srcdir" refers to the basic directory for the main package that is
+# being compiled.
+AM_CPPFLAGS = -I`$(CYGPATH_W) $(SYMINCDIR)` -I`$(CYGPATH_W) \
+	$(CLPSRCDIR)/src` -I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiClp` \
+	-I`$(CYGPATH_W) $(CLPOBJDIR)/inc` $(am__append_17) \
+	$(am__append_18) $(am__append_20) $(am__append_22) \
+	$(am__append_23) $(am__append_25) $(am__append_27) \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglClique` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglDuplicateRow` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglFlowCover` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglGomory` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglKnapsackCover` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglLiftAndProject` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglLandP` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglMixedIntegerRounding` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglMixedIntegerRounding2` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglOddHole` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglPreProcess` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglProbing` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglRedSplit` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglSimpleRounding` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglTwomir` -I`$(CYGPATH_W) \
+	$(COINUTILSSRCDIR)/src` -I`$(CYGPATH_W) \
+	$(COINUTILSOBJDIR)/inc` -I`$(CYGPATH_W) $(OSISRCDIR)/src` \
+	-I`$(CYGPATH_W) $(OSIOBJDIR)/inc` -I`$(CYGPATH_W) \
+	$(CGLOBJDIR)/inc` $(am__append_29) $(am__append_30) \
+	$(am__append_31) $(am__append_32) $(am__append_33) \
+	$(am__append_34) $(am__append_35) $(am__append_36) \
+	$(am__append_37) $(am__append_38) $(am__append_39) \
+	$(am__append_40) $(am__append_41) $(am__append_42)
+SYMCPPFLAGS = $(AM_CPPFLAGS) $(SYMDEFS)
+PCPPFLAGS = $(am__append_43)
+APPLCPPFLAGS = $(SYMCPPFLAGS) -DUSE_SYM_APPLICATION
+APPLPCPPFLAGS = $(am__append_45)
+LDADD = $(am__append_15) $(OSIOBJDIR)/src/OsiClp/libOsiClp.la \
+	$(CLPOBJDIR)/src/libClp.la $(am__append_19) $(am__append_21) \
+	$(am__append_24) $(am__append_26) $(am__append_28) \
+	$(OSIOBJDIR)/src/libOsi.la \
+	$(COINUTILSOBJDIR)/src/libCoinUtils.la
+
+# This line is necessary to allow VPATH compilation with MS compilers
+# on Cygwin
+ALLLDADD = $(LDADD) $(ADDLIBS)
+PALLLDADD = $(am__append_44)
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/inc
 CCLD = $(CXX)
 
 #Static link
@@ -2826,9 +2851,9 @@ STATIC_LINK = $(LIBTOOL) --tag=CXX --mode=link $(CCLD) -all-static\
 
 
 # Link with g++
-LINK = $(am__append_37) $(am__append_38)
-# the rpath seem to be necessary to have a .lai file created, which is necessary for installing libraries
-SYMLINK = $(am__append_39) $(am__append_40)
+LINK = $(am__append_46) $(am__append_47)
+SYMLINK = $(am__append_48) $(am__append_50)
+SYMLDADD = $(LDADD) $(am__append_49)
 
 ########################################################################
 #                               libSym                                 #
@@ -2910,86 +2935,86 @@ libSym_tm_lp_cg_la_LDFLAGS = $(LT_LDFLAGS)
 libSym_tm_lp_cg_cp_la_LDFLAGS = $(LT_LDFLAGS)
 libSym_tm_cp_la_LDFLAGS = $(LT_LDFLAGS)
 symphony_SOURCES = $(MAIN_SRC) symphony.h
-#symphony_DEPENDENCIES = $(SYMLDADD) libSym.la
+symphony_DEPENDENCIES = $(SYMLDADD) libSym.la
 symphony_CPPFLAGS = $(SYMCPPFLAGS)
-symphony_LDADD = libSym.la $(LDADD) $(ADDLIBS)
-symphony_DEPENDENCIES = libSym.la $(DEPENDENCIES)
+symphony_LDADD = libSym.la $(ALLLDADD)
+symphony_LDFLAGS = -rpath $(libdir)
 symphony_LINK = $(SYMLINK)
 symphony_m_SOURCES = $(MAIN_SRC) symphony.h
-#symphony_m_DEPENDENCIES = $(LDADD) libSym$(MASTEREXT).la
+symphony_m_DEPENDENCIES = $(LDADD) libSym$(MASTEREXT).la
 symphony_m_CPPFLAGS = $(PCPPFLAGS)
-symphony_m_LDADD = libSym$(MASTEREXT).la $(PLDADD)
-symphony_m_DEPENDENCIES = libSym$(MASTEREXT).la $(DEPENDENCIES)
+symphony_m_LDADD = libSym$(MASTEREXT).la $(PALLLDADD)
+symphony_m_LDFLAGS = -rpath $(libdir)
 symphony_m_tm_SOURCES = $(MAIN_SRC) symphony.h
-#symphony_m_tm_DEPENDENCIES = $(LDADD) libSym$(MASTEREXT).la
+symphony_m_tm_DEPENDENCIES = $(LDADD) libSym$(MASTEREXT).la
 symphony_m_tm_CPPFLAGS = $(PCPPFLAGS)
-symphony_m_tm_LDADD = libSym$(MASTEREXT).la $(PLDADD)
-symphony_m_tm_DEPENDENCIES = libSym$(MASTEREXT).la $(DEPENDENCIES)
+symphony_m_tm_LDADD = libSym$(MASTEREXT).la $(PALLLDADD)
+symphony_m_tm_LDFLAGS = -rpath $(libdir)
 symphony_m_tm_lp_SOURCES = $(MAIN_SRC) symphony.h
-#symphony_m_tm_lp_DEPENDENCIES = $(LDADD) libSym$(MASTEREXT).la
+symphony_m_tm_lp_DEPENDENCIES = $(LDADD) libSym$(MASTEREXT).la
 symphony_m_tm_lp_CPPFLAGS = $(PCPPFLAGS)
-symphony_m_tm_lp_LDADD = libSym$(MASTEREXT).la $(PLDADD)
-symphony_m_tm_lp_DEPENDENCIES = libSym$(MASTEREXT).la $(DEPENDENCIES)
+symphony_m_tm_lp_LDADD = libSym$(MASTEREXT).la $(PALLLDADD)
+symphony_m_tm_lp_LDFLAGS = -rpath $(libdir)
 symphony_m_tm_cp_SOURCES = $(MAIN_SRC) symphony.h
-#symphony_m_tm_cp_DEPENDENCIES = $(LDADD) libSym$(MASTEREXT).la
+symphony_m_tm_cp_DEPENDENCIES = $(LDADD) libSym$(MASTEREXT).la
 symphony_m_tm_cp_CPPFLAGS = $(PCPPFLAGS)
-symphony_m_tm_cp_LDADD = libSym$(MASTEREXT).la $(PLDADD)
-symphony_m_tm_cp_DEPENDENCIES = libSym$(MASTEREXT).la $(DEPENDENCIES)
+symphony_m_tm_cp_LDADD = libSym$(MASTEREXT).la $(PALLLDADD)
+symphony_m_tm_cp_LDFLAGS = -rpath $(libdir)
 symphony_m_tm_lp_cg_SOURCES = $(MAIN_SRC) symphony.h
-#symphony_m_tm_lp_cg_DEPENDENCIES = $(LDADD) libSym$(MASTEREXT).la
+symphony_m_tm_lp_cg_DEPENDENCIES = $(LDADD) libSym$(MASTEREXT).la
 symphony_m_tm_lp_cg_CPPFLAGS = $(PCPPFLAGS)
-symphony_m_tm_lp_cg_LDADD = libSym$(MASTEREXT).la $(PLDADD)
-symphony_m_tm_lp_cg_DEPENDENCIES = libSym$(MASTEREXT).la $(DEPENDENCIES)
+symphony_m_tm_lp_cg_LDADD = libSym$(MASTEREXT).la $(PALLLDADD)
+symphony_m_tm_lp_cg_LDFLAGS = -rpath $(libdir)
 symphony_m_tm_lp_cg_cp_SOURCES = $(MAIN_SRC) symphony.h
-#symphony_m_tm_lp_cg_cp_DEPENDENCIES = $(LDADD) libSym$(MASTEREXT).la
+symphony_m_tm_lp_cg_cp_DEPENDENCIES = $(LDADD) libSym$(MASTEREXT).la
 symphony_m_tm_lp_cg_cp_CPPFLAGS = $(PCPPFLAGS)
-symphony_m_tm_lp_cg_cp_LDADD = libSym$(MASTEREXT).la $(PLDADD)
-symphony_m_tm_lp_cg_cp_DEPENDENCIES = libSym$(MASTEREXT).la $(DEPENDENCIES)
+symphony_m_tm_lp_cg_cp_LDADD = libSym$(MASTEREXT).la $(PALLLDADD)
+symphony_m_tm_lp_cg_cp_LDFLAGS = -rpath $(libdir)
 symphony_tm_SOURCES = 
-#symphony_tm_DEPENDENCIES = $(LDADD) libSym_tm$(TMEXT).la
+symphony_tm_DEPENDENCIES = $(LDADD) libSym_tm$(TMEXT).la
 symphony_tm_CPPFLAGS = $(PCPPFLAGS)
-symphony_tm_LDADD = libSym_tm$(TMEXT).la $(PLDADD)
-symphony_tm_DEPENDENCIES = libSym_tm$(TMEXT).la $(DEPENDENCIES)
+symphony_tm_LDADD = libSym_tm$(TMEXT).la $(PALLLDADD)
+symphony_tm_LDFLAGS = -rpath $(libdir)
 symphony_tm_lp_SOURCES = 
-#symphony_tm_lp_DEPENDENCIES = $(LDADD) libSym_tm$(TMEXT).la
+symphony_tm_lp_DEPENDENCIES = $(LDADD) libSym_tm$(TMEXT).la
 symphony_tm_lp_CPPFLAGS = $(PCPPFLAGS)
-symphony_tm_lp_LDADD = libSym_tm$(TMEXT).la $(PLDADD)
-symphony_tm_lp_DEPENDENCIES = libSym_tm$(TMEXT).la $(DEPENDENCIES)
+symphony_tm_lp_LDADD = libSym_tm$(TMEXT).la $(PALLLDADD)
+symphony_tm_lp_LDFLAGS = -rpath $(libdir)
 symphony_tm_cp_SOURCES = 
-#symphony_tm_cp_DEPENDENCIES = $(LDADD) libSym_tm$(TMEXT).la
+symphony_tm_cp_DEPENDENCIES = $(LDADD) libSym_tm$(TMEXT).la
 symphony_tm_cp_CPPFLAGS = $(PCPPFLAGS)
-symphony_tm_cp_LDADD = libSym_tm$(TMEXT).la $(PLDADD)
-symphony_tm_cp_DEPENDENCIES = libSym_tm$(TMEXT).la $(DEPENDENCIES)
+symphony_tm_cp_LDADD = libSym_tm$(TMEXT).la $(PALLLDADD)
+symphony_tm_cp_LDFLAGS = -rpath $(libdir)
 symphony_tm_lp_cg_SOURCES = 
-#symphony_tm_lp_cg_DEPENDENCIES = $(LDADD) libSym_tm$(TMEXT).la
+symphony_tm_lp_cg_DEPENDENCIES = $(LDADD) libSym_tm$(TMEXT).la
 symphony_tm_lp_cg_CPPFLAGS = $(PCPPFLAGS)
-symphony_tm_lp_cg_LDADD = libSym_tm$(TMEXT).la $(PLDADD)
-symphony_tm_lp_cg_DEPENDENCIES = libSym_tm$(TMEXT).la $(DEPENDENCIES)
+symphony_tm_lp_cg_LDADD = libSym_tm$(TMEXT).la $(PALLLDADD)
+symphony_tm_lp_cg_LDFLAGS = -rpath $(libdir)
 symphony_tm_lp_cg_cp_SOURCES = 
-#symphony_tm_lp_cg_cp_DEPENDENCIES = $(LDADD) libSym_tm$(TMEXT).la
+symphony_tm_lp_cg_cp_DEPENDENCIES = $(LDADD) libSym_tm$(TMEXT).la
 symphony_tm_lp_cg_cp_CPPFLAGS = $(PCPPFLAGS)
-symphony_tm_lp_cg_cp_LDADD = libSym_tm$(TMEXT).la $(PLDADD)
-symphony_tm_lp_cg_cp_DEPENDENCIES = libSym_tm$(TMEXT).la $(DEPENDENCIES)
+symphony_tm_lp_cg_cp_LDADD = libSym_tm$(TMEXT).la $(PALLLDADD)
+symphony_tm_lp_cg_cp_LDFLAGS = -rpath $(libdir)
 symphony_cp_SOURCES = 
-#symphony_cp_DEPENDENCIES = $(LDADD) libSym_cp.la
+symphony_cp_DEPENDENCIES = $(LDADD) libSym_cp.la
 symphony_cp_CPPFLAGS = $(PCPPFLAGS)
-symphony_cp_LDADD = libSym_cp.la $(PLDADD)
-symphony_cp_DEPENDENCIES = libSym_cp.la $(DEPENDENCIES)
+symphony_cp_LDADD = libSym_cp.la $(PALLLDADD)
+symphony_cp_LDFLAGS = -rpath $(libdir)
 symphony_lp_SOURCES = 
-#symphony_lp_DEPENDENCIES = $(LDADD) 
+symphony_lp_DEPENDENCIES = $(LDADD) 
 symphony_lp_CPPFLAGS = $(PCPPFLAGS)
-symphony_lp_LDADD = libSym_lp$(LPEXT).la $(PLDADD)
-symphony_lp_DEPENDENCIES = libSym_lp$(LPEXT).la $(DEPENDENCIES)
+symphony_lp_LDADD = libSym_lp$(LPEXT).la $(PALLLDADD)
+symphony_lp_LDFLAGS = -rpath $(libdir)
 symphony_lp_cg_SOURCES = 
-#symphony_lp_cg_DEPENDENCIES = $(LDADD) libSym_lp$(LPEXT).la 
+symphony_lp_cg_DEPENDENCIES = $(LDADD) libSym_lp$(LPEXT).la 
 symphony_lp_cg__CPPFLAGS = $(PCPPFLAGS)
-symphony_lp_cg_LDADD = libSym_lp$(LPEXT).la $(PLDADD)
-symphony_lp_cg_DEPENDENCIES = libSym_lp$(LPEXT).la $(DEPENDENCIES)
+symphony_lp_cg_LDADD = libSym_lp$(LPEXT).la $(PALLLDADD)
+symphony_lp_cg_LDFLAGS = -rpath $(libdir)
 symphony_lp_cg_cp_SOURCES = 
-#symphony_lp_cg_cp_DEPENDENCIES = $(LDADD) libSym_lp$(LPEXT).la
+symphony_lp_cg_cp_DEPENDENCIES = $(LDADD) libSym_lp$(LPEXT).la
 symphony_lp_cg_cp__CPPFLAGS = $(PCPPFLAGS)
-symphony_lp_cg_cp_LDADD = libSym_lp$(LPEXT).la $(PLDADD)
-symphony_lp_cg_cp_DEPENDENCIES = libSym_lp$(LPEXT).la $(DEPENDENCIES)
+symphony_lp_cg_cp_LDADD = libSym_lp$(LPEXT).la $(PALLLDADD)
+symphony_lp_cg_cp_LDFLAGS = -rpath $(libdir)
 
 ########################################################################
 #                Application Library                                   #    
@@ -3057,9 +3082,22 @@ libSymAppl_tm_cp_la_CPPFLAGS = $(APPLPCPPFLAGS)
 ########################################################################
 
 # Here list all the header files that are required by a user of the library,
-# and that therefore should be installed in 'include/coin'
+# and that therefore should be installed in 'install/coin'
+# Although SYMPHONY is not using configuration defs file config.sym, we 
+# add it for now for COIN compatibility.  
 includecoindir = $(includedir)/coin
-includecoin_HEADERS = ../include/symphony.h
+includecoin_HEADERS = \
+	../include/config_sym.h \
+	../include/symphony.h
+
+#	$(SYMHEADERS)
+
+#############################################################################
+# Create the Config.h file that always defines HAVE_CONFIG_H and install it #
+#############################################################################
+
+# You only need to adapt the following line
+ConfigHeader = SymConfig.h
 all: all-recursive
 
 .SUFFIXES:
@@ -9603,17 +9641,17 @@ uninstall-info: uninstall-info-recursive
 
 rename_obj:
 	mv main.obj symphony-main.obj
-#	$(SYMHEADERS)
-
-#######################################################################
-# Create the Config.h file that has all public defines and install it #
-#######################################################################
 
 install-exec-local:
-	$(install_sh_DATA) ../include/config_sym.h $(DESTDIR)$(includecoindir)/SymConfig.h
+	echo "#ifndef HAVE_CONFIG_H" >bla
+	echo "#define HAVE_CONFIG_H" >>bla
+	echo "#endif" >> bla
+	cat $(top_srcdir)/include/$(ConfigHeader) >> bla
+	$(install_sh_DATA) bla $(DESTDIR)$(includecoindir)/$(ConfigHeader)
+	rm -f bla
 
 uninstall-local:
-	rm -f $(DESTDIR)$(includecoindir)/SymConfig.h
+	rm -f $(DESTDIR)$(includecoindir)/$(ConfigHeader)
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

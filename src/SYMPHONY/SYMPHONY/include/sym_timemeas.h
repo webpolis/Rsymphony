@@ -5,9 +5,9 @@
 /* SYMPHONY was jointly developed by Ted Ralphs (ted@lehigh.edu) and         */
 /* Laci Ladanyi (ladanyi@us.ibm.com).                                        */
 /*                                                                           */
-/* (c) Copyright 2000-2011 Ted Ralphs. All Rights Reserved.                  */
+/* (c) Copyright 2000-2010 Ted Ralphs. All Rights Reserved.                  */
 /*                                                                           */
-/* This software is licensed under the Eclipse Public License. Please see    */
+/* This software is licensed under the Common Public License. Please see     */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -96,7 +96,7 @@
 
 #define DBLTOTV(x, tv)						\
      tv.tv_sec = (int) floor(x);				\
-     tv.tv_usec = (int) floor(1000000 * (x - (double)tv.tv_sec));
+     tv.tv_usec = (int) floor(1000000 * (x - tv.tv_sec));
 #define DBLTOPTV(x, tvp)						\
      (tvp)->tv_sec = (int) floor(x);					\
      (tvp)->tv_usec = (int) floor(1000000 * (x - (tvp)->tv_sec));

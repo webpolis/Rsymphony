@@ -5,9 +5,9 @@
 /* SYMPHONY was jointly developed by Ted Ralphs (ted@lehigh.edu) and         */
 /* Laci Ladanyi (ladanyi@us.ibm.com).                                        */
 /*                                                                           */
-/* (c) Copyright 2000-2011 Ted Ralphs. All Rights Reserved.                  */
+/* (c) Copyright 2000-2010 Ted Ralphs. All Rights Reserved.                  */
 /*                                                                           */
-/* This software is licensed under the Eclipse Public License. Please see    */
+/* This software is licensed under the Common Public License. Please see     */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -50,8 +50,8 @@ void usage(void)
 	  "-d: enable graph drawing",
 	  "-g: use cut generator",
 	  "-r: do repricing in root",
+	  "-t: trim the tree",
 	  "-b: don't perform branch and cut",
-	  "-t time: set wallclock time limit to 'time'",
 	  "-u ub: use upper bound 'ub'",
 	  "-p procs: allow 'procs' active nodes",
 	  "-n i: use node selection rule 'i'",
@@ -78,6 +78,20 @@ void usage(void)
 	  "-L model: LP format model should be read in from file 'model'",
 	  "-D data: model is in AMPL format and data is in file 'data'");
 #endif   
+}
+
+/*===========================================================================*/
+
+void version(void)
+{
+   printf("\n");
+   printf("*******************************************************\n");
+   printf("*   This is SYMPHONY Version 5.2.2                    *\n");
+   printf("*   Copyright 2000-2010 Ted Ralphs and others         *\n");
+   printf("*   All Rights Reserved.                              *\n");
+   printf("*   Distributed under the Common Public License 1.0   *\n");
+   printf("*******************************************************\n");
+   printf("\n");
 }
 
 /*===========================================================================*/
@@ -374,7 +388,7 @@ int parse_command_line(sym_environment *env, int argc, char **argv)
       switch (c) {
        case '-':
 	 if (!strcmp(argv[i], "--version")){
-	    sym_version();
+	    version();
 	    exit(0);
 	 }
 	 if (!strcmp(argv[i], "--help")){
@@ -957,19 +971,19 @@ void print_statistics(node_times *tim, problem_stat *stat,
 
    if (obj_sense == SYM_MAXIMIZE){
      if (gap > -1e-07 && gap < 0){
-       printf("\nCurrent Lower Bound:         %.10f", -ub + obj_offset);
-       printf("\nCurrent Upper Bound:         %.10f", -lb + obj_offset);
-       printf("\nGap Percentage:              %.10f\n", -gap);
+       printf("\nCurrent Lower Bound:         %.3f", -ub + obj_offset);
+       printf("\nCurrent Upper Bound:         %.3f", -lb + obj_offset);
+       printf("\nGap Percentage:              %.2f\n", -gap);
      } else if (!has_ub) {
-       printf("\nCurrent Upper Bound:         %.10f\n", -lb + obj_offset);
+       printf("\nCurrent Upper Bound:         %.3f\n", -lb + obj_offset);
      }
    }else{
      if (gap > 1e-07){
-       printf("\nCurrent Upper Bound:         %.10f", ub + obj_offset);
-       printf("\nCurrent Lower Bound:         %.10f", lb + obj_offset);
-       printf("\nGap Percentage:              %.3f\n", gap);
+       printf("\nCurrent Upper Bound:         %.6f", ub + obj_offset);
+       printf("\nCurrent Lower Bound:         %.6f", lb + obj_offset);
+       printf("\nGap Percentage:              %.2f\n", gap);
      } else if (!has_ub){
-       printf("\nCurrent Lower Bound:         %.10f\n", lb + obj_offset);
+       printf("\nCurrent Lower Bound:         %.3f\n", lb + obj_offset);
      }
    }
 }

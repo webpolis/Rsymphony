@@ -1,17 +1,18 @@
-/* $Id: CoinSimpFactorization.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinSimpFactorization.cpp 1191 2009-07-25 08:38:12Z forrest $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
+#if defined(_MSC_VER)
+// Turn off compiler warning about long names
+#  pragma warning(disable:4786)
+#endif
 
 #include "CoinUtilsConfig.h"
 
 #include <cassert>
-#include "CoinPragma.hpp"
 #include "CoinSimpFactorization.hpp"
 #include "CoinIndexedVector.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedMatrix.hpp"
-#include "CoinFinite.hpp"
 #include <stdio.h>
 
 

@@ -1,7 +1,6 @@
-/* $Id: CoinFactorization3.cpp 1373 2011-01-03 23:57:44Z lou $ */
+/* $Id: CoinFactorization3.cpp 1237 2009-12-05 22:43:00Z bjarni $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
@@ -1209,7 +1208,8 @@ CoinFactorization::updateColumnUSparsish ( CoinIndexedVector * regionSparse,
   nU_SZ += numberU_;
 #endif
 
-  for (int ii=0;ii<numberNonZero;ii++) {
+  // Bjarni: renamed i to ii to avoid in MSVC compiler potential conflicts warnings with i defined in line 1230
+  for (int ii = 0; ii < numberNonZero; ii++) { 
     int iPivot=indexIn[ii];
     int iWord = iPivot>>CHECK_SHIFT;
     int iBit = iPivot-(iWord<<CHECK_SHIFT);

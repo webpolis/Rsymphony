@@ -1,8 +1,6 @@
-/* $Id: CoinIndexedVector.hpp 1464 2011-08-08 16:20:42Z forrest $ */
+/* $Id: CoinIndexedVector.hpp 1239 2009-12-10 16:16:11Z ladanyi $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #ifndef CoinIndexedVector_H
 #define CoinIndexedVector_H
 
@@ -12,7 +10,6 @@
 #endif
 
 #include <map>
-#include "CoinFinite.hpp"
 #ifndef CLP_NO_VECTOR
 #include "CoinPackedVectorBase.hpp"
 #endif
@@ -189,14 +186,6 @@ public:
 
    /// Insert an element into the vector
    void insert(int index, double element);
-   /// Insert a nonzero element into the vector
-   inline void quickInsert(int index, double element)
-               {
-		 assert (!elements_[index]);
-		 indices_[nElements_++] = index;
-		 assert (nElements_<=capacity_);
-		 elements_[index] = element;
-	       }
    /** Insert or if exists add an element into the vector
        Any resulting zero elements will be made tiny */
    void add(int index, double element);
@@ -207,32 +196,12 @@ public:
                {
 		 if (elements_[index]) {
 		   element += elements_[index];
-		   if ((element > 0 ? element : -element) >= COIN_INDEXED_TINY_ELEMENT) {
+		   if (fabs(element)>= COIN_INDEXED_TINY_ELEMENT) {
 		     elements_[index] = element;
 		   } else {
 		     elements_[index] = 1.0e-100;
 		   }
-		 } else if ((element > 0 ? element : -element) >= COIN_INDEXED_TINY_ELEMENT) {
-		   indices_[nElements_++] = index;
-		   assert (nElements_<=capacity_);
-		   elements_[index] = element;
-		 }
-	       }
-   /** Insert or if exists add an element into the vector
-       Any resulting zero elements will be made tiny.
-       This knows element is nonzero
-       This version does no checking */
-   inline void quickAddNonZero(int index, double element)
-               {
-		 assert (element);
-		 if (elements_[index]) {
-		   element += elements_[index];
-		   if (element) {
-		     elements_[index] = element;
-		   } else {
-		     elements_[index] = COIN_DBL_MIN;
-		   }
-		 } else {
+		 } else if (fabs(element)>= COIN_INDEXED_TINY_ELEMENT) {
 		   indices_[nElements_++] = index;
 		   assert (nElements_<=capacity_);
 		   elements_[index] = element;
@@ -243,7 +212,7 @@ public:
    inline void zero(int index)
                {
 		 if (elements_[index]) 
-		   elements_[index] = COIN_DBL_MIN;
+		   elements_[index] = 1.0e-100;
 	       }
    /** set all small values to zero and return number remaining
       - < tolerance => 0.0 */

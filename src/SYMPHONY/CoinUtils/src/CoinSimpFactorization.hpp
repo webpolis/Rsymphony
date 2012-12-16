@@ -1,10 +1,11 @@
-/* $Id: CoinSimpFactorization.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinSimpFactorization.hpp 1191 2009-07-25 08:38:12Z forrest $ */
 // Copyright (C) 2008, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 /* 
    This is a simple factorization of the LP Basis
+   
+
  */
 #ifndef CoinSimpFactorization_H
 #define CoinSimpFactorization_H
@@ -12,7 +13,7 @@
 #include <iostream>
 #include <string>
 #include <cassert>
-#include "CoinTypes.hpp"
+#include "CoinFinite.hpp"
 #include "CoinIndexedVector.hpp"
 #include "CoinDenseFactorization.hpp"
 class CoinPackedMatrix;

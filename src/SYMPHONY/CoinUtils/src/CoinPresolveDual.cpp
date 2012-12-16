@@ -1,8 +1,6 @@
-/* $Id: CoinPresolveDual.cpp 1373 2011-01-03 23:57:44Z lou $ */
+/* $Id: CoinPresolveDual.cpp 1215 2009-11-05 11:03:04Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #include <stdio.h>
 #include <math.h>
 
@@ -375,7 +373,6 @@ const CoinPresolveAction *remove_dual_action::presolve(CoinPresolveMatrix *prob,
 	    break;
 	  } else {
 	    fix_cols[--nfixdown_cols] = j;
-	    PRESOLVE_DETAIL_PRINT(printf("pre_duallo %dC E\n",j));
 #	    if PRESOLVE_DEBUG
 	    printf("NDUAL: fixing x<%d>",fix_cols[nfixdown_cols]) ;
 	    if (csol) printf(" = %g",csol[j]) ;
@@ -450,7 +447,6 @@ const CoinPresolveAction *remove_dual_action::presolve(CoinPresolveMatrix *prob,
 	    prob->status_ |= 2;
 	    break;
 	  } else {
-	    PRESOLVE_DETAIL_PRINT(printf("pre_dualup %dC E\n",j));
 	    fix_cols[nfixup_cols++] = j;
 #	    if PRESOLVE_DEBUG
 	    printf("NDUAL: fixing x<%d>",fix_cols[nfixup_cols-1]) ;

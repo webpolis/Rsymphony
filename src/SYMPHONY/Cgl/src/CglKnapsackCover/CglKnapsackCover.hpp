@@ -1,8 +1,5 @@
-// $Id: CglKnapsackCover.hpp 936 2011-01-04 23:21:32Z lou $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #ifndef CglKnapsackCover_H
 #define CglKnapsackCover_H
 

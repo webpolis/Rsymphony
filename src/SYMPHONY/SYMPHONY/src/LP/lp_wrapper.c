@@ -5,12 +5,12 @@
 /* SYMPHONY was jointly developed by Ted Ralphs (ted@lehigh.edu) and         */
 /* Laci Ladanyi (ladanyi@us.ibm.com).                                        */
 /*                                                                           */
-/* (c) Copyright 2000-2011 Ted Ralphs. All Rights Reserved.                  */
+/* (c) Copyright 2000-2010 Ted Ralphs. All Rights Reserved.                  */
 /*                                                                           */
 /* The OSI interface in this file was written by Menal Guzelsoy.             */
 /* The OSL interface was written by Ondrej Medek.                            */
 /*                                                                           */
-/* This software is licensed under the Eclipse Public License. Please see    */
+/* This software is licensed under the Common Public License. Please see     */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -1002,13 +1002,10 @@ int is_feasible_u(lp_prob *p, char branching, char is_last_iter)
 	 }
       }
 #ifdef COMPILE_IN_LP
-#pragma omp critical (new_ub)
-      {
-	 install_new_ub(p->tm, p->ub, p->proc_index, p->bc_index, branching,
-			feasible);
-	 if (p->bc_index>0) {
-	    tighten_root_bounds(p);
-	 }
+      install_new_ub(p->tm, p->ub, p->proc_index, p->bc_index, branching,
+		     feasible);
+      if (p->bc_index>0) {
+         tighten_root_bounds(p);
       }
       if (!p->par.multi_criteria){
 	 display_lp_solution_u(p, DISP_FEAS_SOLUTION);

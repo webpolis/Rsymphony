@@ -1,14 +1,11 @@
-/* $Id: CoinModel.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinModel.hpp 1215 2009-11-05 11:03:04Z forrest $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #ifndef CoinModel_H
 #define CoinModel_H
 
 #include "CoinModelUseful.hpp"
 #include "CoinPackedMatrix.hpp"
-#include "CoinFinite.hpp"
 class CoinBaseModel {
 
 public:

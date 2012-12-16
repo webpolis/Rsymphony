@@ -1,4 +1,4 @@
-// $Id: CglFlowCover.hpp 908 2010-12-30 21:54:29Z mjs $
+// $Id: CglFlowCover.hpp 741 2009-05-27 20:09:51Z rlh $
 //-----------------------------------------------------------------------------
 // name:     Cgl Lifted Simple Generalized Flow Cover Cut Generator
 // author:   Yan Xu                email: yan.xu@sas.com
@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 2003, Yan Xu, Jeff Linderoth, Martin Savelsberg and others. 
 // All Rights Reserved.
-// This code is published under the Eclipse Public License.
+// This code is published under the Common Public License.
 
 #ifndef CglFlowCover_H
 #define CglFlowCover_H
@@ -98,7 +98,7 @@ enum CglFlowRowType {
 
 //=============================================================================
 
-/** Variable upper bound class. */
+/** Varibale upper bound class. */
 class CglFlowVUB
 {
 protected:
@@ -134,7 +134,7 @@ public:
 
 //=============================================================================
 
-/** Variable lower bound class, which is the same as vub. */
+/** Varibale lower bound class, which is the same as vub. */
 typedef CglFlowVUB CglFlowVLB;
 
 /** Overloaded operator<< for printing VUB and VLB.*/
@@ -251,7 +251,7 @@ private:
 		   double *M,
 		   double *rho) const;
 
-    bool liftPlus(double &alpha, 
+    int liftPlus(double &alpha, 
 		 double &beta,
 		 int r,
 		 double m_j, 
@@ -360,7 +360,7 @@ private:
 };
 
 //#############################################################################
-/** A function that tests the methods in the CglFlowCover class. The
+/** A function that tests the methods in the CglProbing class. The
     only reason for it not to be a member method is that this way it doesn't
     have to be compiled into the library. And that's a gain, because the
     library should be compiled with optimization on, but this method should be

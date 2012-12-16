@@ -1,8 +1,5 @@
-// $Id: CglSimpleRounding.hpp 946 2011-01-04 23:27:12Z lou $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #ifndef CglSimpleRounding_H
 #define CglSimpleRounding_H
 

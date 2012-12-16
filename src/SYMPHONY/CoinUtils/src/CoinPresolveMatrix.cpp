@@ -1,7 +1,6 @@
-/* $Id: CoinPresolveMatrix.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinPresolveMatrix.cpp 1215 2009-11-05 11:03:04Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #include <stdio.h>
 
@@ -344,11 +343,9 @@ CoinPresolveMatrix::recomputeSums(int iRow)
 	    ++infiniteUpper;
 	}
       }
-#if 0
-      // Build in a margin of error (NO)
+      // Build in a margin of error
       maximumUp += 1.0e-8*fabs(maximumUp);
       maximumDown -= 1.0e-8*fabs(maximumDown);
-#endif
       infiniteUp_[iRow]=infiniteUpper;
       sumUp_[iRow]=maximumUp;
       infiniteDown_[iRow]=infiniteLower;
@@ -571,6 +568,3 @@ CoinPresolveMatrix::statistics()
   tuning_=true;
   startTime_ = CoinCpuTime();
 }
-#ifdef PRESOLVE_DEBUG
-#include "CoinPresolvePsdebug.cpp"
-#endif

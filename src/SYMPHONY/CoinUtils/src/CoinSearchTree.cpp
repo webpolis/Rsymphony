@@ -1,8 +1,4 @@
-/* $Id: CoinSearchTree.cpp 1373 2011-01-03 23:57:44Z lou $ */
-// Copyright (C) 2006, International Business Machines
-// Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
+/* $Id: CoinSearchTree.cpp 1191 2009-07-25 08:38:12Z forrest $ */
 #include <cstdio>
 #include "CoinSearchTree.hpp"
 

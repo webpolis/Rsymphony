@@ -1,8 +1,8 @@
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Eclipse Public License.
+# This file is distributed under the Common Public License.
 
-## $Id: Makefile.am 1041 2011-08-14 10:55:03Z stefan $
+## $Id: Makefile.am 598 2007-12-28 03:58:45Z andreasw $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -17,23 +17,33 @@ AUTOMAKE_OPTIONS = foreign
 noinst_LTLIBRARIES = libCglOddHole.la
 
 # List all source files for this library, including headers
-libCglOddHole_la_SOURCES = CglOddHole.cpp CglOddHole.hpp CglOddHoleTest.cpp
+libCglOddHole_la_SOURCES = \
+	CglOddHole.cpp  CglOddHole.hpp \
+	CglOddHoleTest.cpp
 
 # This is for libtool (on Windows)
 libCglOddHole_la_LDFLAGS = $(LT_LDFLAGS)
 
 # Here list all include flags, relative to this "srcdir" directory.  This
 # "cygpath" stuff is necessary to compile with native compilers on Windows.
-AM_CPPFLAGS = -I`$(CYGPATH_W) $(srcdir)/..` $(COINUTILS_CFLAGS) $(OSI_CFLAGS)
+# "top_srcdir" refers to the basic directory for the main package that is
+# being compiled.
+AM_CPPFLAGS = \
+	-I`$(CYGPATH_W) $(srcdir)/..` \
+	-I`$(CYGPATH_W) $(COINUTILSSRCDIR)/src` \
+	-I`$(CYGPATH_W) $(COINUTILSOBJDIR)/inc` \
+	-I`$(CYGPATH_W) $(OSISRCDIR)/src`
 
-# This line is necessary to allow VPATH compilation
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I..
+# This line is necessary to allow VPATH compilation with MS compilers
+# on Cygwin
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/inc
 
 ########################################################################
 #                Headers that need to be installed                     #
 ########################################################################
 
 # Here list all the header files that are required by a user of the library,
-# and that therefore should be installed in 'include/coin'
+# and that therefore should be installed in 'install/coin'
 includecoindir = $(includedir)/coin
-includecoin_HEADERS = CglOddHole.hpp
+includecoin_HEADERS = \
+	CglOddHole.hpp

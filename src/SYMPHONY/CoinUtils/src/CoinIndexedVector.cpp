@@ -1,8 +1,6 @@
-/* $Id: CoinIndexedVector.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinIndexedVector.cpp 1239 2009-12-10 16:16:11Z ladanyi $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -11,7 +9,7 @@
 #include <cassert>
 #include <cstdio>
 
-#include "CoinTypes.hpp"
+#include "CoinFinite.hpp"
 #include "CoinFloatEqual.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinIndexedVector.hpp"

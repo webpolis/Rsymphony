@@ -7,9 +7,9 @@
 #                                                                           #
 # The author of this file is Menal Guzelsoy                                 #
 #                                                                           #
-# (c) Copyright 2006-2011 Lehigh University. All Rights Reserved.           #
+# (c) Copyright 2006-2010 Lehigh University. All Rights Reserved.           #
 #                                                                           #
-# This software is licensed under the Eclipse Public License. Please see    #
+# This software is licensed under the Common Public License. Please see     #
 # accompanying file for terms.                                              #
 #                                                                           #
 #===========================================================================#
@@ -22,7 +22,7 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([SYMPHONY],[5.4.3],[symphony@list.coin-or.org])
+AC_INIT([SYMPHONY],[5.2.2],[coin-symphony@list.coin-or.org])
 
 AC_COPYRIGHT([
 /*===========================================================================*/
@@ -32,9 +32,9 @@ AC_COPYRIGHT([
 /* SYMPHONY was jointly developed by Ted Ralphs (ted@lehigh.edu) and         */
 /* Laci Ladanyi (ladanyi@us.ibm.com).                                        */
 /*                                                                           */
-/* (c) Copyright 2000-2011 Ted Ralphs. All Rights Reserved.                  */
+/* (c) Copyright 2000-2009 Ted Ralphs. All Rights Reserved.                  */
 /*                                                                           */
-/* This software is licensed under the Eclipse Public License. Please see    */
+/* This software is licensed under the Common Public License. Please see     */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -61,7 +61,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT(SYMPHONY,6:3:4)
+AC_COIN_PROJECTDIR_INIT
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(SYMPHONY)
@@ -70,7 +70,6 @@ AC_COIN_DEBUG_COMPILE(SYMPHONY)
 AC_COIN_PROG_CXX
 #AC_LIBTOOL_LANG_CXX_CONFIG
 AC_LANG_PUSH(C++)
-
 # Initialize automake and libtool
 AC_COIN_INIT_AUTO_TOOLS
 
@@ -85,37 +84,29 @@ AM_CONDITIONAL(COIN_HAS_READLINE,
 #############################################################################
 #                              COIN components                              #
 #############################################################################
-
-AC_COIN_CHECK_PACKAGE(CoinDepend, [coinutils osi], [SymphonyLib])
-if test $coin_has_coindepend != yes ; then
-  AC_MSG_ERROR([Required package CoinUtils or Osi not available.])
-fi
-
-AC_COIN_CHECK_PACKAGE(Clp,  [osi-clp],  [SymphonyLib])
-AC_COIN_CHECK_PACKAGE(DyLP, [osi-dylp], [SymphonyLib])
-AC_COIN_CHECK_PACKAGE(Vol,  [osi-vol],  [SymphonyLib])
-AC_COIN_CHECK_PACKAGE(Cgl,  [cgl],      [SymphonyLib])
-
-AC_COIN_CHECK_PACKAGE(OsiTests, [osi-unittests])
-AC_COIN_CHECK_PACKAGE(Sample,   [coindatasample])
-AC_COIN_CHECK_PACKAGE(Netlib,   [coindatanetlib])
-AC_COIN_CHECK_PACKAGE(Miplib3,  [coindatamiplib3])
-
+AC_COIN_HAS_PROJECT(SYMPHONY)
+AC_COIN_HAS_PROJECT(CoinUtils)
+AC_COIN_HAS_PROJECT(Data)
+AC_COIN_HAS_PROJECT(Clp)
+AC_COIN_HAS_PROJECT(Osi)
+AC_COIN_HAS_PROJECT(Cgl)
 #############################################################################
 #                            Third party solvers                            #
 #############################################################################
 
-# Check which third party solvers are available
-AC_COIN_CHECK_PACKAGE(Cpx,  [osi-cplex],  [SymphonyLib])
-AC_COIN_CHECK_PACKAGE(Glpk, [osi-glpk],   [SymphonyLib]) 
-#AC_COIN_CHECK_PACKAGE(Grb,  [osi-gurobi], [SymphonyLib])
-AC_COIN_CHECK_PACKAGE(Msk,  [osi-mosek],  [SymphonyLib])
-#AC_COIN_CHECK_PACKAGE(Spx,  [osi-soplex], [SymphonyLib])
-AC_COIN_CHECK_PACKAGE(Xpr,  [osi-xpress], [SymphonyLib])
+# Check which third party solvers are available ToDo!
+AC_COIN_HAS_USER_LIBRARY([Cplex],[CPX],[cplex.h],[CPXgetstat])
+AC_COIN_HAS_GLPK(Glpk)
+AC_COIN_HAS_USER_LIBRARY([Osl],[OSL],[ekk_c_api.h],[ekk_simplex])
+AC_COIN_HAS_USER_LIBRARY([Soplex],[SPX],[spxsolver.h]) # ToDo
+AC_COIN_HAS_USER_LIBRARY([Xpress],[XPR],[xprs.h],[XPRSsetintcontrol])
 
 #############################################################################
 #                      Check for the LP solver                              #
 #############################################################################
+
+AM_CONDITIONAL(COIN_HAS_CLP,
+               false)
 
 AC_MSG_CHECKING([for SYMPHONY default solver])
 AC_ARG_WITH([lp-solver],
@@ -128,40 +119,41 @@ found_package=true
 case $sym_lp_solver in 
    clp)
     AC_MSG_RESULT(Clp) 
-     if [test $coin_has_clp = unavailable || test $coin_has_clp = skipping]; \
-     then
+#    AC_COIN_HAS_PROJECT(Clp)
+     if [test $coin_has_clp = unavailable ||
+                test $coin_has_clp = skipping]; then
          found_package=false
-     fi
+      fi
    ;;
    glpk)
      AC_MSG_RESULT(Glpk)
      if test $coin_has_glpk = false; then 
          found_package=false
-     fi
+      fi
    ;; 
    cplex)
      AC_MSG_RESULT(Cplex)
      if test $coin_has_cpx = false; then 
          found_package=false
-     fi
+      fi
    ;; 
    osl)
          AC_MSG_RESULT(Osl)
      if test $coin_has_osl = false; then 
          found_package=false
-     fi
+      fi
    ;; 
    soplex)
          AC_MSG_RESULT(Soplex)
      if test $coin_has_spx = false; then 
          found_package=false
-     fi
+      fi
    ;; 
    xpress)
          AC_MSG_RESULT(Xpress)
      if test $coin_has_xpr = false; then 
          found_package=false
-     fi
+      fi
    ;; 
   *)
     AC_MSG_ERROR(Unknown LP solver!)
@@ -174,7 +166,7 @@ fi
 
 AM_CONDITIONAL(CLP_LP_SOLVER,[test $sym_lp_solver = clp &&
 test $coin_has_clp != unavailable &&
-test $coin_has_clp != skipping])
+                test $coin_has_clp != skipping])
 AM_CONDITIONAL(GLPK_LP_SOLVER,[test $sym_lp_solver = glpk &&
 test $coin_has_glpk = true])
 AM_CONDITIONAL(OSL_LP_SOLVER,[test $sym_lp_solver = osl &&
@@ -596,43 +588,29 @@ dnl AM_CONDITIONAL(SYM_WITH_VRP, [test $sym_appl = vrp])
 #############################################################################
 #                       Parallel configuration                              #
 #############################################################################
-
-AC_COIN_CHECK_USER_LIBRARY([Pvm], [PVM], [pvm3.h], [pvm_gettid])
+AC_MSG_CHECKING([whether to compile in the parallel configuration])
 AC_ARG_WITH([pvm],
 [AC_HELP_STRING([--with-pvm],
-                [compile in distributed parallel mode (assuming that 
+                [compile in parallel architecture (assuming that 
 		pvm is installed and the variable PVM_ROOT is 
 		defined.)])],
-		[find_pvm=$withval],[find_pvm=no])
+		[sym_parallel=$withval],[sym_parallel=no])
 
-if test x"$find_pvm" = xyes; then 
-    if test x"$coin_has_pvm" != xyes; then 
-        m4_ifvaln([pvm3.h],
-                  [AC_CHECK_FILE([$PVM_ROOT/include/pvm3.h],
-                  [pvm_header=yes])],
-                  [])
-	m4_ifvaln([pvm_gettid],
-                  [LIBS="-L$PVM_ROOT/lib -lgpvm3 -lpvm3"
-                   pvm_link=no
-                   AC_LANG_PUSH(C)
-                   AC_MSG_CHECKING([whether symbol pvm_gettid is available with PVM])
-                   AC_LINK_IFELSE([AC_LANG_PROGRAM([[]],[[pvm_gettid()]])],
-                                  [AC_MSG_RESULT(yes)
-                                   pvm_link=yes
-                                   break],
-                                  [AC_MSG_RESULT(no)])
-                   AC_LANG_POP(C)])
+pvm_path=no
+
+if test $sym_parallel = no; then 
+    AC_MSG_RESULT(no)
+else
+    AC_MSG_RESULT(yes)
+        AC_COIN_CHECK_HEADER([pvm3.h],[pvm_path=yes])                       
+    if test $pvm_path = no; then 
+        m4_ifvaln([pvm3.h],[AC_CHECK_FILE([$PVM_ROOT/include/pvm3.h],
+                 [pvm_path=yes])],[])
     fi
 
-    if test x"$pvm_header" != xyes; then
+    if test $pvm_path = no; then
        AC_MSG_ERROR([Cannot find the pvm header files either in system path or 
 in PVM_ROOT path:$PVM_ROOT])
-    fi
-    if test x"$pvm_link" != xyes ; then
-       AC_MSG_ERROR([Cannot find PVM library in system paths or in PVM_ROOT path:$PVM_ROOT])
-    fi
-    if test $pvm_link == yes && test $pvm_header == yes; then
-       coin_has_pvm=yes
     fi
 fi
 
@@ -672,12 +650,12 @@ sym_enable_parallel=false;
 if [test $in_cg = no || test $in_cp = no ||  
    test $in_lp = no || test $in_tm = no]; then
 #   sym_def_pconfig=false;
-   if test $coin_has_pvm = no; then 
-      AC_MSG_ERROR(Need PVM to enable distributed parallel execution!)
+   if test $sym_parallel=no; then 
+      AC_MSG_ERROR(First enable parallel configuration: --with-pvm!)
    fi
    sym_enable_parallel=true;
 else 
-   if test $coin_has_pvm = yes; then 
+   if test $sym_parallel = yes; then 
        in_lp=no
        AM_CONDITIONAL(SYM_COMPILE_IN_LP, false)
        sym_enable_parallel=true;
@@ -882,10 +860,8 @@ AM_CONDITIONAL(USE_CL, [test $sym_use_cl = true])
 # configuration header file)
 AC_CONFIG_FILES([Makefile
                  src/Makefile
-		 src/OsiSym/Makefile
                  test/Makefile
 		 Examples/Makefile
-		 Applications/Makefile.Applications
                  Applications/CNRP/Makefile
 		 Applications/MATCH/Makefile
 		 Applications/MCKP/Makefile
@@ -894,14 +870,23 @@ AC_CONFIG_FILES([Makefile
 		 Applications/SPP+CUTS/Makefile
 		 Applications/USER/Makefile
 		 Applications/VRP/Makefile
-		 symphony.pc
-		 symphony-app.pc
-		 symphony-uninstalled.pc
-		 osi-sym.pc:src/OsiSym/osi-sym.pc.in
-		 osi-sym-uninstalled.pc:src/OsiSym/osi-sym-uninstalled.pc.in])
+                 sym_addlibs.txt])
+
+if test `cd $srcdir; pwd` != `pwd`; then 
+AC_CONFIG_FILES([
+   	$srcdir/Applications/CNRP/Makefile:Applications/CNRP/Makefile
+	$srcdir/Applications/MATCH/Makefile:Applications/MATCH/Makefile
+	$srcdir/Applications/MCKP/Makefile:Applications/MCKP/Makefile
+	$srcdir/Applications/MPP/Makefile:Applications/MPP/Makefile
+	$srcdir/Applications/SPP/Makefile:Applications/SPP/Makefile
+	$srcdir/Applications/SPP+CUTS/Makefile:Applications/SPP+CUTS/Makefile
+	$srcdir/Applications/USER/Makefile:Applications/USER/Makefile
+	$srcdir/Applications/VRP/Makefile:Applications/VRP/Makefile
+	$srcdir/Examples/Makefile:Examples/Makefile])
+fi
 
 # Here put the location and name of the configuration header file
-AC_CONFIG_HEADER([include/config.h include/config_sym.h])
+AC_CONFIG_HEADER([include/config_sym.h])
 
 # Finally, we let configure write all the output...
 AC_COIN_FINALIZE

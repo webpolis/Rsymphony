@@ -1,26 +1,18 @@
-/* $Id: CoinSort.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinSort.hpp 1239 2009-12-10 16:16:11Z ladanyi $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #ifndef CoinSort_H
 #define CoinSort_H
 
 #include <functional>
 #include <new>
-#include <algorithm>
 #include "CoinDistance.hpp"
+#include "CoinFinite.hpp"
 
 // Uncomment the next three lines to get thorough initialisation of memory.
 // #ifndef ZEROFAULT
 // #define ZEROFAULT
 // #endif
-
-#ifdef COIN_FAST_CODE
-#ifndef COIN_USE_EKK_SORT
-#define COIN_USE_EKK_SORT
-#endif
-#endif
 
 //#############################################################################
 

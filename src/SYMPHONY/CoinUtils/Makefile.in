@@ -16,20 +16,19 @@
 
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Eclipse Public License.
+# This file is distributed under the Common Public License.
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
 # Copyright (C) 2006, 2007 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Eclipse Public License.
+# This file is distributed under the Common Public License.
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
 ########################################################################
 #                    Documentation installation                        #
 ########################################################################
-
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
@@ -58,13 +57,14 @@ host_triplet = @host@
 # included in the tarball
 @ALWAYS_FALSE@am__append_1 = test
 DIST_COMMON = README $(am__configure_deps) \
-	$(srcdir)/BuildTools/Makemain.inc $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/coinutils-uninstalled.pc.in \
-	$(srcdir)/coinutils.pc.in $(top_srcdir)/configure \
-	$(top_srcdir)/doxydoc/doxygen.conf.in AUTHORS INSTALL \
-	config.guess config.sub depcomp install-sh ltmain.sh missing
-@HAVE_EXTERNALS_TRUE@am__append_2 = Dependencies
-@HAVE_EXTERNALS_TRUE@am__append_3 = .Dependencies-stamp
+	$(srcdir)/../BuildTools/Makemain.inc $(srcdir)/../config.guess \
+	$(srcdir)/../config.sub $(srcdir)/../install-sh \
+	$(srcdir)/../ltmain.sh $(srcdir)/../missing \
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/coinutils_addlibs.txt.in $(top_srcdir)/configure \
+	$(top_srcdir)/inc/config_coinutils.h.in AUTHORS INSTALL
+@HAVE_EXTERNALS_TRUE@am__append_2 = Externals
+@HAVE_EXTERNALS_TRUE@am__append_3 = .Externals-stamp
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
@@ -74,10 +74,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/src/config.h \
-	$(top_builddir)/src/config_coinutils.h
-CONFIG_CLEAN_FILES = coinutils.pc coinutils-uninstalled.pc \
-	doxydoc/doxygen.conf
+CONFIG_HEADER = $(top_builddir)/inc/config_coinutils.h
+CONFIG_CLEAN_FILES = coinutils_addlibs.txt
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -86,15 +84,6 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-recursive installcheck-recursive installdirs-recursive \
 	pdf-recursive ps-recursive uninstall-info-recursive \
 	uninstall-recursive
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(pkgconfiglibdir)"
-pkgconfiglibDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(pkgconfiglib_DATA)
 ETAGS = etags
 CTAGS = ctags
 DIST_SUBDIRS = src test
@@ -109,8 +98,8 @@ DIST_ARCHIVES = $(distdir).tar.gz
 GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
-ABSBUILDDIR = @ABSBUILDDIR@
 ACLOCAL = @ACLOCAL@
+ADDLIBS = @ADDLIBS@
 ADD_CFLAGS = @ADD_CFLAGS@
 ADD_CXXFLAGS = @ADD_CXXFLAGS@
 ADD_FFLAGS = @ADD_FFLAGS@
@@ -120,51 +109,40 @@ AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
 AR = @AR@
+ASLLIB = @ASLLIB@
+ASL_CPPFLAGS = @ASL_CPPFLAGS@
 AUTOCONF = @AUTOCONF@
 AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AUX_DIR = @AUX_DIR@
 AWK = @AWK@
-BLAS_CFLAGS = @BLAS_CFLAGS@
-BLAS_CFLAGS_INSTALLED = @BLAS_CFLAGS_INSTALLED@
-BLAS_DATA = @BLAS_DATA@
-BLAS_DATA_INSTALLED = @BLAS_DATA_INSTALLED@
-BLAS_DEPENDENCIES = @BLAS_DEPENDENCIES@
-BLAS_LIBS = @BLAS_LIBS@
-BLAS_LIBS_INSTALLED = @BLAS_LIBS_INSTALLED@
 BUILDTOOLSDIR = @BUILDTOOLSDIR@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CDEFS = @CDEFS@
 CFLAGS = @CFLAGS@
-COINUTILSLIB_CFLAGS = @COINUTILSLIB_CFLAGS@
-COINUTILSLIB_CFLAGS_INSTALLED = @COINUTILSLIB_CFLAGS_INSTALLED@
-COINUTILSLIB_DEPENDENCIES = @COINUTILSLIB_DEPENDENCIES@
-COINUTILSLIB_LIBS = @COINUTILSLIB_LIBS@
-COINUTILSLIB_LIBS_INSTALLED = @COINUTILSLIB_LIBS_INSTALLED@
-COINUTILSLIB_PCLIBS = @COINUTILSLIB_PCLIBS@
-COINUTILSLIB_PCREQUIRES = @COINUTILSLIB_PCREQUIRES@
-COINUTILS_SVN_REV = @COINUTILS_SVN_REV@
-COIN_CC_IS_CL_FALSE = @COIN_CC_IS_CL_FALSE@
-COIN_CC_IS_CL_TRUE = @COIN_CC_IS_CL_TRUE@
-COIN_CXX_IS_CL_FALSE = @COIN_CXX_IS_CL_FALSE@
-COIN_CXX_IS_CL_TRUE = @COIN_CXX_IS_CL_TRUE@
+COINUTILSDOCDIR = @COINUTILSDOCDIR@
+COINUTILSOBJDIR = @COINUTILSOBJDIR@
+COINUTILSSRCDIR = @COINUTILSSRCDIR@
+COINUTILS_LIBADD = @COINUTILS_LIBADD@
+COIN_BUILD_BLAS_FALSE = @COIN_BUILD_BLAS_FALSE@
+COIN_BUILD_BLAS_TRUE = @COIN_BUILD_BLAS_TRUE@
+COIN_BUILD_GLPK_FALSE = @COIN_BUILD_GLPK_FALSE@
+COIN_BUILD_GLPK_TRUE = @COIN_BUILD_GLPK_TRUE@
+COIN_BUILD_LAPACK_FALSE = @COIN_BUILD_LAPACK_FALSE@
+COIN_BUILD_LAPACK_TRUE = @COIN_BUILD_LAPACK_TRUE@
+COIN_HAS_ASL_FALSE = @COIN_HAS_ASL_FALSE@
+COIN_HAS_ASL_TRUE = @COIN_HAS_ASL_TRUE@
 COIN_HAS_BLAS_FALSE = @COIN_HAS_BLAS_FALSE@
 COIN_HAS_BLAS_TRUE = @COIN_HAS_BLAS_TRUE@
-COIN_HAS_GLPK_FALSE = @COIN_HAS_GLPK_FALSE@
-COIN_HAS_GLPK_TRUE = @COIN_HAS_GLPK_TRUE@
+COIN_HAS_COINUTILS_FALSE = @COIN_HAS_COINUTILS_FALSE@
+COIN_HAS_COINUTILS_TRUE = @COIN_HAS_COINUTILS_TRUE@
+COIN_HAS_GMPL_FALSE = @COIN_HAS_GMPL_FALSE@
+COIN_HAS_GMPL_TRUE = @COIN_HAS_GMPL_TRUE@
 COIN_HAS_LAPACK_FALSE = @COIN_HAS_LAPACK_FALSE@
 COIN_HAS_LAPACK_TRUE = @COIN_HAS_LAPACK_TRUE@
-COIN_HAS_NETLIB_FALSE = @COIN_HAS_NETLIB_FALSE@
-COIN_HAS_NETLIB_TRUE = @COIN_HAS_NETLIB_TRUE@
-COIN_HAS_PKGCONFIG_FALSE = @COIN_HAS_PKGCONFIG_FALSE@
-COIN_HAS_PKGCONFIG_TRUE = @COIN_HAS_PKGCONFIG_TRUE@
-COIN_HAS_SAMPLE_FALSE = @COIN_HAS_SAMPLE_FALSE@
-COIN_HAS_SAMPLE_TRUE = @COIN_HAS_SAMPLE_TRUE@
 COIN_HAS_ZLIB_FALSE = @COIN_HAS_ZLIB_FALSE@
 COIN_HAS_ZLIB_TRUE = @COIN_HAS_ZLIB_TRUE@
-COIN_PKG_CONFIG_PATH = @COIN_PKG_CONFIG_PATH@
-COIN_PKG_CONFIG_PATH_UNINSTALLED = @COIN_PKG_CONFIG_PATH_UNINSTALLED@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -185,28 +163,18 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
+FADDLIBS = @FADDLIBS@
 FFLAGS = @FFLAGS@
 FLIBS = @FLIBS@
-GLPK_CFLAGS = @GLPK_CFLAGS@
-GLPK_CFLAGS_INSTALLED = @GLPK_CFLAGS_INSTALLED@
-GLPK_DATA = @GLPK_DATA@
-GLPK_DATA_INSTALLED = @GLPK_DATA_INSTALLED@
-GLPK_DEPENDENCIES = @GLPK_DEPENDENCIES@
-GLPK_LIBS = @GLPK_LIBS@
-GLPK_LIBS_INSTALLED = @GLPK_LIBS_INSTALLED@
+GMPLINCDIR = @GMPLINCDIR@
+GMPLLIB = @GMPLLIB@
+GMPLOBJDIR = @GMPLOBJDIR@
 HAVE_EXTERNALS_FALSE = @HAVE_EXTERNALS_FALSE@
 HAVE_EXTERNALS_TRUE = @HAVE_EXTERNALS_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-LAPACK_CFLAGS = @LAPACK_CFLAGS@
-LAPACK_CFLAGS_INSTALLED = @LAPACK_CFLAGS_INSTALLED@
-LAPACK_DATA = @LAPACK_DATA@
-LAPACK_DATA_INSTALLED = @LAPACK_DATA_INSTALLED@
-LAPACK_DEPENDENCIES = @LAPACK_DEPENDENCIES@
-LAPACK_LIBS = @LAPACK_LIBS@
-LAPACK_LIBS_INSTALLED = @LAPACK_LIBS_INSTALLED@
 LDFLAGS = @LDFLAGS@
 LIBEXT = @LIBEXT@
 LIBOBJS = @LIBOBJS@
@@ -223,13 +191,6 @@ MAKEINFO = @MAKEINFO@
 MPICC = @MPICC@
 MPICXX = @MPICXX@
 MPIF77 = @MPIF77@
-NETLIB_CFLAGS = @NETLIB_CFLAGS@
-NETLIB_CFLAGS_INSTALLED = @NETLIB_CFLAGS_INSTALLED@
-NETLIB_DATA = @NETLIB_DATA@
-NETLIB_DATA_INSTALLED = @NETLIB_DATA_INSTALLED@
-NETLIB_DEPENDENCIES = @NETLIB_DEPENDENCIES@
-NETLIB_LIBS = @NETLIB_LIBS@
-NETLIB_LIBS_INSTALLED = @NETLIB_LIBS_INSTALLED@
 OBJEXT = @OBJEXT@
 OPT_CFLAGS = @OPT_CFLAGS@
 OPT_CXXFLAGS = @OPT_CXXFLAGS@
@@ -241,16 +202,8 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 RANLIB = @RANLIB@
 RPATH_FLAGS = @RPATH_FLAGS@
-SAMPLE_CFLAGS = @SAMPLE_CFLAGS@
-SAMPLE_CFLAGS_INSTALLED = @SAMPLE_CFLAGS_INSTALLED@
-SAMPLE_DATA = @SAMPLE_DATA@
-SAMPLE_DATA_INSTALLED = @SAMPLE_DATA_INSTALLED@
-SAMPLE_DEPENDENCIES = @SAMPLE_DEPENDENCIES@
-SAMPLE_LIBS = @SAMPLE_LIBS@
-SAMPLE_LIBS_INSTALLED = @SAMPLE_LIBS_INSTALLED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -268,7 +221,6 @@ ac_ct_F77 = @ac_ct_F77@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
 ac_cxx_preproc_warn_flag = @ac_cxx_preproc_warn_flag@
-ac_pt_PKG_CONFIG = @ac_pt_PKG_CONFIG@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -284,18 +236,11 @@ build_alias = @build_alias@
 build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
-coin_doxy_excludes = @coin_doxy_excludes@
-coin_doxy_logname = @coin_doxy_logname@
-coin_doxy_tagfiles = @coin_doxy_tagfiles@
-coin_doxy_tagname = @coin_doxy_tagname@
-coin_doxy_usedot = @coin_doxy_usedot@
-coin_have_doxygen = @coin_have_doxygen@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
 have_autoconf = @have_autoconf@
 have_automake = @have_automake@
 have_svn = @have_svn@
-have_svnversion = @have_svnversion@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -332,27 +277,25 @@ SUBDIRS = src $(am__append_1)
 EXTRA_DIST = $(am__append_2)
 
 ########################################################################
-#                  Installation of the addlibs and .pc file            #
+#                  Installation of the addlibs file                    #
 ########################################################################
-pkgconfiglibdir = $(libdir)/pkgconfig
-pkgconfiglib_DATA = coinutils.pc
-addlibsdir = $(DESTDIR)$(datadir)/coin/doc/CoinUtils
+addlibsfile = coinutils_addlibs.txt
+addlibsdir = $(prefix)/share/doc/coin/$(PACKAGE_NAME)/
 
 ########################################################################
 #                         Maintainer Stuff                             #
 ########################################################################
-CLEANFILES = 
 
 # Files that are generated and should be cleaned with make distclean
 DISTCLEANFILES = $(am__append_3) $(VPATH_DISTCLEANFILES)
 DocFiles = README AUTHORS LICENSE
-DocInstallDir = $(datadir)/coin/doc/$(PACKAGE_NAME)
+DocInstallDir = $(prefix)/share/doc/coin/$(PACKAGE_NAME)
 all: all-recursive
 
 .SUFFIXES:
 am--refresh:
 	@:
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(srcdir)/BuildTools/Makemain.inc $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(srcdir)/../BuildTools/Makemain.inc $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -383,11 +326,24 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(srcdir) && $(AUTOCONF)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
-coinutils.pc: $(top_builddir)/config.status $(srcdir)/coinutils.pc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-coinutils-uninstalled.pc: $(top_builddir)/config.status $(srcdir)/coinutils-uninstalled.pc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-doxydoc/doxygen.conf: $(top_builddir)/config.status $(top_srcdir)/doxydoc/doxygen.conf.in
+
+inc/config_coinutils.h: inc/stamp-h1
+	@if test ! -f $@; then \
+	  rm -f inc/stamp-h1; \
+	  $(MAKE) inc/stamp-h1; \
+	else :; fi
+
+inc/stamp-h1: $(top_srcdir)/inc/config_coinutils.h.in $(top_builddir)/config.status
+	@rm -f inc/stamp-h1
+	cd $(top_builddir) && $(SHELL) ./config.status inc/config_coinutils.h
+$(top_srcdir)/inc/config_coinutils.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps) 
+	cd $(top_srcdir) && $(AUTOHEADER)
+	rm -f inc/stamp-h1
+	touch $@
+
+distclean-hdr:
+	-rm -f inc/config_coinutils.h inc/stamp-h1
+coinutils_addlibs.txt: $(top_builddir)/config.status $(srcdir)/coinutils_addlibs.txt.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
@@ -399,23 +355,6 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
-install-pkgconfiglibDATA: $(pkgconfiglib_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(pkgconfiglibdir)" || $(mkdir_p) "$(DESTDIR)$(pkgconfiglibdir)"
-	@list='$(pkgconfiglib_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(pkgconfiglibDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(pkgconfiglibdir)/$$f'"; \
-	  $(pkgconfiglibDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(pkgconfiglibdir)/$$f"; \
-	done
-
-uninstall-pkgconfiglibDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(pkgconfiglib_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(pkgconfiglibdir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(pkgconfiglibdir)/$$f"; \
-	done
 
 # This directory's subdirectories are mostly independent; you can cd
 # into them and run `make' without going through this Makefile.
@@ -552,7 +491,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/. $(distdir)/BuildTools $(distdir)/doxydoc
+	$(mkdir_p) $(distdir)/. $(distdir)/.. $(distdir)/../BuildTools $(distdir)/inc
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -693,12 +632,9 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(DATA)
+all-am: Makefile
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(pkgconfiglibdir)"; do \
-	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
-	done
 install: install-recursive
 install-exec: install-exec-recursive
 install-data: install-data-recursive
@@ -716,7 +652,6 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -732,8 +667,8 @@ clean-am: clean-generic clean-libtool clean-local mostlyclean-am
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -f Makefile
-distclean-am: clean-am distclean-generic distclean-libtool \
-	distclean-local distclean-tags
+distclean-am: clean-am distclean-generic distclean-hdr \
+	distclean-libtool distclean-local distclean-tags
 
 dvi: dvi-recursive
 
@@ -745,9 +680,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-pkgconfiglibDATA
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
+install-data-am:
 
 install-exec-am: install-exec-local
 
@@ -775,10 +708,7 @@ ps: ps-recursive
 
 ps-am:
 
-uninstall-am: uninstall-info-am uninstall-local \
-	uninstall-pkgconfiglibDATA
-	@$(NORMAL_INSTALL)
-	$(MAKE) $(AM_MAKEFLAGS) uninstall-hook
+uninstall-am: uninstall-info-am uninstall-local
 
 uninstall-info: uninstall-info-recursive
 
@@ -786,19 +716,18 @@ uninstall-info: uninstall-info-recursive
 	check-am clean clean-generic clean-libtool clean-local \
 	clean-recursive ctags ctags-recursive dist dist-all dist-bzip2 \
 	dist-gzip dist-shar dist-tarZ dist-zip distcheck distclean \
-	distclean-generic distclean-libtool distclean-local \
-	distclean-recursive distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am \
-	install-data-hook install-exec install-exec-am \
+	distclean-generic distclean-hdr distclean-libtool \
+	distclean-local distclean-recursive distclean-tags \
+	distcleancheck distdir distuninstallcheck dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-exec install-exec-am \
 	install-exec-local install-info install-info-am install-man \
-	install-pkgconfiglibDATA install-strip installcheck \
-	installcheck-am installdirs installdirs-am maintainer-clean \
-	maintainer-clean-generic maintainer-clean-recursive \
-	mostlyclean mostlyclean-generic mostlyclean-libtool \
-	mostlyclean-recursive pdf pdf-am ps ps-am tags tags-recursive \
-	uninstall uninstall-am uninstall-hook uninstall-info-am \
-	uninstall-local uninstall-pkgconfiglibDATA
+	install-strip installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
+	maintainer-clean-recursive mostlyclean mostlyclean-generic \
+	mostlyclean-libtool mostlyclean-recursive pdf pdf-am ps ps-am \
+	tags tags-recursive uninstall uninstall-am uninstall-info-am \
+	uninstall-local
 
 
 ########################################################################
@@ -810,35 +739,19 @@ test: all
 
 unitTest: test
 
-# Doxygen documentation
-
-doxydoc:
-	doxygen doxydoc/doxygen.conf
-
-clean-doxydoc:
-	( cd doxydoc ; rm -rf html *.log *.tag )
-
-clean-local: clean-doxydoc
+clean-local:
 	if test -r test/Makefile; then cd test; $(MAKE) clean; fi
 
 distclean-local:
 	if test -r test/Makefile; then cd test; $(MAKE) distclean; fi
 
+.PHONY: test unitTest
+
 install-exec-local: install-doc
+	$(install_sh_DATA) $(addlibsfile) $(DESTDIR)$(addlibsdir)/$(addlibsfile)
 
 uninstall-local: uninstall-doc
-
-.PHONY: test unitTest doxydoc
-
-install-data-hook:
-	@$(mkdir_p) "$(addlibsdir)"
-@COIN_HAS_PKGCONFIG_TRUE@	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ \
-@COIN_HAS_PKGCONFIG_TRUE@	$(PKG_CONFIG) --libs coinutils > $(addlibsdir)/coinutils_addlibs.txt
-@COIN_CXX_IS_CL_TRUE@@COIN_HAS_PKGCONFIG_FALSE@	echo "-libpath:`$(CYGPATH_W) @abs_lib_dir@` libCoinUtils.lib @COINUTILSLIB_LIBS_INSTALLED@" > $(addlibsdir)/coinutils_addlibs.txt
-@COIN_CXX_IS_CL_FALSE@@COIN_HAS_PKGCONFIG_FALSE@	echo -L@abs_lib_dir@ -lCoinUtils @COINUTILSLIB_LIBS_INSTALLED@ > $(addlibsdir)/coinutils_addlibs.txt
-
-uninstall-hook:
-	rm -f $(addlibsdir)/coinutils_addlibs.txt
+	rm -f $(DESTDIR)$(addlibsdir)/$(addlibsfile)
 
 install-doc: $(DocFiles)
 	test -z "$(DocInstallDir)" || $(mkdir_p) "$(DESTDIR)$(DocInstallDir)"
@@ -879,14 +792,14 @@ uninstall-doc:
 @MAINTAINER_MODE_TRUE@$(AUX_DIR)/ltmain.sh: $(BUILDTOOLSDIR)/ltmain.sh
 @MAINTAINER_MODE_TRUE@	cp $< $@
 
-# Take care of updating externals (if Dependencies file exists)
-@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@$(top_builddir)/Makefile: .Dependencies-stamp
+# Take care of updating externals (if Externals file exists)
+@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@$(top_builddir)/Makefile: .Externals-stamp
 
-@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@.Dependencies-stamp: $(srcdir)/Dependencies
-@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@	cd $(srcdir); BuildTools/set_externals Dependencies
-@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@	touch .Dependencies-stamp
+@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@.Externals-stamp: $(srcdir)/Externals
+@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@	cd $(srcdir); svn propset svn:externals -F Externals .
+@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@	touch .Externals-stamp
 
-@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@update-externals: .Dependencies-stamp
+@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@update-externals: .Externals-stamp
 @HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@	cd $(srcdir); svn update
 
 .PHONY: install-doc uninstall-doc update-externals

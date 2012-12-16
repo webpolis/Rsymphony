@@ -5,9 +5,9 @@
 /* SYMPHONY was jointly developed by Ted Ralphs (ted@lehigh.edu) and         */
 /* Laci Ladanyi (ladanyi@us.ibm.com).                                        */
 /*                                                                           */
-/* (c) Copyright 2000-2011 Ted Ralphs. All Rights Reserved.                  */
+/* (c) Copyright 2000-2010 Ted Ralphs. All Rights Reserved.                  */
 /*                                                                           */
-/* This software is licensed under the Eclipse Public License. Please see    */
+/* This software is licensed under the Common Public License. Please see     */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -53,7 +53,7 @@ double used_time(double *T)
    struct rusage x;
 
    (void) getrusage(RUSAGE_SELF, &x);
-   *T = ((1e6 * (double) x.ru_utime.tv_sec) + (double)x.ru_utime.tv_usec);
+   *T = (1e6 * x.ru_utime.tv_sec) + x.ru_utime.tv_usec;
    *T /= 1e6;
    return (*T - oldT);
 

@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 2004, International Business Machines Corporation and others. 
 // All Rights Reserved.
-// This code is published under the Eclipse Public License.
+// This code is published under the Common Public License.
 
 #if defined(_MSC_VER)
 // Turn off MS VS compiler warning about long names
@@ -30,7 +30,7 @@
 void
 CglResidualCapacity::generateCuts(const OsiSolverInterface& si,
 				      OsiCuts& cs,
-				  const CglTreeInfo /*info*/) const
+				      const CglTreeInfo info) const
 {
 
   // If the LP or integer presolve is used, then need to redo preprocessing
@@ -420,7 +420,7 @@ bool
 CglResidualCapacity::treatAsLessThan(const OsiSolverInterface& si,
 				     const int rowLen, const int* ind, 
 				     const double* coef,
-				     const double /*rhs*/,
+				     const double rhs,
 				     const double* colLowerBound,
 				     const double* colUpperBound) const
 {
@@ -464,8 +464,8 @@ CglResidualCapacity::generateResCapCuts(
 				     const double* xlp,
 				     const double* colUpperBound,
 				     const double* colLowerBound,
-				     const CoinPackedMatrix& /*matrixByRow*/,
-				     const double* /*LHS*/,
+				     const CoinPackedMatrix& matrixByRow,
+				     const double* LHS,
 				     const double* coefByRow,
 				     const int* colInds,
 				     const int* rowStarts,
@@ -541,7 +541,7 @@ CglResidualCapacity::resCapSeparation(const OsiSolverInterface& si,
 				      const double rhs,
 				      const double *xlp,  
 				      const double* colUpperBound,
-				      const double* /*colLowerBound*/,
+				      const double* colLowerBound,
 				      OsiRowCut& resCapCut) const
 { 
     // process original row to create row in canonical form
@@ -589,14 +589,14 @@ CglResidualCapacity::resCapSeparation(const OsiSolverInterface& si,
 	    setSbar.push_back(i);
 	    sumCoef+=newRowCoef[i];
 	}
-    const int sSize = static_cast<int>(setSbar.size());
+    const int sSize=setSbar.size();
     bool generated;
     if ( sSize == 0 ) generated=false; // no cut
     else {
 	// generate cut
 	const double mu= ceil( (sumCoef - newRowRHS)/intCoef );
 	double r = sumCoef - newRowRHS - intCoef * floor( (sumCoef - newRowRHS)/intCoef );
-	const int numInt = static_cast<int>(positionIntVar.size());
+	const int numInt = positionIntVar.size();
 	const int cutLen = sSize + numInt;
 	int* cutInd = new int [cutLen];
 	double* cutCoef = new double [cutLen];

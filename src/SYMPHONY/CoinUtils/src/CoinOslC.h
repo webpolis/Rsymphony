@@ -1,13 +1,80 @@
-/* $Id: CoinOslC.h 1374 2011-01-04 00:08:33Z lou $ */
+/* $Id: CoinOslC.h 1202 2009-09-25 15:27:15Z forrest $ */
 #ifndef COIN_OSL_C_INCLUDE
-/*
-  Copyright (C) 1987, 2009, International Business Machines Corporation
-  and others.  All Rights Reserved.
-
-  This code is licensed under the terms of the Eclipse Public License (EPL).
-*/
+/* Copyright (C) 1987, 2009, International Business Machines
+   Corporation and others.  All Rights Reserved. */
 #define COIN_OSL_C_INCLUDE
+typedef struct {int suc, pre;} EKKHlink;
+typedef struct _EKKfactinfo {
+  double drtpiv;
+  double demark;
+  double zpivlu;
+  double zeroTolerance;
+  double areaFactor;
+  int *xrsadr;
+  int *xcsadr;
+  int *xrnadr;
+  int *xcnadr;
+  int *krpadr;
+  int *kcpadr;
+  int *mpermu;
+  int *bitArray;
+  int * back;
+  char * nonzero;
+  double * trueStart;
+  mutable double *kadrpm;
+  int *R_etas_index;
+  int *R_etas_start;
+  double *R_etas_element;
 
+  int *xecadr;
+  int *xeradr;
+  double *xeeadr;
+  double *xe2adr;
+  EKKHlink * kp1adr;
+  EKKHlink * kp2adr;
+  double * kw1adr;
+  double * kw2adr;
+  double * kw3adr;
+  int * hpivcoR;
+  int nrow;
+  int nrowmx;
+  int firstDoRow;
+  int firstLRow;
+  int maxinv;
+  int nnetas;
+  int iterin;
+  int iter0;
+  int invok;
+  int nbfinv;
+  int num_resets;
+  int nnentl;
+  int nnentu;
+  int ndenuc;
+  int npivots; /* use as xpivsq in factorization */
+  int kmxeta;
+  int xnetal;
+  int first_dense;
+  int last_dense;
+  int iterno;
+  int numberSlacks;
+  int lastSlack;
+  int firstNonSlack;
+  int xnetalval;
+  int lstart;
+  int if_sparse_update;
+  mutable int packedMode;
+  int switch_off_sparse_update;
+  int nuspike;
+  bool rows_ok;	/* replaces test using mrstrt[1] */
+
+  int nR_etas;
+  int sortedEta; /* if vector for F-T is sorted */
+  int lastEtaCount;
+  int ifvsol;
+  int eta_size;
+  int last_eta_size;
+  int maxNNetas;
+} EKKfactinfo;
 #ifndef CLP_OSL
 #define CLP_OSL 0
 #endif

@@ -1,13 +1,15 @@
-/* $Id: CoinParam.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinParam.cpp 1191 2009-07-25 08:38:12Z forrest $ */
 // Copyright (C) 2006, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
+#if defined(_MSC_VER)
+// Turn off compiler warning about long names
+#  pragma warning(disable:4786)
+#endif
 
 #include <string>
 #include <cassert>
 #include <iostream>
 
-#include "CoinPragma.hpp"
 #include "CoinParam.hpp"
 
 /*
@@ -278,9 +280,9 @@ void CoinParam::processName()
 */
 int CoinParam::matches (std::string input) const
 {
-  size_t inputLen = input.length() ;
+  unsigned int inputLen = input.length() ;
   if (inputLen <= lengthName_)
-  { size_t i ;
+  { unsigned int i ;
     for (i = 0 ; i < inputLen ; i++)
     { if (tolower(name_[i]) != tolower(input[i])) 
 	break ; }
@@ -381,10 +383,10 @@ int CoinParam::kwdIndex (std::string input) const
   assert (type_ == coinParamKwd) ;
 
   int whichItem = -1 ;
-  size_t numberItems = definedKwds_.size() ;
+  int numberItems = definedKwds_.size() ;
   if (numberItems > 0)
-  { size_t inputLen = input.length() ;
-    size_t it ;
+  { unsigned int inputLen = input.length() ;
+    int it ;
 /*
   Open a loop to check each keyword against the input string. We don't record
   the match length for keywords, so we need to check each one for an `!' and
@@ -394,8 +396,8 @@ int CoinParam::kwdIndex (std::string input) const
     for (it = 0 ; it < numberItems ; it++)
     { std::string kwd = definedKwds_[it] ;
       std::string::size_type shriekPos = kwd.find('!') ;
-      size_t kwdLen = kwd.length() ;
-      size_t matchLen = kwdLen ;
+      unsigned int kwdLen = kwd.length() ;
+      unsigned int matchLen = kwdLen ;
       if (shriekPos != std::string::npos)
       { matchLen = shriekPos ;
 	kwd = kwd.substr(0,shriekPos)+kwd.substr(shriekPos+1) ;
@@ -410,7 +412,7 @@ int CoinParam::kwdIndex (std::string input) const
 	{ if (tolower(kwd[i]) != tolower(input[i])) 
 	    break ; }
 	if (i >= inputLen && i >= matchLen)
-	{ whichItem = static_cast<int>(it) ;
+	{ whichItem = it ;
 	  break ; } } } }
 
   return (whichItem) ;

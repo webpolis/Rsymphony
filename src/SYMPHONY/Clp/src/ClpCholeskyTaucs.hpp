@@ -1,8 +1,6 @@
-/* $Id: ClpCholeskyTaucs.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpCholeskyTaucs.hpp 1458 2009-11-05 12:34:07Z forrest $ */
 // Copyright (C) 2004, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #ifndef ClpCholeskyTaucs_H
 #define ClpCholeskyTaucs_H
 #include "taucs.h"
@@ -18,7 +16,7 @@ http://www.tau.ac.il/~stoledo/taucs/
 
 for terms of use
 
-The taucs.h file was modified to put
+The taucs.h file was modified to put 
 
 #ifdef __cplusplus
 extern "C"{
@@ -41,56 +39,56 @@ to
 
 */
 class ClpCholeskyTaucs : public ClpCholeskyBase {
-
+  
 public:
-     /**@name Virtual methods that the derived classes provides  */
-     //@{
-     /** Orders rows and saves pointer to matrix.and model.
-      Returns non-zero if not enough memory */
-     virtual int order(ClpInterior * model) ;
-     /// Dummy
-     virtual int symbolic();
-     /** Factorize - filling in rowsDropped and returning number dropped.
-         If return code negative then out of memory */
-     virtual int factorize(const double * diagonal, int * rowsDropped) ;
-     /** Uses factorization to solve. */
-     virtual void solve (double * region) ;
-     //@}
+   /**@name Virtual methods that the derived classes provides  */
+   //@{
+  /** Orders rows and saves pointer to matrix.and model.
+   Returns non-zero if not enough memory */
+  virtual int order(ClpInterior * model) ;
+  /// Dummy
+  virtual int symbolic();
+  /** Factorize - filling in rowsDropped and returning number dropped.
+      If return code negative then out of memory */
+  virtual int factorize(const double * diagonal, int * rowsDropped) ;
+  /** Uses factorization to solve. */
+  virtual void solve (double * region) ;
+  //@}
 
 
-     /**@name Constructors, destructor */
-     //@{
-     /** Default constructor. */
-     ClpCholeskyTaucs();
-     /** Destructor  */
-     virtual ~ClpCholeskyTaucs();
-     // Copy
-     ClpCholeskyTaucs(const ClpCholeskyTaucs&);
-     // Assignment
-     ClpCholeskyTaucs& operator=(const ClpCholeskyTaucs&);
-     /// Clone
-     virtual ClpCholeskyBase * clone() const ;
-     //@}
-
-
+  /**@name Constructors, destructor */
+  //@{
+  /** Default constructor. */
+  ClpCholeskyTaucs();
+  /** Destructor  */
+  virtual ~ClpCholeskyTaucs();
+  // Copy
+  ClpCholeskyTaucs(const ClpCholeskyTaucs&);
+  // Assignment
+  ClpCholeskyTaucs& operator=(const ClpCholeskyTaucs&);
+  /// Clone
+  virtual ClpCholeskyBase * clone() const ;
+  //@}
+   
+    
 private:
-     /**@name Data members */
-     //@{
-     /// Taucs matrix (== sparseFactor etc)
-     taucs_ccs_matrix * matrix_;
-     /// Taucs factor
-     void * factorization_;
-     /// sparseFactor.
-     double * sparseFactorT_;
-     /// choleskyStart
-     CoinBigIndex * choleskyStartT_;
-     /// choleskyRow
-     int * choleskyRowT_;
-     /// sizeFactor.
-     CoinBigIndex sizeFactorT_;
-     /// Row copy of matrix
-     ClpMatrixBase * rowCopyT_;
-     //@}
+  /**@name Data members */
+   //@{
+  /// Taucs matrix (== sparseFactor etc)
+  taucs_ccs_matrix * matrix_;
+  /// Taucs factor
+  void * factorization_;
+  /// sparseFactor.
+  double * sparseFactorT_;
+  /// choleskyStart
+  CoinBigIndex * choleskyStartT_;
+  /// choleskyRow
+  int * choleskyRowT_;
+  /// sizeFactor.
+  CoinBigIndex sizeFactorT_;
+  /// Row copy of matrix
+  ClpMatrixBase * rowCopyT_;
+  //@}
 };
 
 #endif

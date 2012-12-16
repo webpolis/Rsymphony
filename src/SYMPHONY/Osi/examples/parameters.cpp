@@ -3,7 +3,7 @@
 // Also demonstrates some parameter setting
 
 #include <iostream>
-#include OSIXXXhpp
+#include "OsiClpSolverInterface.hpp"
 
 int
 main(void)
@@ -12,15 +12,10 @@ main(void)
   OsiSolverInterface *si;
 
   // When we instantiate the object, we need a specific derived class.
-  si = new OSIXXX;
+  si = new OsiClpSolverInterface;  
 
-   // Read in an mps file.  This one's from the MIPLIB library.
-#if defined(SAMPLEDIR)
-   si->readMps(SAMPLEDIR "/p0033");
-#else
-   fprintf(stderr, "Do not know where to find sample MPS files.\n");
-   exit(1);
-#endif
+  // Read in an mps file.  This one's from the MIPLIB library.
+  si->readMps("../../Data/Sample/p0033");
 
   // Display some information about the instance
   int nrows = si->getNumRows();

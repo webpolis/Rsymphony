@@ -1,8 +1,3 @@
-// $Id: CglCliqueHelper.cpp 933 2011-01-04 23:16:49Z lou $
-// Copyright (C) 2000, International Business Machines
-// Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #include <numeric>
 #include <cassert>
 
@@ -24,16 +19,6 @@ CglClique::selectFractionalBinaries(const OsiSolverInterface& si) const
    si.getDblParam(OsiPrimalTolerance, lclPetol);
 
    const int numcols = si.getNumCols();
-   if (petol<0.0) {
-     // do all if not too many
-     int n=0;
-     for (int i = 0; i < numcols; ++i) {
-       if (si.isBinary(i))
-	 n++;
-     }
-     if (n<5000)
-       lclPetol=-1.0e-5;
-   }
    const double* x = si.getColSolution();
    std::vector<int> fracind;
    int i;
@@ -41,7 +26,7 @@ CglClique::selectFractionalBinaries(const OsiSolverInterface& si) const
       if (si.isBinary(i) && x[i] > lclPetol && x[i] < 1-petol)
 	 fracind.push_back(i);
    }
-   sp_numcols = static_cast<int>(fracind.size());
+   sp_numcols = fracind.size();
    sp_orig_col_ind = new int[sp_numcols];
    sp_colsol = new double[sp_numcols];
    for (i = 0; i < sp_numcols; ++i) {
@@ -72,7 +57,7 @@ CglClique::selectFractionals(const OsiSolverInterface& si) const
       if (x[i] > lclPetol && x[i] < 1-lclPetol)
 	 fracind.push_back(i);
    }
-   sp_numcols = static_cast<int>(fracind.size());
+   sp_numcols = fracind.size();
    sp_orig_col_ind = new int[sp_numcols];
    sp_colsol = new double[sp_numcols];
    for (i = 0; i < sp_numcols; ++i) {
@@ -193,7 +178,7 @@ CglClique::createSetPackingSubMatrix(const OsiSolverInterface& si) const
 */
    sp_col_ind = new int[nzcnt];
    sp_row_ind = new int[nzcnt];
-   int last=0;
+
    for (j = 0; j < sp_numcols; ++j) {
       const CoinShallowPackedVector& vec = mcol.getVector(sp_orig_col_ind[j]);
       const int len = vec.getNumElements();
@@ -216,9 +201,6 @@ CglClique::createSetPackingSubMatrix(const OsiSolverInterface& si) const
 	   }
 	}
       }
-      // sort
-      std::sort(sp_col_ind+last,sp_col_ind+sp_col_start[j]);
-      last=sp_col_start[j];
    }
    std::rotate(sp_col_start, sp_col_start+sp_numcols,
 	       sp_col_start + (sp_numcols+1));

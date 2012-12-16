@@ -1,4 +1,4 @@
-// $Id: CglFlowCover.cpp 908 2010-12-30 21:54:29Z mjs $
+// $Id: CglFlowCover.cpp 806 2009-12-02 20:01:20Z forrest $
 //-----------------------------------------------------------------------------
 // name:     Cgl Lifted Simple Generalized Flow Cover Cut Generator
 // author:   Yan Xu                email: yan.xu@sas.com
@@ -9,7 +9,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 2003, Yan Xu, Jeff Linderoth, Martin Savelsberg and others. 
 // All Rights Reserved.
-// This code is published under the Eclipse Public License.
+// This code is published under the Common Public License.
 
 #if defined(_MSC_VER)
 // Turn off MS VS compiler warning about long names
@@ -26,8 +26,7 @@
 
 #include "CglFlowCover.hpp"
 
-// added #define to get rid of warnings (so uncomment if =true)
-//#define CGLFLOW_DEBUG2
+
 static bool CGLFLOW_DEBUG=false;
 static bool doLift=true;
 #include <iomanip>
@@ -332,12 +331,10 @@ void CglFlowCover::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
   }
 
 
-#ifdef CGLFLOW_DEBUG2
   if(CGLFLOW_DEBUG) {
     std::cout << "\nnumFlowCuts = "<< getNumFlowCuts()  << std::endl;
     std::cout << "CGLFLOW_COL_BINNEG = "<< CGLFLOW_COL_BINNEG  << std::endl;
   }
-#endif
   if (!info.inTree&&((info.options&4)==4||((info.options&8)&&!info.pass))) {
     int numberRowCutsAfter = cs.sizeRowCuts();
     for (int i=numberRowCutsBefore;i<numberRowCutsAfter;i++)
@@ -1010,7 +1007,6 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
   // Calculate the violation
   violation = -cutRHS;
   for ( i = 0; i < rowLen; ++i ) {
-#ifdef CGLFLOW_DEBUG2
     if(CGLFLOW_DEBUG) {
       std::cout << "i = " << i << " ind = " << ind[i] << " sign = " 
 		<< sign[i] 
@@ -1018,7 +1014,6 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
 		<< xCoef[i] << " y = " << y[i] << " yCoef = " << yCoef[i] 
 		<< " up = " << up[i] << " label = " << label[i] << std::endl;
     }
-#endif
     violation += y[i] * yCoef[i] + x[i] * xCoef[i];
   }
 
@@ -1030,7 +1025,7 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
     double estY, estX;
     double movement = 0.0;
     double dPrimePrime = temp + cutRHS; 
-    bool lifted = false;
+    int lifted = false;
     for( i = 0; i < rowLen; ++i ) {
       if ( (label[i] != CGLFLOW_COL_INCUT) && (sign[i] > 0) ) {/* N+\C+*/
 	lifted = liftPlus(estY, estX,
@@ -1084,7 +1079,6 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
   // Calculate the violation
   violation = -cutRHS;
   for ( i = 0; i < rowLen; ++i ) {
-#ifdef CGLFLOW_DEBUG2
     if(CGLFLOW_DEBUG) {
       std::cout << "i = " << i << " ind = " << ind[i] << " sign = " 
 		<< sign[i] 
@@ -1092,7 +1086,6 @@ CglFlowCover::generateOneFlowCut( const OsiSolverInterface & si,
 		<< xCoef[i] << " y = " << y[i] << " yCoef = " << yCoef[i] 
 		<< " up = " << up[i] << " label = " << label[i] << std::endl;
     }
-#endif
     violation += y[i] * yCoef[i] + x[i] * xCoef[i];
   }
 
@@ -1411,7 +1404,7 @@ CglFlowCover::liftMinus(double &movement, /* Output */
 
 /*===========================================================================*/
 
-bool
+int
 CglFlowCover::liftPlus(double &alpha, 
 		       double &beta,
 		       int r,
@@ -1423,7 +1416,7 @@ CglFlowCover::liftPlus(double &alpha,
 		       double *M) const
 {
   int i;
-  bool status = false;  /* Default: fail to lift */
+  int status = false;  /* Defalut: fail to lift */
   double value;
   alpha = 0.0;
   beta = 0.0;

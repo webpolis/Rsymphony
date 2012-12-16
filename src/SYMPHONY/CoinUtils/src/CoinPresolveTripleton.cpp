@@ -1,12 +1,10 @@
-/* $Id: CoinPresolveTripleton.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinPresolveTripleton.cpp 1231 2009-12-03 03:11:32Z bjarni $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #include <stdio.h>
 #include <math.h>
 
-#include "CoinFinite.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPresolveMatrix.hpp"
 
@@ -60,11 +58,7 @@
  * In the row rep, irow will be eliminated entirely, but not here;
  * icoly is removed from the rows it occurs in.
  */
-static bool elim_tripleton(const char * 
-#ifdef PRESOLVE_DEBUG
-msg
-#endif
-			   ,
+static bool elim_tripleton(const char * /*msg*/,
 			   CoinBigIndex *mcstrt, 
 			   double *rlo, double * acts, double *rup,
 			   double *colels,
@@ -336,8 +330,7 @@ const CoinPresolveAction *tripleton_action::presolve(CoinPresolveMatrix *prob,
   int nactions = 0;
 
   int *zeros	= prob->usefulColumnInt_; //new int[ncols];
-  char * mark = reinterpret_cast<char *>(zeros+ncols);
-  memset(mark,0,ncols);
+  memset(zeros,0,ncols*sizeof(int));
   int nzeros	= 0;
 
   // If rowstat exists then all do
@@ -501,8 +494,6 @@ const CoinPresolveAction *tripleton_action::presolve(CoinPresolveMatrix *prob,
 	{
 	  action *s = &actions[nactions];	  
 	  nactions++;
-	  PRESOLVE_DETAIL_PRINT(printf("pre_tripleton %dR %dC %dC %dC E\n",
-				       irow,icoly,icolx,icolz));
 	  
 	  s->row = irow;
 	  s->icolx = icolx;
@@ -607,14 +598,10 @@ const CoinPresolveAction *tripleton_action::presolve(CoinPresolveMatrix *prob,
 	rlo[irow] = 0.0;
 	rup[irow] = 0.0;
 
-	if (!mark[icolx]) {
-	  mark[icolx]=1;
-	  zeros[nzeros++]=icolx;
-	}
-	if (!mark[icolz]) {
-	  mark[icolz]=1;
-	  zeros[nzeros++]=icolz;
-	}
+	zeros[icolx] = 1;	// check for zeros
+	zeros[icolz] = 1;	// check for zeros
+	nzeros++;
+
       }
       
 #     if PRESOLVE_CONSISTENCY
@@ -633,6 +620,11 @@ const CoinPresolveAction *tripleton_action::presolve(CoinPresolveMatrix *prob,
     next = new tripleton_action(nactions, actions1, next);
 
     if (nzeros) {
+      int i;
+      nzeros=0;
+      for (i=0;i<ncols;i++) 
+	if (zeros[i])
+	  zeros[nzeros++]=i;
       next = drop_zero_coefficients_action::presolve(prob, zeros, nzeros, next);
     }
   }

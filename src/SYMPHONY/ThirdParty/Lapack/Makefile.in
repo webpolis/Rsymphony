@@ -16,18 +16,17 @@
 
 # Copyright (C) 2006, 2008 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Eclipse Public License.
+# This file is distributed under the Common Public License.
 
 # Copyright (C) 2006, 2007 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Eclipse Public License.
+# This file is distributed under the Common Public License.
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
 ########################################################################
 #                    Documentation installation                        #
 ########################################################################
-
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -51,13 +50,14 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-DIST_COMMON = $(am__configure_deps) $(srcdir)/BuildTools/Makemain.inc \
-	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/coinlapack-uninstalled.pc.in \
-	$(srcdir)/coinlapack.pc.in $(top_srcdir)/configure \
-	config.guess config.sub depcomp install-sh ltmain.sh missing
-@HAVE_EXTERNALS_TRUE@am__append_1 = Dependencies
-@HAVE_EXTERNALS_TRUE@am__append_2 = .Dependencies-stamp
+DIST_COMMON = $(am__configure_deps) \
+	$(srcdir)/../../BuildTools/Makemain.inc \
+	$(srcdir)/../../config.guess $(srcdir)/../../config.sub \
+	$(srcdir)/../../install-sh $(srcdir)/../../ltmain.sh \
+	$(srcdir)/../../missing $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(top_srcdir)/configure
+@HAVE_EXTERNALS_TRUE@am__append_1 = Externals
+@HAVE_EXTERNALS_TRUE@am__append_2 = .Externals-stamp
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
@@ -67,31 +67,23 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(install_sh) -d
-CONFIG_CLEAN_FILES = coinlapack.pc coinlapack-uninstalled.pc
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfiglibdir)"
-libLTLIBRARIES_INSTALL = $(INSTALL)
-LTLIBRARIES = $(lib_LTLIBRARIES)
+CONFIG_CLEAN_FILES =
+LTLIBRARIES = $(noinst_LTLIBRARIES)
 libcoinlapack_la_LIBADD =
 am__objects_1 = dbdsqr.lo dgebd2.lo dgebrd.lo dgelq2.lo dgelqf.lo \
 	dgeqr2.lo dgeqrf.lo dgesvd.lo dgesv.lo dgetf2.lo dgetrf.lo \
-	dgetrs.lo disnan.lo dlabrd.lo dlacpy.lo dlae2.lo dlaev2.lo \
-	dlaisnan.lo dlamch.lo dlange.lo dlanst.lo dlansy.lo dlapy2.lo \
-	dlarf.lo dlarfb.lo dlarfg.lo dlarfp.lo dlarft.lo dlartg.lo \
-	dlas2.lo dlascl.lo dlaset.lo dlasq1.lo dlasq2.lo dlasq3.lo \
-	dlasq4.lo dlasq5.lo dlasq6.lo dlasr.lo dlasrt.lo dlaswp.lo \
-	dlassq.lo dlasv2.lo dlatrd.lo dorg2l.lo dorg2r.lo dorgbr.lo \
-	dorglq.lo dorgl2.lo dorgql.lo dorgqr.lo dorgtr.lo dorm2r.lo \
-	dormbr.lo dorml2.lo dormlq.lo dormqr.lo dpotf2.lo dpotrf.lo \
-	dpotrs.lo dsteqr.lo dsterf.lo dsyev.lo dsytd2.lo dsytrd.lo \
-	ieeeck.lo iladlc.lo iladlr.lo ilaenv.lo iparmq.lo
-am_libcoinlapack_la_OBJECTS = $(am__objects_1)
-libcoinlapack_la_OBJECTS = $(am_libcoinlapack_la_OBJECTS)
+	dgetrs.lo dlabrd.lo dlacpy.lo dlae2.lo dlaev2.lo dlamch.lo \
+	dlange.lo dlanst.lo dlansy.lo dlapy2.lo dlarf.lo dlarfb.lo \
+	dlarfg.lo dlarft.lo dlartg.lo dlas2.lo dlascl.lo dlaset.lo \
+	dlasq1.lo dlasq2.lo dlasq5.lo dlasq6.lo dlasr.lo dlasrt.lo \
+	dlaswp.lo dlassq.lo dlasv2.lo dlatrd.lo dlazq3.lo dlazq4.lo \
+	dorg2l.lo dorg2r.lo dorgbr.lo dorglq.lo dorgl2.lo dorgql.lo \
+	dorgqr.lo dorgtr.lo dorm2r.lo dormbr.lo dorml2.lo dormlq.lo \
+	dormqr.lo dpotf2.lo dpotrf.lo dpotrs.lo dsteqr.lo dsterf.lo \
+	dsyev.lo dsytd2.lo dsytrd.lo ieeeck.lo ilaenv.lo iparmq.lo
+nodist_libcoinlapack_la_OBJECTS = $(am__objects_1)
+libcoinlapack_la_OBJECTS = $(nodist_libcoinlapack_la_OBJECTS)
+@SKIPMAKE_FALSE@am_libcoinlapack_la_rpath =
 DEFAULT_INCLUDES = -I. -I$(srcdir)
 F77COMPILE = $(F77) $(AM_FFLAGS) $(FFLAGS)
 LTF77COMPILE = $(LIBTOOL) --tag=F77 --mode=compile $(F77) $(AM_FFLAGS) \
@@ -99,10 +91,8 @@ LTF77COMPILE = $(LIBTOOL) --tag=F77 --mode=compile $(F77) $(AM_FFLAGS) \
 F77LD = $(F77)
 F77LINK = $(LIBTOOL) --tag=F77 --mode=link $(F77LD) $(AM_FFLAGS) \
 	$(FFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
-SOURCES = $(libcoinlapack_la_SOURCES)
-DIST_SOURCES = $(libcoinlapack_la_SOURCES)
-pkgconfiglibDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(pkgconfiglib_DATA)
+SOURCES = $(nodist_libcoinlapack_la_SOURCES)
+DIST_SOURCES =
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -116,8 +106,8 @@ DIST_ARCHIVES = $(distdir).tar.gz
 GZIP_ENV = --best
 distuninstallcheck_listfiles = find . -type f -print
 distcleancheck_listfiles = find . -type f -print
-ABSBUILDDIR = @ABSBUILDDIR@
 ACLOCAL = @ACLOCAL@
+ADDLIBS = @ADDLIBS@
 ADD_CFLAGS = @ADD_CFLAGS@
 ADD_FFLAGS = @ADD_FFLAGS@
 ALWAYS_FALSE_FALSE = @ALWAYS_FALSE_FALSE@
@@ -131,26 +121,19 @@ AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AUX_DIR = @AUX_DIR@
 AWK = @AWK@
-BLAS_CFLAGS = @BLAS_CFLAGS@
-BLAS_CFLAGS_INSTALLED = @BLAS_CFLAGS_INSTALLED@
-BLAS_DATA = @BLAS_DATA@
-BLAS_DATA_INSTALLED = @BLAS_DATA_INSTALLED@
-BLAS_DEPENDENCIES = @BLAS_DEPENDENCIES@
-BLAS_LIBS = @BLAS_LIBS@
-BLAS_LIBS_INSTALLED = @BLAS_LIBS_INSTALLED@
 BUILDTOOLSDIR = @BUILDTOOLSDIR@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CDEFS = @CDEFS@
 CFLAGS = @CFLAGS@
-COIN_CC_IS_CL_FALSE = @COIN_CC_IS_CL_FALSE@
-COIN_CC_IS_CL_TRUE = @COIN_CC_IS_CL_TRUE@
+COIN_BUILD_BLAS_FALSE = @COIN_BUILD_BLAS_FALSE@
+COIN_BUILD_BLAS_TRUE = @COIN_BUILD_BLAS_TRUE@
+COIN_BUILD_LAPACK_FALSE = @COIN_BUILD_LAPACK_FALSE@
+COIN_BUILD_LAPACK_TRUE = @COIN_BUILD_LAPACK_TRUE@
 COIN_HAS_BLAS_FALSE = @COIN_HAS_BLAS_FALSE@
 COIN_HAS_BLAS_TRUE = @COIN_HAS_BLAS_TRUE@
-COIN_HAS_PKGCONFIG_FALSE = @COIN_HAS_PKGCONFIG_FALSE@
-COIN_HAS_PKGCONFIG_TRUE = @COIN_HAS_PKGCONFIG_TRUE@
-COIN_PKG_CONFIG_PATH = @COIN_PKG_CONFIG_PATH@
-COIN_PKG_CONFIG_PATH_UNINSTALLED = @COIN_PKG_CONFIG_PATH_UNINSTALLED@
+COIN_HAS_LAPACK_FALSE = @COIN_HAS_LAPACK_FALSE@
+COIN_HAS_LAPACK_TRUE = @COIN_HAS_LAPACK_TRUE@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -170,6 +153,7 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
+FADDLIBS = @FADDLIBS@
 FFLAGS = @FFLAGS@
 FLIBS = @FLIBS@
 HAVE_EXTERNALS_FALSE = @HAVE_EXTERNALS_FALSE@
@@ -178,14 +162,6 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
-LAPACKLIB_CFLAGS = @LAPACKLIB_CFLAGS@
-LAPACKLIB_CFLAGS_INSTALLED = @LAPACKLIB_CFLAGS_INSTALLED@
-LAPACKLIB_DEPENDENCIES = @LAPACKLIB_DEPENDENCIES@
-LAPACKLIB_LIBS = @LAPACKLIB_LIBS@
-LAPACKLIB_LIBS_INSTALLED = @LAPACKLIB_LIBS_INSTALLED@
-LAPACKLIB_PCLIBS = @LAPACKLIB_PCLIBS@
-LAPACKLIB_PCREQUIRES = @LAPACKLIB_PCREQUIRES@
-LAPACK_SVN_REV = @LAPACK_SVN_REV@
 LDFLAGS = @LDFLAGS@
 LIBEXT = @LIBEXT@
 LIBOBJS = @LIBOBJS@
@@ -199,6 +175,7 @@ MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
 MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
+MAKEOKFILE = @MAKEOKFILE@
 MPICC = @MPICC@
 MPIF77 = @MPIF77@
 OBJEXT = @OBJEXT@
@@ -211,11 +188,12 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 RANLIB = @RANLIB@
 RPATH_FLAGS = @RPATH_FLAGS@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SKIPMAKE_FALSE = @SKIPMAKE_FALSE@
+SKIPMAKE_TRUE = @SKIPMAKE_TRUE@
 STRIP = @STRIP@
 VERSION = @VERSION@
 VPATH_DISTCLEANFILES = @VPATH_DISTCLEANFILES@
@@ -231,7 +209,6 @@ ac_ct_F77 = @ac_ct_F77@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
 ac_cxx_preproc_warn_flag = @ac_cxx_preproc_warn_flag@
-ac_pt_PKG_CONFIG = @ac_pt_PKG_CONFIG@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -252,7 +229,6 @@ exec_prefix = @exec_prefix@
 have_autoconf = @have_autoconf@
 have_automake = @have_automake@
 have_svn = @have_svn@
-have_svnversion = @have_svnversion@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -276,7 +252,8 @@ sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 AUTOMAKE_OPTIONS = foreign
 EXTRA_DIST = get.lapack INSTALL.LAPACK $(am__append_1)
-lib_LTLIBRARIES = libcoinlapack.la
+@SKIPMAKE_FALSE@noinst_LTLIBRARIES = libcoinlapack.la
+@SKIPMAKE_TRUE@noinst_LTLIBRARIES = 
 LAPACK_FILES = \
 	dbdsqr.f \
 	dgebd2.f \
@@ -290,12 +267,10 @@ LAPACK_FILES = \
 	dgetf2.f \
 	dgetrf.f \
 	dgetrs.f \
-	disnan.f \
 	dlabrd.f \
 	dlacpy.f \
 	dlae2.f \
 	dlaev2.f \
-	dlaisnan.f \
 	dlamch.f \
 	dlange.f \
 	dlanst.f \
@@ -304,7 +279,6 @@ LAPACK_FILES = \
 	dlarf.f \
 	dlarfb.f \
 	dlarfg.f \
-	dlarfp.f \
 	dlarft.f \
 	dlartg.f \
 	dlas2.f \
@@ -312,8 +286,6 @@ LAPACK_FILES = \
 	dlaset.f \
 	dlasq1.f \
 	dlasq2.f \
-	dlasq3.f \
-	dlasq4.f \
 	dlasq5.f \
 	dlasq6.f \
 	dlasr.f \
@@ -322,6 +294,8 @@ LAPACK_FILES = \
 	dlassq.f \
 	dlasv2.f \
 	dlatrd.f \
+	dlazq3.f \
+	dlazq4.f \
 	dorg2l.f \
 	dorg2r.f \
 	dorgbr.f \
@@ -344,33 +318,28 @@ LAPACK_FILES = \
 	dsytd2.f \
 	dsytrd.f \
 	ieeeck.f \
-	iladlc.f \
-	iladlr.f \
 	ilaenv.f \
 	iparmq.f
 
-libcoinlapack_la_SOURCES = $(LAPACK_FILES)
+nodist_libcoinlapack_la_SOURCES = $(LAPACK_FILES)
 libcoinlapack_la_LDFLAGS = $(LT_LDFLAGS)
-pkgconfiglibdir = $(libdir)/pkgconfig
-pkgconfiglib_DATA = coinlapack.pc
 
 ########################################################################
 #                         Maintainer Stuff                             #
 ########################################################################
-CLEANFILES = 
 
 # Files that are generated and should be cleaned with make distclean
 DISTCLEANFILES = $(LAPACK_FILES) $(MAKEOKFILE) $(am__append_2) \
 	$(VPATH_DISTCLEANFILES)
 DocFiles = README AUTHORS LICENSE
-DocInstallDir = $(datadir)/coin/doc/$(PACKAGE_NAME)
+DocInstallDir = $(prefix)/share/doc/coin/$(PACKAGE_NAME)
 all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .f .lo .o .obj
 am--refresh:
 	@:
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(srcdir)/BuildTools/Makemain.inc $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(srcdir)/../../BuildTools/Makemain.inc $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -401,39 +370,17 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(srcdir) && $(AUTOCONF)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
-coinlapack.pc: $(top_builddir)/config.status $(srcdir)/coinlapack.pc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-coinlapack-uninstalled.pc: $(top_builddir)/config.status $(srcdir)/coinlapack-uninstalled.pc.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-install-libLTLIBRARIES: $(lib_LTLIBRARIES)
-	@$(NORMAL_INSTALL)
-	test -z "$(libdir)" || $(mkdir_p) "$(DESTDIR)$(libdir)"
-	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
-	  if test -f $$p; then \
-	    f=$(am__strip_dir) \
-	    echo " $(LIBTOOL) --mode=install $(libLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(libdir)/$$f'"; \
-	    $(LIBTOOL) --mode=install $(libLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(libdir)/$$f"; \
-	  else :; fi; \
-	done
 
-uninstall-libLTLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	@set -x; list='$(lib_LTLIBRARIES)'; for p in $$list; do \
-	  p=$(am__strip_dir) \
-	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(libdir)/$$p'"; \
-	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(libdir)/$$p"; \
-	done
-
-clean-libLTLIBRARIES:
-	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
-	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+clean-noinstLTLIBRARIES:
+	-test -z "$(noinst_LTLIBRARIES)" || rm -f $(noinst_LTLIBRARIES)
+	@list='$(noinst_LTLIBRARIES)'; for p in $$list; do \
 	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
 	  test "$$dir" != "$$p" || dir=.; \
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
 libcoinlapack.la: $(libcoinlapack_la_OBJECTS) $(libcoinlapack_la_DEPENDENCIES) 
-	$(F77LINK) -rpath $(libdir) $(libcoinlapack_la_LDFLAGS) $(libcoinlapack_la_OBJECTS) $(libcoinlapack_la_LIBADD) $(LIBS)
+	$(F77LINK) $(am_libcoinlapack_la_rpath) $(libcoinlapack_la_LDFLAGS) $(libcoinlapack_la_OBJECTS) $(libcoinlapack_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -459,23 +406,6 @@ clean-libtool:
 distclean-libtool:
 	-rm -f libtool
 uninstall-info-am:
-install-pkgconfiglibDATA: $(pkgconfiglib_DATA)
-	@$(NORMAL_INSTALL)
-	test -z "$(pkgconfiglibdir)" || $(mkdir_p) "$(DESTDIR)$(pkgconfiglibdir)"
-	@list='$(pkgconfiglib_DATA)'; for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  f=$(am__strip_dir) \
-	  echo " $(pkgconfiglibDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(pkgconfiglibdir)/$$f'"; \
-	  $(pkgconfiglibDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(pkgconfiglibdir)/$$f"; \
-	done
-
-uninstall-pkgconfiglibDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(pkgconfiglib_DATA)'; for p in $$list; do \
-	  f=$(am__strip_dir) \
-	  echo " rm -f '$(DESTDIR)$(pkgconfiglibdir)/$$f'"; \
-	  rm -f "$(DESTDIR)$(pkgconfiglibdir)/$$f"; \
-	done
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -528,7 +458,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/. $(distdir)/BuildTools
+	$(mkdir_p) $(distdir)/../.. $(distdir)/../../BuildTools
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -654,11 +584,8 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES) $(DATA)
+all-am: Makefile $(LTLIBRARIES)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfiglibdir)"; do \
-	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
-	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -676,7 +603,6 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -687,7 +613,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
+clean-am: clean-generic clean-libtool clean-noinstLTLIBRARIES \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -706,9 +632,9 @@ info: info-am
 
 info-am:
 
-install-data-am: install-pkgconfiglibDATA
+install-data-am:
 
-install-exec-am: install-libLTLIBRARIES
+install-exec-am:
 
 install-info: install-info-am
 
@@ -735,24 +661,21 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES \
-	uninstall-pkgconfiglibDATA
+uninstall-am: uninstall-info-am
 
 .PHONY: CTAGS GTAGS all all-am am--refresh check check-am clean \
-	clean-generic clean-libLTLIBRARIES clean-libtool ctags dist \
+	clean-generic clean-libtool clean-noinstLTLIBRARIES ctags dist \
 	dist-all dist-bzip2 dist-gzip dist-shar dist-tarZ dist-zip \
 	distcheck distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distcleancheck distdir \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
 	install install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-pkgconfiglibDATA \
+	install-exec-am install-info install-info-am install-man \
 	install-strip installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
 	pdf pdf-am ps ps-am tags uninstall uninstall-am \
-	uninstall-info-am uninstall-libLTLIBRARIES \
-	uninstall-pkgconfiglibDATA
+	uninstall-info-am
 
 
 dlamch.o: dlamch.f
@@ -763,9 +686,6 @@ dlamch.obj: dlamch.f
 
 dlamch.lo: dlamch.f
 	$(LIBTOOL) --tag=F77 --mode=compile $(F77) $(AM_FFLAGS) $(DLAMCH_FFLAGS) -c -o $@ $<
-
-test:
-	@echo "No test available for Lapack."
 
 install-doc: $(DocFiles)
 	test -z "$(DocInstallDir)" || $(mkdir_p) "$(DESTDIR)$(DocInstallDir)"
@@ -806,14 +726,14 @@ uninstall-doc:
 @MAINTAINER_MODE_TRUE@$(AUX_DIR)/ltmain.sh: $(BUILDTOOLSDIR)/ltmain.sh
 @MAINTAINER_MODE_TRUE@	cp $< $@
 
-# Take care of updating externals (if Dependencies file exists)
-@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@$(top_builddir)/Makefile: .Dependencies-stamp
+# Take care of updating externals (if Externals file exists)
+@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@$(top_builddir)/Makefile: .Externals-stamp
 
-@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@.Dependencies-stamp: $(srcdir)/Dependencies
-@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@	cd $(srcdir); BuildTools/set_externals Dependencies
-@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@	touch .Dependencies-stamp
+@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@.Externals-stamp: $(srcdir)/Externals
+@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@	cd $(srcdir); svn propset svn:externals -F Externals .
+@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@	touch .Externals-stamp
 
-@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@update-externals: .Dependencies-stamp
+@HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@update-externals: .Externals-stamp
 @HAVE_EXTERNALS_TRUE@@MAINTAINER_MODE_TRUE@	cd $(srcdir); svn update
 
 .PHONY: install-doc uninstall-doc update-externals

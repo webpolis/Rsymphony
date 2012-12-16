@@ -1,7 +1,6 @@
-/* $Id: CoinFactorization2.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinFactorization2.cpp 1215 2009-11-05 11:03:04Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
@@ -16,7 +15,6 @@
 #include "CoinFactorization.hpp"
 #include "CoinIndexedVector.hpp"
 #include "CoinHelperFunctions.hpp"
-#include "CoinFinite.hpp"
 #if DENSE_CODE==1
 // using simple lapack interface
 extern "C" 
@@ -839,7 +837,7 @@ CoinFactorization::restoreFactorization (const char * file , bool factorIt )
   if (fp) {
     // Get rid of current
     gutsOfDestructor();
-    CoinBigIndex newSize=0; // for checking - should be same
+    int newSize=0; // for checking - should be same
     // Restore so we can pick up scalars
     char * first = reinterpret_cast<char *> ( &pivotTolerance_);
     char * last = reinterpret_cast<char *> ( &biasLU_);

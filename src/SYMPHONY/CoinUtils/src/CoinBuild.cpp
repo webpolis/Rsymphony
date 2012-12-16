@@ -1,7 +1,7 @@
-/* $Id: CoinBuild.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinBuild.cpp 1240 2009-12-10 17:07:20Z ladanyi $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 
 
 #include <cstdlib>
@@ -12,10 +12,11 @@
 #include <iostream>
 
 
-#include "CoinBuild.hpp"
-
 #include "CoinPragma.hpp"
+
 #include "CoinHelperFunctions.hpp"
+
+#include "CoinBuild.hpp"
 
 /*
   Format of each item is a bit sleazy.

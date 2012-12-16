@@ -1,13 +1,10 @@
-// Copyright (C) 2005-2009, Pierre Bonami and others.  All Rights Reserved.
+// Copyright (C) 2005-2008, Pierre Bonami and others.  All Rights Reserved.
 // Author:   Pierre Bonami
 //           LIF
 //           CNRS, Aix-Marseille Universites
 // Date:     02/23/08
-//
-// $Id$
-//
-// This code is licensed under the terms of the Eclipse Public License (EPL).
 //---------------------------------------------------------------------------
+
 #ifndef CglLandPMessages_H
 #define CglLandPMessages_H
 
@@ -19,8 +16,7 @@ namespace LAP
 /** Forward declaration of class to store extra debug data.*/
 class DebugData;
 /** Types of messages for lift-and-project simplex.*/
-enum LAP_messages
-{
+enum LAP_messages {
     Separating,
     FoundImprovingRow,
     FoundBestImprovingCol,
@@ -42,8 +38,6 @@ enum LAP_messages
     WarnBadRhsComputation,
     WarnFailedPivotTol,
     WarnFailedPivotIIf,
-    RoundStats,
-    CutStat,
     DUMMY_END
 };
 /** Message handler for lift-and-project simplex. */

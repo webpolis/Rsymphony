@@ -3,11 +3,8 @@
 //           Tepper School of Business
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 // Date:     11/24/06
-//
-// $Id: CglRedSplitParam.cpp 944 2011-01-04 23:26:07Z lou $
 //---------------------------------------------------------------------------
 // Copyright (C) 2006, Francois Margot and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names

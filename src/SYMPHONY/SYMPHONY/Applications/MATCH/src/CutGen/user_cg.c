@@ -9,7 +9,7 @@
 /* This application was originally written by Michael Trick and was modified */
 /* by Ted Ralphs (ted@lehigh.edu)     .                                      */
 /*                                                                           */
-/* This software is licensed under the Eclipse Public License. Please see    */
+/* This software is licensed under the Common Public License. Please see     */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -113,7 +113,7 @@ int user_find_cuts(void *user, int varnum, int iter_num, int level,
    }
    
 #else
-   /* Here, we show how to use a user-defined cut class with a packed form. In
+   /* Here, we show how to use a user-defined cut class with a packed form. IN
       this case, the packed form is just to store the three nodes that form
       the triangle. See the function user_unpack_cuts() for the code to unpack
       the cut. */

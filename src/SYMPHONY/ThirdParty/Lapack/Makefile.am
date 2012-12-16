@@ -1,14 +1,18 @@
 # Copyright (C) 2006, 2008 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Eclipse Public License.
+# This file is distributed under the Common Public License.
 
-## $Id: Makefile.am 2313 2011-06-19 14:33:08Z stefan $
+## $Id: Makefile.am 1423 2009-10-28 02:36:30Z andreasw $
 
 AUTOMAKE_OPTIONS = foreign
 
 EXTRA_DIST = get.lapack INSTALL.LAPACK
 
-lib_LTLIBRARIES = libcoinlapack.la
+if SKIPMAKE
+  noinst_LTLIBRARIES =
+else
+  noinst_LTLIBRARIES = libcoinlapack.la
+endif
 
 LAPACK_FILES = \
 	dbdsqr.f \
@@ -23,12 +27,10 @@ LAPACK_FILES = \
 	dgetf2.f \
 	dgetrf.f \
 	dgetrs.f \
-	disnan.f \
 	dlabrd.f \
 	dlacpy.f \
 	dlae2.f \
 	dlaev2.f \
-	dlaisnan.f \
 	dlamch.f \
 	dlange.f \
 	dlanst.f \
@@ -37,7 +39,6 @@ LAPACK_FILES = \
 	dlarf.f \
 	dlarfb.f \
 	dlarfg.f \
-	dlarfp.f \
 	dlarft.f \
 	dlartg.f \
 	dlas2.f \
@@ -45,8 +46,6 @@ LAPACK_FILES = \
 	dlaset.f \
 	dlasq1.f \
 	dlasq2.f \
-	dlasq3.f \
-	dlasq4.f \
 	dlasq5.f \
 	dlasq6.f \
 	dlasr.f \
@@ -55,6 +54,8 @@ LAPACK_FILES = \
 	dlassq.f \
 	dlasv2.f \
 	dlatrd.f \
+	dlazq3.f \
+	dlazq4.f \
 	dorg2l.f \
 	dorg2r.f \
 	dorgbr.f \
@@ -77,12 +78,10 @@ LAPACK_FILES = \
 	dsytd2.f \
 	dsytrd.f \
 	ieeeck.f \
-	iladlc.f \
-	iladlr.f \
 	ilaenv.f \
 	iparmq.f
 
-libcoinlapack_la_SOURCES = $(LAPACK_FILES)
+nodist_libcoinlapack_la_SOURCES = $(LAPACK_FILES)
 
 libcoinlapack_la_LDFLAGS = $(LT_LDFLAGS)
 
@@ -95,19 +94,11 @@ dlamch.obj: dlamch.f
 dlamch.lo: dlamch.f
 	$(LIBTOOL) --tag=F77 --mode=compile $(F77) $(AM_FFLAGS) $(DLAMCH_FFLAGS) -c -o $@ $<
 
-pkgconfiglibdir = $(libdir)/pkgconfig
-pkgconfiglib_DATA = coinlapack.pc
-
-test:
-	@echo "No test available for Lapack."
-
 ########################################################################
 #                         Maintainer Stuff                             #
 ########################################################################
 
-CLEANFILES =
-
 # Files that are generated and should be cleaned with make distclean
 DISTCLEANFILES = $(LAPACK_FILES) $(MAKEOKFILE)
 
-include BuildTools/Makemain.inc
+include ../../BuildTools/Makemain.inc

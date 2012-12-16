@@ -1,8 +1,5 @@
-// $Id: CglSimpleRounding.cpp 1033 2011-06-19 16:49:13Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -21,7 +18,7 @@
 //-------------------------------------------------------------
 void
 CglSimpleRounding::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
-				const CglTreeInfo /*info*/) const
+				const CglTreeInfo info) const
 {
   int nRows=si.getNumRows(); // number of rows in the coefficient matrix
   int nCols=si.getNumCols(); // number of columns in the coefficient matrix
@@ -154,7 +151,7 @@ CglSimpleRounding::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
     if (fabs(cutRhs*gcd-b)> epsilon_){ // if the cut and row are different. 
       OsiRowCut rc;
       rc.setRow(cut.getNumElements(),cut.getIndices(),cut.getElements());
-      rc.setLb(-COIN_DBL_MAX);
+      rc.setLb(-DBL_MAX);
       rc.setUb(cutRhs);   
       cs.insert(rc);
 

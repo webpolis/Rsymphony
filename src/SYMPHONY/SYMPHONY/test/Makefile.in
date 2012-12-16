@@ -23,9 +23,9 @@
 #                                                                           #
 # The author of this file is Menal Guzelsoy                                 #
 #                                                                           #
-# (c) Copyright 2006-2011 Lehigh University. All Rights Reserved.           #
+# (c) Copyright 2006-2010 Lehigh University. All Rights Reserved.           #
 #                                                                           #
-# This software is licensed under the Eclipse Public License. Please see    #
+# This software is licensed under the Common Public License. Please see     #
 # accompanying file for terms.                                              #
 #                                                                           #
 #===========================================================================#
@@ -52,37 +52,66 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@USE_CGL_CUTS_TRUE@am__append_1 = $(CGLOBJDIR)/src/libCgl.la
+@USE_CGL_CUTS_TRUE@am__append_2 = \
+@USE_CGL_CUTS_TRUE@	`cat $(CGLOBJDIR)/cgl_addlibs.txt`
+
 
 # List all additionally required solver and Osi libraries
-@CLP_LP_SOLVER_TRUE@am__append_1 = -D__OSI_CLP__
-@CPLEX_LP_SOLVER_TRUE@am__append_2 = -D__OSI_CPLEX__
-@GLPK_LP_SOLVER_TRUE@am__append_3 = -D__OSI_GLPK__
-@SOPLEX_LP_SOLVER_TRUE@am__append_4 = -D__OSI_SOPLEX__
-@XPRESS_LP_SOLVER_TRUE@am__append_5 = -D__OSI_XPRESS__
-@SYM_PARALLEL_TRUE@am__append_6 = -I`$(CYGPATH_W) $(PVM_ROOT)/include`
-@SYM_PARALLEL_TRUE@am__append_7 = -L`$(CYGPATH_W) $(PVM_ROOT)/lib/$(ARCH)` \
+@CLP_LP_SOLVER_TRUE@am__append_3 = -I`$(CYGPATH_W) $(CLPSRCDIR)/src` \
+@CLP_LP_SOLVER_TRUE@	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiClp` \
+@CLP_LP_SOLVER_TRUE@	-I`$(CYGPATH_W) $(CLPOBJDIR)/inc` \
+@CLP_LP_SOLVER_TRUE@	-D__OSI_CLP__
+@CLP_LP_SOLVER_TRUE@am__append_4 = $(OSIOBJDIR)/src/OsiClp/libOsiClp.la \
+@CLP_LP_SOLVER_TRUE@	$(CLPOBJDIR)/src/libClp.la
+
+@CLP_LP_SOLVER_TRUE@am__append_5 = `cat $(CLPOBJDIR)/clp_addlibs.txt`
+@CPLEX_LP_SOLVER_TRUE@am__append_6 = -I`$(CYGPATH_W) $(CPXINCDIR)` \
+@CPLEX_LP_SOLVER_TRUE@	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiCpx` \
+@CPLEX_LP_SOLVER_TRUE@	-D__OSI_CPLEX__
+@CPLEX_LP_SOLVER_TRUE@am__append_7 = $(OSIOBJDIR)/src/OsiCpx/libOsiCpx.la
+@GLPK_LP_SOLVER_TRUE@am__append_8 = -I`$(CYGPATH_W) $(GLPKINCDIR)` \
+@GLPK_LP_SOLVER_TRUE@	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiGlpk` \
+@GLPK_LP_SOLVER_TRUE@	-D__OSI_GLPK__
+@GLPK_LP_SOLVER_TRUE@am__append_9 = $(OSIOBJDIR)/src/OsiGlpk/libOsiGlpk.la 
+@GLPK_LP_SOLVER_FALSE@@USE_GMPL_TRUE@am__append_10 = -I`$(CYGPATH_W) $(GLPKINCDIR)`
+@OSL_LP_SOLVER_TRUE@am__append_11 = -I`$(CYGPATH_W) $(OSLINCDIR)` \
+@OSL_LP_SOLVER_TRUE@	-I`$(CYGPATH_W) $(OSISRCDIR)/src/OsiOsl` \
+@OSL_LP_SOLVER_TRUE@	-D__OSI_OSL__
+@OSL_LP_SOLVER_TRUE@am__append_12 = $(OSIOBJDIR)/src/OsiOsl/libOsiOsl.la
+@SOPLEX_LP_SOLVER_TRUE@am__append_13 = -I`$(CYGPATH_W) $(SPXINCDIR)` \
+@SOPLEX_LP_SOLVER_TRUE@	-I`$(CYGPATH_W) \
+@SOPLEX_LP_SOLVER_TRUE@	$(OSISRCDIR)/src/OsiSpx` -D__OSI_SPX__
+@SOPLEX_LP_SOLVER_TRUE@am__append_14 = $(OSIOBJDIR)/src/OsiSpx/libOsiSpx.la
+@XPRESS_LP_SOLVER_TRUE@am__append_15 = -I`$(CYGPATH_W) $(XPRINCDIR)` \
+@XPRESS_LP_SOLVER_TRUE@	-I`$(CYGPATH_W) \
+@XPRESS_LP_SOLVER_TRUE@	$(OSISRCDIR)/src/OsiXpr` \
+@XPRESS_LP_SOLVER_TRUE@	-D__OSI_XPRESS__
+@XPRESS_LP_SOLVER_TRUE@am__append_16 = $(OSIOBJDIR)/src/OsiXpr/libOsiXpr.la
+@SYM_PARALLEL_TRUE@am__append_17 = -I`$(CYGPATH_W) $(PVM_ROOT)/include`
+@SYM_PARALLEL_TRUE@am__append_18 = -L`$(CYGPATH_W) $(PVM_ROOT)/lib/$(ARCH)` \
 @SYM_PARALLEL_TRUE@	-lgpvm3 -lpvm3
 
-@SYM_PARALLEL_TRUE@am__append_8 = ../src/libSym$(MASTEREXT).la ../src/OsiSym/libOsiSym.la
-@SYM_PARALLEL_FALSE@am__append_9 = $(SYMLIB)
-@USE_CL_TRUE@am__append_10 = cp -f OsiColCutTest.$(OBJEXT) unitTest-OsiColCutTest.$(OBJEXT); \
+@SYM_PARALLEL_TRUE@am__append_19 = $(SYMPHONYOBJDIR)/src/libSym$(MASTEREXT).la
+@SYM_PARALLEL_FALSE@am__append_20 = $(SYMLIB)
+@USE_CL_TRUE@am__append_21 = cp -f OsiColCutTest.$(OBJEXT) unitTest-OsiColCutTest.$(OBJEXT); \
 @USE_CL_TRUE@	cp -f OsiCutsTest.$(OBJEXT)  unitTest-OsiCutsTest.$(OBJEXT); \
 @USE_CL_TRUE@	cp -f OsiRowCutDebuggerTest.$(OBJEXT) unitTest-OsiRowCutDebuggerTest.$(OBJEXT); \
 @USE_CL_TRUE@	cp -f OsiRowCutTest.$(OBJEXT) unitTest-OsiRowCutTest.$(OBJEXT); \
+@USE_CL_TRUE@	cp -f OsiSolverInterfaceTest.$(OBJEXT) unitTest-OsiSolverInterfaceTest.$(OBJEXT); \
 @USE_CL_TRUE@	cp -f OsiSymSolverInterfaceTest.$(OBJEXT) unitTest-OsiSymSolverInterfaceTest.$(OBJEXT); \
 @USE_CL_TRUE@	cp -f unitTestSym.$(OBJEXT) unitTest-unitTestSym.$(OBJEXT); \
 @USE_CL_TRUE@	$(LIBTOOL) \
 @USE_CL_TRUE@	--tag=CXX --mode=link $(CXX) $(AM_CFLAGS) $(CCLCFLAGS) \
 @USE_CL_TRUE@	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 
-@USE_CL_TRUE@am__append_11 = OsiColCutTest.$(OBJEXT) OsiCutsTest.$(OBJEXT) \
+@USE_CL_TRUE@am__append_22 = OsiColCutTest.$(OBJEXT) OsiCutsTest.$(OBJEXT) \
 @USE_CL_TRUE@	OsiRowCutDebuggerTest.$(OBJEXT) OsiRowCutTest.$(OBJEXT) \
-@USE_CL_TRUE@	OsiSymSolverInterfaceTest.$(OBJEXT) unitTestSym.$(OBJEXT)
+@USE_CL_TRUE@	OsiSolverInterfaceTest.$(OBJEXT) OsiSymSolverInterfaceTest.$(OBJEXT) \
+@USE_CL_TRUE@	 unitTestSym.$(OBJEXT)
 
-@USE_CL_FALSE@am__append_12 = $(CXXLINK)
+@USE_CL_FALSE@am__append_23 = $(CXXLINK)
 noinst_PROGRAMS = unitTest$(EXEEXT) punitTest$(EXEEXT)
-@COIN_HAS_NETLIB_TRUE@am__append_13 = -netlibDir=`$(CYGPATH_W) $(NETLIB_DATA)` -testOsiSolverInterface
-@COIN_HAS_SAMPLE_TRUE@am__append_14 = -mpsDir=`$(CYGPATH_W) $(SAMPLE_DATA)`
 subdir = test
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -91,27 +120,60 @@ am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/include/config.h \
-	$(top_builddir)/include/config_sym.h
+CONFIG_HEADER = $(top_builddir)/include/config_sym.h
 CONFIG_CLEAN_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
-am_punitTest_OBJECTS = punitTest-OsiSymSolverInterfaceTest.$(OBJEXT) \
+am_punitTest_OBJECTS = punitTest-OsiColCutTest.$(OBJEXT) \
+	punitTest-OsiCutsTest.$(OBJEXT) \
+	punitTest-OsiRowCutDebuggerTest.$(OBJEXT) \
+	punitTest-OsiRowCutTest.$(OBJEXT) \
+	punitTest-OsiSolverInterfaceTest.$(OBJEXT) \
+	punitTest-OsiSymSolverInterfaceTest.$(OBJEXT) \
 	punitTest-unitTestSym.$(OBJEXT)
 punitTest_OBJECTS = $(am_punitTest_OBJECTS)
-@SYM_PARALLEL_TRUE@am__DEPENDENCIES_2 = ../src/libSym$(MASTEREXT).la \
-@SYM_PARALLEL_TRUE@	../src/OsiSym/libOsiSym.la
-am__DEPENDENCIES_3 = ../src/libSym.la ../src/OsiSym/libOsiSym.la
-@SYM_PARALLEL_FALSE@am__DEPENDENCIES_4 = $(am__DEPENDENCIES_3)
-am__DEPENDENCIES_5 = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_4)
-am__DEPENDENCIES_1 =
-am__DEPENDENCIES_6 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
-am__DEPENDENCIES_7 = $(am__DEPENDENCIES_6)
-@SYM_PARALLEL_TRUE@am__DEPENDENCIES_8 = $(PVM_ROOT)/lib/$(ARCH)`
-am__DEPENDENCIES_9 = $(am__DEPENDENCIES_7) $(am__DEPENDENCIES_8)
-am_unitTest_OBJECTS = unitTest-OsiSymSolverInterfaceTest.$(OBJEXT) \
+@SYM_PARALLEL_TRUE@am__DEPENDENCIES_8 = $(SYMPHONYOBJDIR)/src/libSym$(MASTEREXT).la
+am__DEPENDENCIES_9 = $(SYMPHONYOBJDIR)/src/libSym.la
+@SYM_PARALLEL_FALSE@am__DEPENDENCIES_10 = $(am__DEPENDENCIES_9)
+am__DEPENDENCIES_11 = $(am__DEPENDENCIES_8) $(am__DEPENDENCIES_10)
+@USE_CGL_CUTS_TRUE@am__DEPENDENCIES_1 = $(CGLOBJDIR)/src/libCgl.la
+@CLP_LP_SOLVER_TRUE@am__DEPENDENCIES_2 =  \
+@CLP_LP_SOLVER_TRUE@	$(OSIOBJDIR)/src/OsiClp/libOsiClp.la \
+@CLP_LP_SOLVER_TRUE@	$(CLPOBJDIR)/src/libClp.la
+@CPLEX_LP_SOLVER_TRUE@am__DEPENDENCIES_3 =  \
+@CPLEX_LP_SOLVER_TRUE@	$(OSIOBJDIR)/src/OsiCpx/libOsiCpx.la
+@GLPK_LP_SOLVER_TRUE@am__DEPENDENCIES_4 =  \
+@GLPK_LP_SOLVER_TRUE@	$(OSIOBJDIR)/src/OsiGlpk/libOsiGlpk.la
+@OSL_LP_SOLVER_TRUE@am__DEPENDENCIES_5 =  \
+@OSL_LP_SOLVER_TRUE@	$(OSIOBJDIR)/src/OsiOsl/libOsiOsl.la
+@SOPLEX_LP_SOLVER_TRUE@am__DEPENDENCIES_6 =  \
+@SOPLEX_LP_SOLVER_TRUE@	$(OSIOBJDIR)/src/OsiSpx/libOsiSpx.la
+@XPRESS_LP_SOLVER_TRUE@am__DEPENDENCIES_7 =  \
+@XPRESS_LP_SOLVER_TRUE@	$(OSIOBJDIR)/src/OsiXpr/libOsiXpr.la
+am__DEPENDENCIES_12 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_2) \
+	$(am__DEPENDENCIES_3) $(am__DEPENDENCIES_4) \
+	$(am__DEPENDENCIES_5) $(am__DEPENDENCIES_6) \
+	$(am__DEPENDENCIES_7) $(OSIOBJDIR)/src/libOsi.la \
+	$(COINUTILSOBJDIR)/src/libCoinUtils.la \
+	$(OSIOBJDIR)/src/OsiSym/libOsiSym.la
+@USE_CGL_CUTS_TRUE@am__DEPENDENCIES_13 = `cat \
+@USE_CGL_CUTS_TRUE@	$(CGLOBJDIR)/cgl_addlibs.txt`
+@CLP_LP_SOLVER_TRUE@am__DEPENDENCIES_14 = `cat \
+@CLP_LP_SOLVER_TRUE@	$(CLPOBJDIR)/clp_addlibs.txt`
+am__DEPENDENCIES_15 = `cat $(OSIOBJDIR)/osi_addlibs.txt` `cat \
+	$(COINUTILSOBJDIR)/coinutils_addlibs.txt` \
+	$(am__DEPENDENCIES_13) $(am__DEPENDENCIES_14)
+am__DEPENDENCIES_16 = $(am__DEPENDENCIES_12) $(am__DEPENDENCIES_15)
+@SYM_PARALLEL_TRUE@am__DEPENDENCIES_17 = $(PVM_ROOT)/lib/$(ARCH)`
+am__DEPENDENCIES_18 = $(am__DEPENDENCIES_16) $(am__DEPENDENCIES_17)
+am_unitTest_OBJECTS = unitTest-OsiColCutTest.$(OBJEXT) \
+	unitTest-OsiCutsTest.$(OBJEXT) \
+	unitTest-OsiRowCutDebuggerTest.$(OBJEXT) \
+	unitTest-OsiRowCutTest.$(OBJEXT) \
+	unitTest-OsiSolverInterfaceTest.$(OBJEXT) \
+	unitTest-OsiSymSolverInterfaceTest.$(OBJEXT) \
 	unitTest-unitTestSym.$(OBJEXT)
 unitTest_OBJECTS = $(am_unitTest_OBJECTS)
-depcomp = $(SHELL) $(top_srcdir)/depcomp
+depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -126,8 +188,10 @@ DIST_SOURCES = $(punitTest_SOURCES) $(unitTest_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ABSBUILDDIR = @ABSBUILDDIR@
 ACLOCAL = @ACLOCAL@
+ADDLIBS = @ADDLIBS@ `cat $(OSIOBJDIR)/osi_addlibs.txt` `cat \
+	$(COINUTILSOBJDIR)/coinutils_addlibs.txt` $(am__append_2) \
+	$(am__append_5)
 ADD_CFLAGS = @ADD_CFLAGS@
 ADD_CXXFLAGS = @ADD_CXXFLAGS@
 ALWAYS_FALSE_FALSE = @ALWAYS_FALSE_FALSE@
@@ -147,71 +211,47 @@ CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CDEFS = @CDEFS@
 CFLAGS = @CFLAGS@
-CGL_CFLAGS = @CGL_CFLAGS@
-CGL_CFLAGS_INSTALLED = @CGL_CFLAGS_INSTALLED@
-CGL_DATA = @CGL_DATA@
-CGL_DATA_INSTALLED = @CGL_DATA_INSTALLED@
-CGL_DEPENDENCIES = @CGL_DEPENDENCIES@
-CGL_LIBS = @CGL_LIBS@
-CGL_LIBS_INSTALLED = @CGL_LIBS_INSTALLED@
+CGLDOCDIR = @CGLDOCDIR@
+CGLOBJDIR = @CGLOBJDIR@
+CGLSRCDIR = @CGLSRCDIR@
 CHECK_CUT_VALIDITY_FALSE = @CHECK_CUT_VALIDITY_FALSE@
 CHECK_CUT_VALIDITY_TRUE = @CHECK_CUT_VALIDITY_TRUE@
 CLLCFLAGS = @CLLCFLAGS@
-CLP_CFLAGS = @CLP_CFLAGS@
-CLP_CFLAGS_INSTALLED = @CLP_CFLAGS_INSTALLED@
-CLP_DATA = @CLP_DATA@
-CLP_DATA_INSTALLED = @CLP_DATA_INSTALLED@
-CLP_DEPENDENCIES = @CLP_DEPENDENCIES@
-CLP_LIBS = @CLP_LIBS@
-CLP_LIBS_INSTALLED = @CLP_LIBS_INSTALLED@
+CLPDOCDIR = @CLPDOCDIR@
+CLPOBJDIR = @CLPOBJDIR@
+CLPSRCDIR = @CLPSRCDIR@
 CLP_LP_SOLVER_FALSE = @CLP_LP_SOLVER_FALSE@
 CLP_LP_SOLVER_TRUE = @CLP_LP_SOLVER_TRUE@
-COINDEPEND_CFLAGS = @COINDEPEND_CFLAGS@
-COINDEPEND_CFLAGS_INSTALLED = @COINDEPEND_CFLAGS_INSTALLED@
-COINDEPEND_DATA = @COINDEPEND_DATA@
-COINDEPEND_DATA_INSTALLED = @COINDEPEND_DATA_INSTALLED@
-COINDEPEND_DEPENDENCIES = @COINDEPEND_DEPENDENCIES@
-COINDEPEND_LIBS = @COINDEPEND_LIBS@
-COINDEPEND_LIBS_INSTALLED = @COINDEPEND_LIBS_INSTALLED@
-COIN_CC_IS_CL_FALSE = @COIN_CC_IS_CL_FALSE@
-COIN_CC_IS_CL_TRUE = @COIN_CC_IS_CL_TRUE@
-COIN_CXX_IS_CL_FALSE = @COIN_CXX_IS_CL_FALSE@
-COIN_CXX_IS_CL_TRUE = @COIN_CXX_IS_CL_TRUE@
+COINUTILSDOCDIR = @COINUTILSDOCDIR@
+COINUTILSOBJDIR = @COINUTILSOBJDIR@
+COINUTILSSRCDIR = @COINUTILSSRCDIR@
+COIN_BUILD_GLPK_FALSE = @COIN_BUILD_GLPK_FALSE@
+COIN_BUILD_GLPK_TRUE = @COIN_BUILD_GLPK_TRUE@
 COIN_HAS_CGL_FALSE = @COIN_HAS_CGL_FALSE@
 COIN_HAS_CGL_TRUE = @COIN_HAS_CGL_TRUE@
 COIN_HAS_CLP = @COIN_HAS_CLP@
 COIN_HAS_CLP_FALSE = @COIN_HAS_CLP_FALSE@
 COIN_HAS_CLP_TRUE = @COIN_HAS_CLP_TRUE@
-COIN_HAS_COINDEPEND_FALSE = @COIN_HAS_COINDEPEND_FALSE@
-COIN_HAS_COINDEPEND_TRUE = @COIN_HAS_COINDEPEND_TRUE@
+COIN_HAS_COINUTILS_FALSE = @COIN_HAS_COINUTILS_FALSE@
+COIN_HAS_COINUTILS_TRUE = @COIN_HAS_COINUTILS_TRUE@
 COIN_HAS_CPX_FALSE = @COIN_HAS_CPX_FALSE@
 COIN_HAS_CPX_TRUE = @COIN_HAS_CPX_TRUE@
-COIN_HAS_DYLP_FALSE = @COIN_HAS_DYLP_FALSE@
-COIN_HAS_DYLP_TRUE = @COIN_HAS_DYLP_TRUE@
+COIN_HAS_DATA_FALSE = @COIN_HAS_DATA_FALSE@
+COIN_HAS_DATA_TRUE = @COIN_HAS_DATA_TRUE@
 COIN_HAS_GLPK_FALSE = @COIN_HAS_GLPK_FALSE@
 COIN_HAS_GLPK_TRUE = @COIN_HAS_GLPK_TRUE@
-COIN_HAS_MIPLIB3_FALSE = @COIN_HAS_MIPLIB3_FALSE@
-COIN_HAS_MIPLIB3_TRUE = @COIN_HAS_MIPLIB3_TRUE@
-COIN_HAS_MSK_FALSE = @COIN_HAS_MSK_FALSE@
-COIN_HAS_MSK_TRUE = @COIN_HAS_MSK_TRUE@
-COIN_HAS_NETLIB_FALSE = @COIN_HAS_NETLIB_FALSE@
-COIN_HAS_NETLIB_TRUE = @COIN_HAS_NETLIB_TRUE@
-COIN_HAS_OSITESTS_FALSE = @COIN_HAS_OSITESTS_FALSE@
-COIN_HAS_OSITESTS_TRUE = @COIN_HAS_OSITESTS_TRUE@
-COIN_HAS_PKGCONFIG_FALSE = @COIN_HAS_PKGCONFIG_FALSE@
-COIN_HAS_PKGCONFIG_TRUE = @COIN_HAS_PKGCONFIG_TRUE@
-COIN_HAS_PVM_FALSE = @COIN_HAS_PVM_FALSE@
-COIN_HAS_PVM_TRUE = @COIN_HAS_PVM_TRUE@
+COIN_HAS_OSI_FALSE = @COIN_HAS_OSI_FALSE@
+COIN_HAS_OSI_TRUE = @COIN_HAS_OSI_TRUE@
+COIN_HAS_OSL_FALSE = @COIN_HAS_OSL_FALSE@
+COIN_HAS_OSL_TRUE = @COIN_HAS_OSL_TRUE@
 COIN_HAS_READLINE_FALSE = @COIN_HAS_READLINE_FALSE@
 COIN_HAS_READLINE_TRUE = @COIN_HAS_READLINE_TRUE@
-COIN_HAS_SAMPLE_FALSE = @COIN_HAS_SAMPLE_FALSE@
-COIN_HAS_SAMPLE_TRUE = @COIN_HAS_SAMPLE_TRUE@
-COIN_HAS_VOL_FALSE = @COIN_HAS_VOL_FALSE@
-COIN_HAS_VOL_TRUE = @COIN_HAS_VOL_TRUE@
+COIN_HAS_SPX_FALSE = @COIN_HAS_SPX_FALSE@
+COIN_HAS_SPX_TRUE = @COIN_HAS_SPX_TRUE@
+COIN_HAS_SYMPHONY_FALSE = @COIN_HAS_SYMPHONY_FALSE@
+COIN_HAS_SYMPHONY_TRUE = @COIN_HAS_SYMPHONY_TRUE@
 COIN_HAS_XPR_FALSE = @COIN_HAS_XPR_FALSE@
 COIN_HAS_XPR_TRUE = @COIN_HAS_XPR_TRUE@
-COIN_PKG_CONFIG_PATH = @COIN_PKG_CONFIG_PATH@
-COIN_PKG_CONFIG_PATH_UNINSTALLED = @COIN_PKG_CONFIG_PATH_UNINSTALLED@
 COMPILE_FRAC_BRANCHING_FALSE = @COMPILE_FRAC_BRANCHING_FALSE@
 COMPILE_FRAC_BRANCHING_TRUE = @COMPILE_FRAC_BRANCHING_TRUE@
 CPEXT = @CPEXT@
@@ -219,19 +259,17 @@ CPLEX_LP_SOLVER_FALSE = @CPLEX_LP_SOLVER_FALSE@
 CPLEX_LP_SOLVER_TRUE = @CPLEX_LP_SOLVER_TRUE@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
-CPX_CFLAGS = @CPX_CFLAGS@
-CPX_CFLAGS_INSTALLED = @CPX_CFLAGS_INSTALLED@
-CPX_DATA = @CPX_DATA@
-CPX_DATA_INSTALLED = @CPX_DATA_INSTALLED@
-CPX_DEPENDENCIES = @CPX_DEPENDENCIES@
-CPX_LIBS = @CPX_LIBS@
-CPX_LIBS_INSTALLED = @CPX_LIBS_INSTALLED@
+CPXINCDIR = @CPXINCDIR@
+CPXLIB = @CPXLIB@
 CXX = @CXX@
 CXXCPP = @CXXCPP@
 CXXDEFS = @CXXDEFS@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
+DATADOCDIR = @DATADOCDIR@
+DATAOBJDIR = @DATAOBJDIR@
+DATASRCDIR = @DATASRCDIR@
 DBG_CFLAGS = @DBG_CFLAGS@
 DBG_CXXFLAGS = @DBG_CXXFLAGS@
 DEFS = @DEFS@
@@ -240,13 +278,6 @@ DO_TESTS_FALSE = @DO_TESTS_FALSE@
 DO_TESTS_TRUE = @DO_TESTS_TRUE@
 DRAWGRAPH_FALSE = @DRAWGRAPH_FALSE@
 DRAWGRAPH_TRUE = @DRAWGRAPH_TRUE@
-DYLP_CFLAGS = @DYLP_CFLAGS@
-DYLP_CFLAGS_INSTALLED = @DYLP_CFLAGS_INSTALLED@
-DYLP_DATA = @DYLP_DATA@
-DYLP_DATA_INSTALLED = @DYLP_DATA_INSTALLED@
-DYLP_DEPENDENCIES = @DYLP_DEPENDENCIES@
-DYLP_LIBS = @DYLP_LIBS@
-DYLP_LIBS_INSTALLED = @DYLP_LIBS_INSTALLED@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
@@ -254,14 +285,11 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
+FADDLIBS = @FADDLIBS@
 FFLAGS = @FFLAGS@
-GLPK_CFLAGS = @GLPK_CFLAGS@
-GLPK_CFLAGS_INSTALLED = @GLPK_CFLAGS_INSTALLED@
-GLPK_DATA = @GLPK_DATA@
-GLPK_DATA_INSTALLED = @GLPK_DATA_INSTALLED@
-GLPK_DEPENDENCIES = @GLPK_DEPENDENCIES@
-GLPK_LIBS = @GLPK_LIBS@
-GLPK_LIBS_INSTALLED = @GLPK_LIBS_INSTALLED@
+GLPKINCDIR = @GLPKINCDIR@
+GLPKLIB = @GLPKLIB@
+GLPKOBJDIR = @GLPKOBJDIR@
 GLPK_LP_SOLVER_FALSE = @GLPK_LP_SOLVER_FALSE@
 GLPK_LP_SOLVER_TRUE = @GLPK_LP_SOLVER_TRUE@
 HAVE_EXTERNALS_FALSE = @HAVE_EXTERNALS_FALSE@
@@ -285,41 +313,18 @@ MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
 MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MASTEREXT = @MASTEREXT@
-MIPLIB3_CFLAGS = @MIPLIB3_CFLAGS@
-MIPLIB3_CFLAGS_INSTALLED = @MIPLIB3_CFLAGS_INSTALLED@
-MIPLIB3_DATA = @MIPLIB3_DATA@
-MIPLIB3_DATA_INSTALLED = @MIPLIB3_DATA_INSTALLED@
-MIPLIB3_DEPENDENCIES = @MIPLIB3_DEPENDENCIES@
-MIPLIB3_LIBS = @MIPLIB3_LIBS@
-MIPLIB3_LIBS_INSTALLED = @MIPLIB3_LIBS_INSTALLED@
 MPICC = @MPICC@
 MPICXX = @MPICXX@
-MSK_CFLAGS = @MSK_CFLAGS@
-MSK_CFLAGS_INSTALLED = @MSK_CFLAGS_INSTALLED@
-MSK_DATA = @MSK_DATA@
-MSK_DATA_INSTALLED = @MSK_DATA_INSTALLED@
-MSK_DEPENDENCIES = @MSK_DEPENDENCIES@
-MSK_LIBS = @MSK_LIBS@
-MSK_LIBS_INSTALLED = @MSK_LIBS_INSTALLED@
-NETLIB_CFLAGS = @NETLIB_CFLAGS@
-NETLIB_CFLAGS_INSTALLED = @NETLIB_CFLAGS_INSTALLED@
-NETLIB_DATA = @NETLIB_DATA@
-NETLIB_DATA_INSTALLED = @NETLIB_DATA_INSTALLED@
-NETLIB_DEPENDENCIES = @NETLIB_DEPENDENCIES@
-NETLIB_LIBS = @NETLIB_LIBS@
-NETLIB_LIBS_INSTALLED = @NETLIB_LIBS_INSTALLED@
 OBJEXT = @OBJEXT@
 OPENMP_FALSE = @OPENMP_FALSE@
 OPENMP_TRUE = @OPENMP_TRUE@
 OPT_CFLAGS = @OPT_CFLAGS@
 OPT_CXXFLAGS = @OPT_CXXFLAGS@
-OSITESTS_CFLAGS = @OSITESTS_CFLAGS@
-OSITESTS_CFLAGS_INSTALLED = @OSITESTS_CFLAGS_INSTALLED@
-OSITESTS_DATA = @OSITESTS_DATA@
-OSITESTS_DATA_INSTALLED = @OSITESTS_DATA_INSTALLED@
-OSITESTS_DEPENDENCIES = @OSITESTS_DEPENDENCIES@
-OSITESTS_LIBS = @OSITESTS_LIBS@
-OSITESTS_LIBS_INSTALLED = @OSITESTS_LIBS_INSTALLED@
+OSIDOCDIR = @OSIDOCDIR@
+OSIOBJDIR = @OSIOBJDIR@
+OSISRCDIR = @OSISRCDIR@
+OSLINCDIR = @OSLINCDIR@
+OSLLIB = @OSLLIB@
 OSL_LP_SOLVER_FALSE = @OSL_LP_SOLVER_FALSE@
 OSL_LP_SOLVER_TRUE = @OSL_LP_SOLVER_TRUE@
 PACKAGE = @PACKAGE@
@@ -329,22 +334,12 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PKG_CONFIG = @PKG_CONFIG@
 PSEUDO_COSTS_FALSE = @PSEUDO_COSTS_FALSE@
 PSEUDO_COSTS_TRUE = @PSEUDO_COSTS_TRUE@
-PVMINCDIR = @PVMINCDIR@
-PVMLIB = @PVMLIB@
 RANLIB = @RANLIB@
 ROOT_NODE_ONLY_FALSE = @ROOT_NODE_ONLY_FALSE@
 ROOT_NODE_ONLY_TRUE = @ROOT_NODE_ONLY_TRUE@
 RPATH_FLAGS = @RPATH_FLAGS@
-SAMPLE_CFLAGS = @SAMPLE_CFLAGS@
-SAMPLE_CFLAGS_INSTALLED = @SAMPLE_CFLAGS_INSTALLED@
-SAMPLE_DATA = @SAMPLE_DATA@
-SAMPLE_DATA_INSTALLED = @SAMPLE_DATA_INSTALLED@
-SAMPLE_DEPENDENCIES = @SAMPLE_DEPENDENCIES@
-SAMPLE_LIBS = @SAMPLE_LIBS@
-SAMPLE_LIBS_INSTALLED = @SAMPLE_LIBS_INSTALLED@
 SENSITIVITY_ANALYSIS_FALSE = @SENSITIVITY_ANALYSIS_FALSE@
 SENSITIVITY_ANALYSIS_TRUE = @SENSITIVITY_ANALYSIS_TRUE@
 SET_MAKE = @SET_MAKE@
@@ -353,6 +348,8 @@ SIGHANDLER_FALSE = @SIGHANDLER_FALSE@
 SIGHANDLER_TRUE = @SIGHANDLER_TRUE@
 SOPLEX_LP_SOLVER_FALSE = @SOPLEX_LP_SOLVER_FALSE@
 SOPLEX_LP_SOLVER_TRUE = @SOPLEX_LP_SOLVER_TRUE@
+SPXINCDIR = @SPXINCDIR@
+SPXLIB = @SPXLIB@
 STATICEXE_FALSE = @STATICEXE_FALSE@
 STATICEXE_TRUE = @STATICEXE_TRUE@
 STATISTICS_FALSE = @STATISTICS_FALSE@
@@ -362,14 +359,9 @@ SYMAPPLDIR = @SYMAPPLDIR@
 SYMDEFS = @SYMDEFS@
 SYMINCDIR = @SYMINCDIR@
 SYMPDEFS = @SYMPDEFS@
-SYMPHONYLIB_CFLAGS = @SYMPHONYLIB_CFLAGS@
-SYMPHONYLIB_CFLAGS_INSTALLED = @SYMPHONYLIB_CFLAGS_INSTALLED@
-SYMPHONYLIB_DEPENDENCIES = @SYMPHONYLIB_DEPENDENCIES@
-SYMPHONYLIB_LIBS = @SYMPHONYLIB_LIBS@
-SYMPHONYLIB_LIBS_INSTALLED = @SYMPHONYLIB_LIBS_INSTALLED@
-SYMPHONYLIB_PCLIBS = @SYMPHONYLIB_PCLIBS@
-SYMPHONYLIB_PCREQUIRES = @SYMPHONYLIB_PCREQUIRES@
-SYMPHONY_SVN_REV = @SYMPHONY_SVN_REV@
+SYMPHONYDOCDIR = @SYMPHONYDOCDIR@
+SYMPHONYOBJDIR = @SYMPHONYOBJDIR@
+SYMPHONYSRCDIR = @SYMPHONYSRCDIR@
 SYMSRCDIR = @SYMSRCDIR@
 SYM_COMPILE_IN_CG_FALSE = @SYM_COMPILE_IN_CG_FALSE@
 SYM_COMPILE_IN_CG_TRUE = @SYM_COMPILE_IN_CG_TRUE@
@@ -395,25 +387,13 @@ USE_CL_TRUE = @USE_CL_TRUE@
 USE_GMPL_FALSE = @USE_GMPL_FALSE@
 USE_GMPL_TRUE = @USE_GMPL_TRUE@
 VERSION = @VERSION@
-VOL_CFLAGS = @VOL_CFLAGS@
-VOL_CFLAGS_INSTALLED = @VOL_CFLAGS_INSTALLED@
-VOL_DATA = @VOL_DATA@
-VOL_DATA_INSTALLED = @VOL_DATA_INSTALLED@
-VOL_DEPENDENCIES = @VOL_DEPENDENCIES@
-VOL_LIBS = @VOL_LIBS@
-VOL_LIBS_INSTALLED = @VOL_LIBS_INSTALLED@
 VPATH_DISTCLEANFILES = @VPATH_DISTCLEANFILES@
 WHATTOMAKEBINS = @WHATTOMAKEBINS@
 WHATTOMAKELIBS = @WHATTOMAKELIBS@
 XPRESS_LP_SOLVER_FALSE = @XPRESS_LP_SOLVER_FALSE@
 XPRESS_LP_SOLVER_TRUE = @XPRESS_LP_SOLVER_TRUE@
-XPR_CFLAGS = @XPR_CFLAGS@
-XPR_CFLAGS_INSTALLED = @XPR_CFLAGS_INSTALLED@
-XPR_DATA = @XPR_DATA@
-XPR_DATA_INSTALLED = @XPR_DATA_INSTALLED@
-XPR_DEPENDENCIES = @XPR_DEPENDENCIES@
-XPR_LIBS = @XPR_LIBS@
-XPR_LIBS_INSTALLED = @XPR_LIBS_INSTALLED@
+XPRINCDIR = @XPRINCDIR@
+XPRLIB = @XPRLIB@
 abs_bin_dir = @abs_bin_dir@
 abs_include_dir = @abs_include_dir@
 abs_lib_dir = @abs_lib_dir@
@@ -426,7 +406,6 @@ ac_ct_F77 = @ac_ct_F77@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
 ac_cxx_preproc_warn_flag = @ac_cxx_preproc_warn_flag@
-ac_pt_PKG_CONFIG = @ac_pt_PKG_CONFIG@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -447,7 +426,6 @@ exec_prefix = @exec_prefix@
 have_autoconf = @have_autoconf@
 have_automake = @have_automake@
 have_svn = @have_svn@
-have_svnversion = @have_svnversion@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -474,48 +452,89 @@ AUTOMAKE_OPTIONS = foreign
 ########################################################################
 #                         unitTest for Symphony                        #
 ########################################################################
+test_srcdir = $(OSISRCDIR)/test
 
 # Add include files
-AM_CPPFLAGS = $(OSITESTS_CFLAGS) $(SYMPHONYLIB_CFLAGS) \
-	-DCOIN_HAS_SYMPHONY $(am__append_1) $(am__append_2) \
-	$(am__append_3) $(am__append_4) $(am__append_5)
+
+########################################################################
+#                            Additional flags                          #
+########################################################################
+
+# Here list all include flags, relative to this "srcdir" directory.  This
+# "cygpath" stuff is necessary to compile with native compilers on Windows.
+# "top_srcdir" refers to the basic directory for the main package that is
+# being compiled.
+AM_CPPFLAGS = -I`$(CYGPATH_W) $(SYMINCDIR)` -I`$(CYGPATH_W) \
+	$(OSISRCDIR)/src/OsiSym` -DCOIN_HAS_SYMPHONY $(am__append_3) \
+	$(am__append_6) $(am__append_8) $(am__append_10) \
+	$(am__append_11) $(am__append_13) $(am__append_15) \
+	-I`$(CYGPATH_W) $(CGLSRCDIR)/src` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglClique` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglDuplicateRow` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglFlowCover` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglGomory` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglKnapsackCover` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglLiftAndProject` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglMixedIntegerRounding` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglMixedIntegerRounding2` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglOddHole` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglPreProcess` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglProbing` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglRedSplit` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglSimpleRounding` -I`$(CYGPATH_W) \
+	$(CGLSRCDIR)/src/CglTwomir` -I`$(CYGPATH_W) \
+	$(COINUTILSSRCDIR)/src` -I`$(CYGPATH_W) \
+	$(COINUTILSOBJDIR)/inc` -I`$(CYGPATH_W) $(OSISRCDIR)/src` \
+	-I`$(CYGPATH_W) $(OSIOBJDIR)/inc` -I`$(CYGPATH_W) \
+	$(CGLOBJDIR)/inc`
 SYMCPPFLAGS = $(AM_CPPFLAGS) $(SYMDEFS)
-SYMPCPPFLAGS = $(AM_CPPFLAGS) $(SYMPDEFS) $(am__append_6)
+SYMPCPPFLAGS = $(AM_CPPFLAGS) $(SYMPDEFS) $(am__append_17)
 APPLCPPFLAGS = 
-SYMPALLLDADD = $(ALLLDADD) $(am__append_7)
-LDADD = $(OSITESTS_LIBS) $(SYMPHONYLIB_LIBS)
-DEPENDENCIES = $(OSITESTS_DEPENDENCIES) $(SYMPHONYLIB_DEPENDENCIES)
+SYMPALLLDADD = $(ALLLDADD) $(am__append_18)
+LDADD = $(am__append_1) $(am__append_4) $(am__append_7) \
+	$(am__append_9) $(am__append_12) $(am__append_14) \
+	$(am__append_16) $(OSIOBJDIR)/src/libOsi.la \
+	$(COINUTILSOBJDIR)/src/libCoinUtils.la \
+	$(OSIOBJDIR)/src/OsiSym/libOsiSym.la
 
 ########################################################################
 #                            Additional Definitions                    #
 ########################################################################
-ALLLDADD = $(LDADD)
-SYMLIB = ../src/libSym.la ../src/OsiSym/libOsiSym.la
-SYMPLIB = $(am__append_8) $(am__append_9)
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(top_srcdir)/include` \
-		   -I`$(CYGPATH_W) $(top_builddir)/include` \
-		   -I`$(CYGPATH_W) $(top_srcdir)/src/OsiSym`
-
-TestLDADD = $(LDADD) $(am__append_11)
-TestLINK = $(am__append_10) $(am__append_12)
+ALLLDADD = $(LDADD) $(ADDLIBS)
+SYMLIB = $(SYMPHONYOBJDIR)/src/libSym.la
+SYMPLIB = $(am__append_19) $(am__append_20)
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/inc
+TestLDADD = $(LDADD) $(am__append_22)
+TestLINK = $(am__append_21) $(am__append_23)
 unitTest_SOURCES = \
+	$(test_srcdir)/OsiColCutTest.cpp \
+	$(test_srcdir)/OsiCutsTest.cpp \
+	$(test_srcdir)/OsiRowCutDebuggerTest.cpp \
+	$(test_srcdir)/OsiRowCutTest.cpp \
+	OsiSolverInterfaceTest.cpp \
 	OsiSymSolverInterfaceTest.cpp \
 	unitTestSym.cpp
 
 punitTest_SOURCES = \
+	$(test_srcdir)/OsiColCutTest.cpp \
+	$(test_srcdir)/OsiCutsTest.cpp \
+	$(test_srcdir)/OsiRowCutDebuggerTest.cpp \
+	$(test_srcdir)/OsiRowCutTest.cpp \
+	OsiSolverInterfaceTest.cpp \
 	OsiSymSolverInterfaceTest.cpp \
 	unitTestSym.cpp
 
-unitTest_CPPFLAGS = $(SYMCPPFLAGS) $(OSIUNITTEST_CFLAGS)
-unitTest_LDADD = $(SYMLIB) $(ALLLDADD) $(OSIUNITTEST_LIBS)
-unitTest_DEPENDENCIES = $(SYMLIB) $(DEPENDENCIES)
+unitTest_DEPENDENCIES = $(TestLDADD) $(SYMLIB)
+unitTest_CPPFLAGS = $(SYMCPPFLAGS)
+unitTest_LDADD = $(SYMLIB) $(ALLLDADD)
+unitTest_LDFLAGS = -rpath $(libdir)
 unitTest_LINK = $(TestLINK)
-punitTest_CPPFLAGS = $(SYMPCPPFLAGS) $(OSIUNITTEST_CFLAGS)
-punitTest_LDADD = $(SYMPLIB) $(SYMPALLLDADD) $(OSIUNITTEST_LIBS)
-punitTest_DEPENDENCIES = $(SYMPLIB) $(DEPENDENCIES)
-@COIN_HAS_MIPLIB3_FALSE@MIPLIBDIR = -miplib3Dir=`$(CYGPATH_W) $(top_srcdir)/miplib3`
-@COIN_HAS_MIPLIB3_TRUE@MIPLIBDIR = -miplib3Dir=`$(CYGPATH_W) $(MIPLIB3_DATA)`
-unittestflags = $(am__append_13) $(am__append_14)
+punitTest_DEPENDENCIES = $(LDADD) $(SYMPLIB)
+punitTest_CPPFLAGS = $(SYMPCPPFLAGS)
+punitTest_LDADD = $(SYMPLIB) $(SYMPALLLDADD)
+punitTest_LDFLAGS = -rpath $(libdir)
+
+# We are using the Cbc solver executable to do the unit test
 testFILES = air03 dcmulti egout flugpl khb05250 l152lav \
 	lseu mod010 p0033 p0201 stein27 vpm1
 
@@ -580,8 +599,18 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/punitTest-OsiColCutTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/punitTest-OsiCutsTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/punitTest-OsiRowCutDebuggerTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/punitTest-OsiRowCutTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/punitTest-OsiSolverInterfaceTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/punitTest-OsiSymSolverInterfaceTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/punitTest-unitTestSym.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unitTest-OsiColCutTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unitTest-OsiCutsTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unitTest-OsiRowCutDebuggerTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unitTest-OsiRowCutTest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unitTest-OsiSolverInterfaceTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unitTest-OsiSymSolverInterfaceTest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unitTest-unitTestSym.Po@am__quote@
 
@@ -605,6 +634,76 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
+
+punitTest-OsiColCutTest.o: $(test_srcdir)/OsiColCutTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT punitTest-OsiColCutTest.o -MD -MP -MF "$(DEPDIR)/punitTest-OsiColCutTest.Tpo" -c -o punitTest-OsiColCutTest.o `test -f '$(test_srcdir)/OsiColCutTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiColCutTest.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/punitTest-OsiColCutTest.Tpo" "$(DEPDIR)/punitTest-OsiColCutTest.Po"; else rm -f "$(DEPDIR)/punitTest-OsiColCutTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiColCutTest.cpp' object='punitTest-OsiColCutTest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o punitTest-OsiColCutTest.o `test -f '$(test_srcdir)/OsiColCutTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiColCutTest.cpp
+
+punitTest-OsiColCutTest.obj: $(test_srcdir)/OsiColCutTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT punitTest-OsiColCutTest.obj -MD -MP -MF "$(DEPDIR)/punitTest-OsiColCutTest.Tpo" -c -o punitTest-OsiColCutTest.obj `if test -f '$(test_srcdir)/OsiColCutTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiColCutTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiColCutTest.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/punitTest-OsiColCutTest.Tpo" "$(DEPDIR)/punitTest-OsiColCutTest.Po"; else rm -f "$(DEPDIR)/punitTest-OsiColCutTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiColCutTest.cpp' object='punitTest-OsiColCutTest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o punitTest-OsiColCutTest.obj `if test -f '$(test_srcdir)/OsiColCutTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiColCutTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiColCutTest.cpp'; fi`
+
+punitTest-OsiCutsTest.o: $(test_srcdir)/OsiCutsTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT punitTest-OsiCutsTest.o -MD -MP -MF "$(DEPDIR)/punitTest-OsiCutsTest.Tpo" -c -o punitTest-OsiCutsTest.o `test -f '$(test_srcdir)/OsiCutsTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiCutsTest.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/punitTest-OsiCutsTest.Tpo" "$(DEPDIR)/punitTest-OsiCutsTest.Po"; else rm -f "$(DEPDIR)/punitTest-OsiCutsTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiCutsTest.cpp' object='punitTest-OsiCutsTest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o punitTest-OsiCutsTest.o `test -f '$(test_srcdir)/OsiCutsTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiCutsTest.cpp
+
+punitTest-OsiCutsTest.obj: $(test_srcdir)/OsiCutsTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT punitTest-OsiCutsTest.obj -MD -MP -MF "$(DEPDIR)/punitTest-OsiCutsTest.Tpo" -c -o punitTest-OsiCutsTest.obj `if test -f '$(test_srcdir)/OsiCutsTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiCutsTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiCutsTest.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/punitTest-OsiCutsTest.Tpo" "$(DEPDIR)/punitTest-OsiCutsTest.Po"; else rm -f "$(DEPDIR)/punitTest-OsiCutsTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiCutsTest.cpp' object='punitTest-OsiCutsTest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o punitTest-OsiCutsTest.obj `if test -f '$(test_srcdir)/OsiCutsTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiCutsTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiCutsTest.cpp'; fi`
+
+punitTest-OsiRowCutDebuggerTest.o: $(test_srcdir)/OsiRowCutDebuggerTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT punitTest-OsiRowCutDebuggerTest.o -MD -MP -MF "$(DEPDIR)/punitTest-OsiRowCutDebuggerTest.Tpo" -c -o punitTest-OsiRowCutDebuggerTest.o `test -f '$(test_srcdir)/OsiRowCutDebuggerTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiRowCutDebuggerTest.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/punitTest-OsiRowCutDebuggerTest.Tpo" "$(DEPDIR)/punitTest-OsiRowCutDebuggerTest.Po"; else rm -f "$(DEPDIR)/punitTest-OsiRowCutDebuggerTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiRowCutDebuggerTest.cpp' object='punitTest-OsiRowCutDebuggerTest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o punitTest-OsiRowCutDebuggerTest.o `test -f '$(test_srcdir)/OsiRowCutDebuggerTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiRowCutDebuggerTest.cpp
+
+punitTest-OsiRowCutDebuggerTest.obj: $(test_srcdir)/OsiRowCutDebuggerTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT punitTest-OsiRowCutDebuggerTest.obj -MD -MP -MF "$(DEPDIR)/punitTest-OsiRowCutDebuggerTest.Tpo" -c -o punitTest-OsiRowCutDebuggerTest.obj `if test -f '$(test_srcdir)/OsiRowCutDebuggerTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiRowCutDebuggerTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiRowCutDebuggerTest.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/punitTest-OsiRowCutDebuggerTest.Tpo" "$(DEPDIR)/punitTest-OsiRowCutDebuggerTest.Po"; else rm -f "$(DEPDIR)/punitTest-OsiRowCutDebuggerTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiRowCutDebuggerTest.cpp' object='punitTest-OsiRowCutDebuggerTest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o punitTest-OsiRowCutDebuggerTest.obj `if test -f '$(test_srcdir)/OsiRowCutDebuggerTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiRowCutDebuggerTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiRowCutDebuggerTest.cpp'; fi`
+
+punitTest-OsiRowCutTest.o: $(test_srcdir)/OsiRowCutTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT punitTest-OsiRowCutTest.o -MD -MP -MF "$(DEPDIR)/punitTest-OsiRowCutTest.Tpo" -c -o punitTest-OsiRowCutTest.o `test -f '$(test_srcdir)/OsiRowCutTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiRowCutTest.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/punitTest-OsiRowCutTest.Tpo" "$(DEPDIR)/punitTest-OsiRowCutTest.Po"; else rm -f "$(DEPDIR)/punitTest-OsiRowCutTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiRowCutTest.cpp' object='punitTest-OsiRowCutTest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o punitTest-OsiRowCutTest.o `test -f '$(test_srcdir)/OsiRowCutTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiRowCutTest.cpp
+
+punitTest-OsiRowCutTest.obj: $(test_srcdir)/OsiRowCutTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT punitTest-OsiRowCutTest.obj -MD -MP -MF "$(DEPDIR)/punitTest-OsiRowCutTest.Tpo" -c -o punitTest-OsiRowCutTest.obj `if test -f '$(test_srcdir)/OsiRowCutTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiRowCutTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiRowCutTest.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/punitTest-OsiRowCutTest.Tpo" "$(DEPDIR)/punitTest-OsiRowCutTest.Po"; else rm -f "$(DEPDIR)/punitTest-OsiRowCutTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiRowCutTest.cpp' object='punitTest-OsiRowCutTest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o punitTest-OsiRowCutTest.obj `if test -f '$(test_srcdir)/OsiRowCutTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiRowCutTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiRowCutTest.cpp'; fi`
+
+punitTest-OsiSolverInterfaceTest.o: OsiSolverInterfaceTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT punitTest-OsiSolverInterfaceTest.o -MD -MP -MF "$(DEPDIR)/punitTest-OsiSolverInterfaceTest.Tpo" -c -o punitTest-OsiSolverInterfaceTest.o `test -f 'OsiSolverInterfaceTest.cpp' || echo '$(srcdir)/'`OsiSolverInterfaceTest.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/punitTest-OsiSolverInterfaceTest.Tpo" "$(DEPDIR)/punitTest-OsiSolverInterfaceTest.Po"; else rm -f "$(DEPDIR)/punitTest-OsiSolverInterfaceTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='OsiSolverInterfaceTest.cpp' object='punitTest-OsiSolverInterfaceTest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o punitTest-OsiSolverInterfaceTest.o `test -f 'OsiSolverInterfaceTest.cpp' || echo '$(srcdir)/'`OsiSolverInterfaceTest.cpp
+
+punitTest-OsiSolverInterfaceTest.obj: OsiSolverInterfaceTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT punitTest-OsiSolverInterfaceTest.obj -MD -MP -MF "$(DEPDIR)/punitTest-OsiSolverInterfaceTest.Tpo" -c -o punitTest-OsiSolverInterfaceTest.obj `if test -f 'OsiSolverInterfaceTest.cpp'; then $(CYGPATH_W) 'OsiSolverInterfaceTest.cpp'; else $(CYGPATH_W) '$(srcdir)/OsiSolverInterfaceTest.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/punitTest-OsiSolverInterfaceTest.Tpo" "$(DEPDIR)/punitTest-OsiSolverInterfaceTest.Po"; else rm -f "$(DEPDIR)/punitTest-OsiSolverInterfaceTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='OsiSolverInterfaceTest.cpp' object='punitTest-OsiSolverInterfaceTest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o punitTest-OsiSolverInterfaceTest.obj `if test -f 'OsiSolverInterfaceTest.cpp'; then $(CYGPATH_W) 'OsiSolverInterfaceTest.cpp'; else $(CYGPATH_W) '$(srcdir)/OsiSolverInterfaceTest.cpp'; fi`
 
 punitTest-OsiSymSolverInterfaceTest.o: OsiSymSolverInterfaceTest.cpp
 @am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT punitTest-OsiSymSolverInterfaceTest.o -MD -MP -MF "$(DEPDIR)/punitTest-OsiSymSolverInterfaceTest.Tpo" -c -o punitTest-OsiSymSolverInterfaceTest.o `test -f 'OsiSymSolverInterfaceTest.cpp' || echo '$(srcdir)/'`OsiSymSolverInterfaceTest.cpp; \
@@ -633,6 +732,76 @@ punitTest-unitTestSym.obj: unitTestSym.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='unitTestSym.cpp' object='punitTest-unitTestSym.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(punitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o punitTest-unitTestSym.obj `if test -f 'unitTestSym.cpp'; then $(CYGPATH_W) 'unitTestSym.cpp'; else $(CYGPATH_W) '$(srcdir)/unitTestSym.cpp'; fi`
+
+unitTest-OsiColCutTest.o: $(test_srcdir)/OsiColCutTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unitTest-OsiColCutTest.o -MD -MP -MF "$(DEPDIR)/unitTest-OsiColCutTest.Tpo" -c -o unitTest-OsiColCutTest.o `test -f '$(test_srcdir)/OsiColCutTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiColCutTest.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/unitTest-OsiColCutTest.Tpo" "$(DEPDIR)/unitTest-OsiColCutTest.Po"; else rm -f "$(DEPDIR)/unitTest-OsiColCutTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiColCutTest.cpp' object='unitTest-OsiColCutTest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unitTest-OsiColCutTest.o `test -f '$(test_srcdir)/OsiColCutTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiColCutTest.cpp
+
+unitTest-OsiColCutTest.obj: $(test_srcdir)/OsiColCutTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unitTest-OsiColCutTest.obj -MD -MP -MF "$(DEPDIR)/unitTest-OsiColCutTest.Tpo" -c -o unitTest-OsiColCutTest.obj `if test -f '$(test_srcdir)/OsiColCutTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiColCutTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiColCutTest.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/unitTest-OsiColCutTest.Tpo" "$(DEPDIR)/unitTest-OsiColCutTest.Po"; else rm -f "$(DEPDIR)/unitTest-OsiColCutTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiColCutTest.cpp' object='unitTest-OsiColCutTest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unitTest-OsiColCutTest.obj `if test -f '$(test_srcdir)/OsiColCutTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiColCutTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiColCutTest.cpp'; fi`
+
+unitTest-OsiCutsTest.o: $(test_srcdir)/OsiCutsTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unitTest-OsiCutsTest.o -MD -MP -MF "$(DEPDIR)/unitTest-OsiCutsTest.Tpo" -c -o unitTest-OsiCutsTest.o `test -f '$(test_srcdir)/OsiCutsTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiCutsTest.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/unitTest-OsiCutsTest.Tpo" "$(DEPDIR)/unitTest-OsiCutsTest.Po"; else rm -f "$(DEPDIR)/unitTest-OsiCutsTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiCutsTest.cpp' object='unitTest-OsiCutsTest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unitTest-OsiCutsTest.o `test -f '$(test_srcdir)/OsiCutsTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiCutsTest.cpp
+
+unitTest-OsiCutsTest.obj: $(test_srcdir)/OsiCutsTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unitTest-OsiCutsTest.obj -MD -MP -MF "$(DEPDIR)/unitTest-OsiCutsTest.Tpo" -c -o unitTest-OsiCutsTest.obj `if test -f '$(test_srcdir)/OsiCutsTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiCutsTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiCutsTest.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/unitTest-OsiCutsTest.Tpo" "$(DEPDIR)/unitTest-OsiCutsTest.Po"; else rm -f "$(DEPDIR)/unitTest-OsiCutsTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiCutsTest.cpp' object='unitTest-OsiCutsTest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unitTest-OsiCutsTest.obj `if test -f '$(test_srcdir)/OsiCutsTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiCutsTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiCutsTest.cpp'; fi`
+
+unitTest-OsiRowCutDebuggerTest.o: $(test_srcdir)/OsiRowCutDebuggerTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unitTest-OsiRowCutDebuggerTest.o -MD -MP -MF "$(DEPDIR)/unitTest-OsiRowCutDebuggerTest.Tpo" -c -o unitTest-OsiRowCutDebuggerTest.o `test -f '$(test_srcdir)/OsiRowCutDebuggerTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiRowCutDebuggerTest.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/unitTest-OsiRowCutDebuggerTest.Tpo" "$(DEPDIR)/unitTest-OsiRowCutDebuggerTest.Po"; else rm -f "$(DEPDIR)/unitTest-OsiRowCutDebuggerTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiRowCutDebuggerTest.cpp' object='unitTest-OsiRowCutDebuggerTest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unitTest-OsiRowCutDebuggerTest.o `test -f '$(test_srcdir)/OsiRowCutDebuggerTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiRowCutDebuggerTest.cpp
+
+unitTest-OsiRowCutDebuggerTest.obj: $(test_srcdir)/OsiRowCutDebuggerTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unitTest-OsiRowCutDebuggerTest.obj -MD -MP -MF "$(DEPDIR)/unitTest-OsiRowCutDebuggerTest.Tpo" -c -o unitTest-OsiRowCutDebuggerTest.obj `if test -f '$(test_srcdir)/OsiRowCutDebuggerTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiRowCutDebuggerTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiRowCutDebuggerTest.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/unitTest-OsiRowCutDebuggerTest.Tpo" "$(DEPDIR)/unitTest-OsiRowCutDebuggerTest.Po"; else rm -f "$(DEPDIR)/unitTest-OsiRowCutDebuggerTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiRowCutDebuggerTest.cpp' object='unitTest-OsiRowCutDebuggerTest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unitTest-OsiRowCutDebuggerTest.obj `if test -f '$(test_srcdir)/OsiRowCutDebuggerTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiRowCutDebuggerTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiRowCutDebuggerTest.cpp'; fi`
+
+unitTest-OsiRowCutTest.o: $(test_srcdir)/OsiRowCutTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unitTest-OsiRowCutTest.o -MD -MP -MF "$(DEPDIR)/unitTest-OsiRowCutTest.Tpo" -c -o unitTest-OsiRowCutTest.o `test -f '$(test_srcdir)/OsiRowCutTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiRowCutTest.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/unitTest-OsiRowCutTest.Tpo" "$(DEPDIR)/unitTest-OsiRowCutTest.Po"; else rm -f "$(DEPDIR)/unitTest-OsiRowCutTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiRowCutTest.cpp' object='unitTest-OsiRowCutTest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unitTest-OsiRowCutTest.o `test -f '$(test_srcdir)/OsiRowCutTest.cpp' || echo '$(srcdir)/'`$(test_srcdir)/OsiRowCutTest.cpp
+
+unitTest-OsiRowCutTest.obj: $(test_srcdir)/OsiRowCutTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unitTest-OsiRowCutTest.obj -MD -MP -MF "$(DEPDIR)/unitTest-OsiRowCutTest.Tpo" -c -o unitTest-OsiRowCutTest.obj `if test -f '$(test_srcdir)/OsiRowCutTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiRowCutTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiRowCutTest.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/unitTest-OsiRowCutTest.Tpo" "$(DEPDIR)/unitTest-OsiRowCutTest.Po"; else rm -f "$(DEPDIR)/unitTest-OsiRowCutTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='$(test_srcdir)/OsiRowCutTest.cpp' object='unitTest-OsiRowCutTest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unitTest-OsiRowCutTest.obj `if test -f '$(test_srcdir)/OsiRowCutTest.cpp'; then $(CYGPATH_W) '$(test_srcdir)/OsiRowCutTest.cpp'; else $(CYGPATH_W) '$(srcdir)/$(test_srcdir)/OsiRowCutTest.cpp'; fi`
+
+unitTest-OsiSolverInterfaceTest.o: OsiSolverInterfaceTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unitTest-OsiSolverInterfaceTest.o -MD -MP -MF "$(DEPDIR)/unitTest-OsiSolverInterfaceTest.Tpo" -c -o unitTest-OsiSolverInterfaceTest.o `test -f 'OsiSolverInterfaceTest.cpp' || echo '$(srcdir)/'`OsiSolverInterfaceTest.cpp; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/unitTest-OsiSolverInterfaceTest.Tpo" "$(DEPDIR)/unitTest-OsiSolverInterfaceTest.Po"; else rm -f "$(DEPDIR)/unitTest-OsiSolverInterfaceTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='OsiSolverInterfaceTest.cpp' object='unitTest-OsiSolverInterfaceTest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unitTest-OsiSolverInterfaceTest.o `test -f 'OsiSolverInterfaceTest.cpp' || echo '$(srcdir)/'`OsiSolverInterfaceTest.cpp
+
+unitTest-OsiSolverInterfaceTest.obj: OsiSolverInterfaceTest.cpp
+@am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unitTest-OsiSolverInterfaceTest.obj -MD -MP -MF "$(DEPDIR)/unitTest-OsiSolverInterfaceTest.Tpo" -c -o unitTest-OsiSolverInterfaceTest.obj `if test -f 'OsiSolverInterfaceTest.cpp'; then $(CYGPATH_W) 'OsiSolverInterfaceTest.cpp'; else $(CYGPATH_W) '$(srcdir)/OsiSolverInterfaceTest.cpp'; fi`; \
+@am__fastdepCXX_TRUE@	then mv -f "$(DEPDIR)/unitTest-OsiSolverInterfaceTest.Tpo" "$(DEPDIR)/unitTest-OsiSolverInterfaceTest.Po"; else rm -f "$(DEPDIR)/unitTest-OsiSolverInterfaceTest.Tpo"; exit 1; fi
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='OsiSolverInterfaceTest.cpp' object='unitTest-OsiSolverInterfaceTest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o unitTest-OsiSolverInterfaceTest.obj `if test -f 'OsiSolverInterfaceTest.cpp'; then $(CYGPATH_W) 'OsiSolverInterfaceTest.cpp'; else $(CYGPATH_W) '$(srcdir)/OsiSolverInterfaceTest.cpp'; fi`
 
 unitTest-OsiSymSolverInterfaceTest.o: OsiSymSolverInterfaceTest.cpp
 @am__fastdepCXX_TRUE@	if $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(unitTest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT unitTest-OsiSymSolverInterfaceTest.o -MD -MP -MF "$(DEPDIR)/unitTest-OsiSymSolverInterfaceTest.Tpo" -c -o unitTest-OsiSymSolverInterfaceTest.o `test -f 'OsiSymSolverInterfaceTest.cpp' || echo '$(srcdir)/'`OsiSymSolverInterfaceTest.cpp; \
@@ -839,39 +1008,58 @@ uninstall-am: uninstall-info-am
 	pdf pdf-am ps ps-am tags uninstall uninstall-am \
 	uninstall-info-am
 
-@COIN_HAS_MIPLIB3_TRUE@check_files:
-@COIN_HAS_MIPLIB3_TRUE@	  echo "using MIPLIB3 directory $(MIPLIB3_DATA)"
 
-@COIN_HAS_MIPLIB3_FALSE@check_files:
-@COIN_HAS_MIPLIB3_FALSE@	if test -r $(top_srcdir)/miplib3; then \
-@COIN_HAS_MIPLIB3_FALSE@	  echo "MIBLIB3 directory found..."; \
-@COIN_HAS_MIPLIB3_FALSE@	else \
-@COIN_HAS_MIPLIB3_FALSE@	  echo "Downloading required test files to $(top_srcdir)/miplib3"; \
-@COIN_HAS_MIPLIB3_FALSE@	  mkdir $(top_srcdir)/miplib3; \
-@COIN_HAS_MIPLIB3_FALSE@	  for file in $(testFILES); do \
-@COIN_HAS_MIPLIB3_FALSE@	    (echo $$file; svn cat https://projects.coin-or.org/svn/Data/miplib3/stable/1.2/$$file.gz >> $(top_srcdir)/miplib3/$$file.gz) \
-@COIN_HAS_MIPLIB3_FALSE@	  done; \
-@COIN_HAS_MIPLIB3_FALSE@	  fi; \
-@COIN_HAS_MIPLIB3_FALSE@	  echo "Uncompressing files"; \
-@COIN_HAS_MIPLIB3_FALSE@	  cd $(top_srcdir)/miplib3; \
-@COIN_HAS_MIPLIB3_FALSE@	  for file in $(testFILES); do \
-@COIN_HAS_MIPLIB3_FALSE@	    if test -r $$file.gz; then \
-@COIN_HAS_MIPLIB3_FALSE@	      (gzip -d $$file.gz) \
-@COIN_HAS_MIPLIB3_FALSE@	    fi \
-@COIN_HAS_MIPLIB3_FALSE@	  done
-
-# by passing -miplib3Dir= we can overwrite using a default miplib3 path which would trigger the MIPLIB tests
 test: unitTest$(EXEEXT)
-	./unitTest$(EXEEXT) -miplib3Dir= $(unittestflags)
+	if test x"$(DIRNETLIB)" != x; then \
+		NETLIBARG="-netlibDir $(DIRNETLIB) -testOsiSolverInterface"; \
+	fi;
+	./unitTest$(EXEEXT) $$NETLIBARG
+#-T $(DATAOBJDIR)/miplib3 \
+#	-mpsDir=$(DATASRCDIR)/Sample \
+#	-netlibDir=$(DATAOBJDIR)/Netlib
 
 fulltest: check_files unitTest$(EXEEXT)
-	./unitTest$(EXEEXT) $(MIPLIBDIR) $(unittestflags)
+	if test x"$(DIRNETLIB)" != x; then \
+		NETLIBARG="-netlibDir $(DIRNETLIB) -testOsiSolverInterface"; \
+	fi;
+	./unitTest$(EXEEXT) $$NETLIBARG -T $(DATASRCDIR)/miplib3
+#	-mpsDir=$(DATASRCDIR)/Sample \
+#	-netlibDir=$(DATAOBJDIR)/Netlib
 
 ptest: punitTest$(EXEEXT)
-	./punitTest$(EXEEXT) -miplib3Dir= $(unittestflags)
+	if test x"$(DIRNETLIB)" != x; then \
+		NETLIBARG="-netlibDir $(DIRNETLIB) -testOsiSolverInterface"; \
+	fi;
+	./punitTest$(EXEEXT) $$NETLIBARG -p 2
+#-T $(DATAOBJDIR)/miplib3 \
+#	-mpsDir=$(DATASRCDIR)/Sample \
+#	-netlibDir=$(DATAOBJDIR)/Netlib
 
 pfulltest: check_files punitTest$(EXEEXT)
-	./punitTest$(EXEEXT) $(MIPLIBDIR) $(unittestflags)
+	if test x"$(DIRNETLIB)" != x; then \
+		NETLIBARG="-netlibDir $(DIRNETLIB) -testOsiSolverInterface"; \
+	fi;
+	./punitTest$(EXEEXT) $$NETLIBARG -T $(DATAOBJDIR)/miplib3 -p 2
+#	-mpsDir=$(DATASRCDIR)/Sample \
+#	-netlibDir=$(DATAOBJDIR)/Netlib
+
+check_files:
+	  if test -r $(DATASRCDIR)/miplib3; then \
+	   echo "MIBLIB3 directory found..."; \
+	  else \
+	   echo "Downloading required test files"; \
+	   mkdir $(DATASRCDIR)/miplib3; \
+	   for file in $(testFILES); do \
+	       (echo $$file; svn cat https://projects.coin-or.org/svn/Data/stable/1.0/miplib3/$$file.gz >> $(DATASRCDIR)/miplib3/$$file.gz) \
+	   done; \
+	  fi; \
+	  echo "Uncompressing files"; \
+	  cd $(DATASRCDIR)/miplib3; \
+	  for file in $(testFILES); do \
+	   if test -r $$file.gz; then \
+		(gzip -d $$file.gz) \
+	   fi \
+	  done
 
 .PHONY: test ptest fulltest pfulltest check_files
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

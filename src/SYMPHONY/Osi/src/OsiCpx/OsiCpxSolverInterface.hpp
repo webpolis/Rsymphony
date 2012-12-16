@@ -4,7 +4,7 @@
 //           Konrad-Zuse-Zentrum Berlin (Germany)
 //           email: pfender@zib.de
 // date:     09/25/2000
-// license:  this file may be freely distributed under the terms of EPL
+// license:  this file may be freely distributed under the terms of CPL
 // comments: please scan this file for '???' and read the comments
 //-----------------------------------------------------------------------------
 // Copyright (C) 2000, Tobias Pfender, International Business Machines
@@ -69,10 +69,6 @@ public:
     bool getDblParam(OsiDblParam key, double& value) const;
     // Get a string parameter
     bool getStrParam(OsiStrParam key, std::string& value) const;
-    // Set mipstart option (pass column solution to CPLEX before MIP start)
-    void setMipStart(bool value) { domipstart = value; }
-    // Get mipstart option value
-    bool getMipStart() const { return domipstart; }
   //@}
 
   //---------------------------------------------------------------------------
@@ -255,13 +251,7 @@ public:
   
       /** Get as many dual rays as the solver can provide. (In case of proven
           primal infeasibility there should be at least one.)
-
-	  The first getNumRows() ray components will always be associated with
-	  the row duals (as returned by getRowPrice()). If \c fullRay is true,
-	  the final getNumCols() entries will correspond to the ray components
-	  associated with the nonbasic variables. If the full ray is requested
-	  and the method cannot provide it, it will throw an exception.
-
+     
           <strong>NOTE for implementers of solver interfaces:</strong> <br>
           The double pointers in the vector should point to arrays of length
           getNumRows() and they should be allocated via new[]. <br>
@@ -270,8 +260,7 @@ public:
           It is the user's responsibility to free the double pointers in the
           vector using delete[].
       */
-      virtual std::vector<double*> getDualRays(int maxNumRays,
-					       bool fullRay = false) const;
+      virtual std::vector<double*> getDualRays(int maxNumRays) const;
       /** Get as many primal rays as the solver can provide. (In case of proven
           dual infeasibility there should be at least one.)
      
@@ -311,12 +300,12 @@ public:
 
       using OsiSolverInterface::setColLower ;
       /** Set a single column lower bound<br>
-    	  Use -COIN_DBL_MAX for -infinity. */
+    	  Use -DBL_MAX for -infinity. */
       virtual void setColLower( int elementIndex, double elementValue );
       
       using OsiSolverInterface::setColUpper ;
       /** Set a single column upper bound<br>
-    	  Use COIN_DBL_MAX for infinity. */
+    	  Use DBL_MAX for infinity. */
       virtual void setColUpper( int elementIndex, double elementValue );
       
       /** Set a single column lower and upper bound<br>
@@ -337,11 +326,11 @@ public:
 				   const double* boundList);
       
       /** Set a single row lower bound<br>
-    	  Use -COIN_DBL_MAX for -infinity. */
+    	  Use -DBL_MAX for -infinity. */
       virtual void setRowLower( int elementIndex, double elementValue );
       
       /** Set a single row upper bound<br>
-    	  Use COIN_DBL_MAX for infinity. */
+    	  Use DBL_MAX for infinity. */
       virtual void setRowUpper( int elementIndex, double elementValue );
     
       /** Set a single row lower and upper bound<br>
@@ -802,7 +791,10 @@ private:
 
   /// free all allocated memory
   void freeAllMemory();
+
   
+  /// Just for testing purposes
+  void printBounds(); 
   //@}
   
   
@@ -876,14 +868,15 @@ private:
   /// Stores whether CPLEX' prob type is currently set to MIP
   mutable bool    probtypemip_;
 
-  /// Whether to pass a column solution to CPLEX before starting MIP solve (copymipstart)
-  bool            domipstart;
-
   //@}
 };
 
 //#############################################################################
-/** A function that tests the methods in the OsiCpxSolverInterface class. */
+/** A function that tests the methods in the OsiOslSolverInterface class. The
+    only reason for it not to be a member method is that this way it doesn't
+    have to be compiled into the library. And that's a gain, because the
+    library should be compiled with optimization on, but this method should be
+    compiled with debugging. */
 void OsiCpxSolverInterfaceUnitTest(const std::string & mpsDir, const std::string & netlibDir);
 
 #endif

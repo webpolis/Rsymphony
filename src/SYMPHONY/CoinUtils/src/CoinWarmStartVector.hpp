@@ -1,7 +1,6 @@
-/* $Id: CoinWarmStartVector.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinWarmStartVector.hpp 1191 2009-07-25 08:38:12Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #ifndef CoinWarmStartVector_H
 #define CoinWarmStartVector_H

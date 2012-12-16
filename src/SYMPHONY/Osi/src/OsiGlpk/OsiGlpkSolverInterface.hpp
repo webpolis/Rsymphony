@@ -5,12 +5,14 @@
 // Copyright (C) 2003  University of Pittsburgh
 //   University of Pittsburgh coding done by Brady Hunsaker
 // All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #ifndef OsiGlpkSolverInterface_H
 #define OsiGlpkSolverInterface_H
 
 #include <string>
+extern "C" {
+#include "glpk.h"
+}
 #include "OsiSolverInterface.hpp"
 #include "CoinPackedMatrix.hpp"
 #include "CoinWarmStartBasis.hpp"
@@ -20,17 +22,8 @@
     Instantiation of OsiGlpkSolverInterface for GPLK
 */
 
-#ifndef LPX
-#define LPX glp_prob
-#endif
-
-#ifndef GLP_PROB_DEFINED
-#define GLP_PROB_DEFINED
-typedef struct { double _opaque_prob[100]; } glp_prob;
-#endif
-
 class OsiGlpkSolverInterface : virtual public OsiSolverInterface {
-  friend void OsiGlpkSolverInterfaceUnitTest(const std::string & mpsDir, const std::string & netlibDir);
+  friend int OsiGlpkSolverInterfaceUnitTest(const std::string & mpsDir, const std::string & netlibDir);
   
 public:
   
@@ -272,17 +265,10 @@ public:
           It is the user's responsibility to free the double pointers in the
           vector using delete[].
       */
-      virtual std::vector<double*> getDualRays(int maxNumRays,
-					       bool fullRay=false) const;
+      virtual std::vector<double*> getDualRays(int maxNumRays) const;
       /** Get as many primal rays as the solver can provide. (In case of proven
           dual infeasibility there should be at least one.)
-
-	  The first getNumRows() ray components will always be associated with
-	  the row duals (as returned by getRowPrice()). If \c fullRay is true,
-	  the final getNumCols() entries will correspond to the ray components
-	  associated with the nonbasic variables. If the full ray is requested
-	  and the method cannot provide it, it will throw an exception.
-
+     
           <strong>NOTE for implementers of solver interfaces:</strong> <br>
           The double pointers in the vector should point to arrays of length
           getNumCols() and they should be allocated via new[]. <br>
@@ -314,12 +300,12 @@ public:
 
       using OsiSolverInterface::setColLower ;
       /** Set a single column lower bound<br>
-    	  Use -COIN_DBL_MAX for -infinity. */
+    	  Use -DBL_MAX for -infinity. */
       virtual void setColLower( int elementIndex, double elementValue );
       
       using OsiSolverInterface::setColUpper ;
       /** Set a single column upper bound<br>
-    	  Use COIN_DBL_MAX for infinity. */
+    	  Use DBL_MAX for infinity. */
       virtual void setColUpper( int elementIndex, double elementValue );
       
       /** Set a single column lower and upper bound<br>
@@ -341,11 +327,11 @@ public:
 				   const double* boundList);
       
       /** Set a single row lower bound<br>
-    	  Use -COIN_DBL_MAX for -infinity. */
+    	  Use -DBL_MAX for -infinity. */
       virtual void setRowLower( int elementIndex, double elementValue );
       
       /** Set a single row upper bound<br>
-    	  Use COIN_DBL_MAX for infinity. */
+    	  Use DBL_MAX for infinity. */
       virtual void setRowUpper( int elementIndex, double elementValue );
     
       /** Set a single row lower and upper bound<br>
@@ -904,7 +890,11 @@ private:
 };
 
 //#############################################################################
-/** A function that tests the methods in the OsiGlpkSolverInterface class. */
-void OsiGlpkSolverInterfaceUnitTest(const std::string & mpsDir, const std::string & netlibDir);
+/** A function that tests the methods in the OsiGlpkSolverInterface class. The
+    only reason for it not to be a member method is that this way it doesn't
+    have to be compiled into the library. And that's a gain, because the
+    library should be compiled with optimization on, but this method should be
+    compiled with debugging. */
+int OsiGlpkSolverInterfaceUnitTest(const std::string & mpsDir, const std::string & netlibDir);
 
 #endif // OsiGlpkSolverInterface_H

@@ -2,7 +2,7 @@
 // with sparse matrix object
 
 #include <iostream>
-#include OSIXXXhpp
+#include "OsiClpSolverInterface.hpp"
 #include "CoinPackedMatrix.hpp"
 #include "CoinPackedVector.hpp"
 
@@ -13,7 +13,7 @@ main(void)
    OsiSolverInterface *si;
 
    // When we instantiate the object, we need a specific derived class.
-   si = new OSIXXX;
+   si = new OsiClpSolverInterface;  
 
    // Build our own instance from scratch
 

@@ -1,12 +1,11 @@
-/* $Id: CoinFloatEqual.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinFloatEqual.hpp 1215 2009-11-05 11:03:04Z forrest $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #ifndef CoinFloatEqual_H
 #define CoinFloatEqual_H
 
 #include <algorithm>
+#
 #include <cmath>
 
 #include "CoinFinite.hpp"
@@ -58,10 +57,7 @@ class CoinAbsFltEq
   /*! \name Constructors and destructors */
   //@{
 
-  /*! \brief Default constructor
-
-    Default tolerance is 1.0e-10.
-  */
+  //! Default constructor
 
   CoinAbsFltEq () : epsilon_(1.e-10) {} 
 
@@ -126,17 +122,11 @@ class CoinRelFltEq
   /*! \name Constructors and destructors */
   //@{
 
-#ifndef COIN_FLOAT
-  /*! Default constructor
+  //! Default constructor
 
-    Default tolerance is 1.0e-10.
-  */
+#ifndef COIN_FLOAT
   CoinRelFltEq () : epsilon_(1.e-10) {} 
 #else
-  /*! Default constructor
-
-    Default tolerance is 1.0e-6.
-  */
   CoinRelFltEq () : epsilon_(1.e-6) {} ; // as float
 #endif
 

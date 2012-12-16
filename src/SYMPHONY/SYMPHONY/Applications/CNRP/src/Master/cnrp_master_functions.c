@@ -8,7 +8,7 @@
 /*                                                                           */
 /* This application was developed by Ted Ralphs (ted@lehigh.edu)             */
 /*                                                                           */
-/* This software is licensed under the Eclipse Public License. Please see    */
+/* This software is licensed under the Common Public License. Please see     */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -71,7 +71,7 @@ void delete_dup_edges(small_graph *g)
 	 (void)memcpy((char *)ed0, (char *)ed1, sizeof(edge_data));
       }
    }
-   pos = ed0 - g->edges + 1;
+   pos = ((int)ed0 - (int)g->edges)/sizeof(edge_data) + 1;
    g->allocated_edgenum -= g->edgenum - pos;
    g->edges = (edge_data *) realloc
       ((char *)(g->edges), g->allocated_edgenum * sizeof(edge_data));

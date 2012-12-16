@@ -1,22 +1,17 @@
-/* $Id: CoinPresolveDupcol.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinPresolveDupcol.cpp 1215 2009-11-05 11:03:04Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #include <stdio.h>
 #include <math.h>
 
-//#define PRESOLVE_DEBUG 1
-// Debugging macros/functions
-//#define PRESOLVE_DETAIL 1
 #include "CoinPresolveMatrix.hpp"
 #include "CoinPresolveFixed.hpp"
 #include "CoinPresolveDupcol.hpp"
 #include "CoinSort.hpp"
-#include "CoinFinite.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPresolveUseless.hpp"
 #include "CoinMessage.hpp"
+//#define PRESOLVE_DEBUG 1
 #if PRESOLVE_DEBUG || PRESOLVE_CONSISTENCY
 #include "CoinPresolvePsdebug.hpp"
 #endif
@@ -168,9 +163,6 @@ const CoinPresolveAction
   int nlook = 0 ;
   for (int j = 0 ; j < ncols ; j++) {
     if (hincol[j] == 0) continue ;
-    // sort
-    CoinSort_2(hrow+mcstrt[j],hrow+mcstrt[j]+hincol[j],
-	       colels+mcstrt[j]);
     // check all positive and adjust rhs
     if (allPositive) {
       double lower = clo[j];
@@ -190,10 +182,7 @@ const CoinPresolveAction
       }
     }
     if (prob->colProhibited2(j)) continue ;
-    //#define PRESOLVE_INTEGER_DUPCOL
-#ifndef PRESOLVE_INTEGER_DUPCOL
     if (prob->isInteger(j)&&!allowIntegers) continue ;
-#endif
     sort[nlook++] = j ; }
   if (nlook == 0)
     { //delete[] sort ;
@@ -498,8 +487,6 @@ const CoinPresolveAction
 	  }
 	}
       }
-      // relax a bit
-      upperBound -= 1.0e-9;
     } else {
       // Not sure what to do so give up
       continue;
@@ -514,24 +501,6 @@ const CoinPresolveAction
 */
     if (c1 == c2)
     { 
-#ifdef PRESOLVE_INTEGER_DUPCOL
-      if (!allowIntegers) {
-	if (prob->isInteger(j1)) {
-	  if (!prob->isInteger(j2)) {
-	    if (cup2 < upperBound) //if (!prob->colInfinite(j2))
-	      continue;
-	    else
-	      cup2 = COIN_DBL_MAX;
-	  }
-	} else if (prob->isInteger(j2)) {
-	  if (cup1 < upperBound) //if (!prob->colInfinite(j1))
-	    continue;
-	  else
-	    cup1 = COIN_DBL_MAX;
-	}
-	//printf("TakingINTeq\n");
-      }
-#endif
 /*
   As far as the presolved lp, there's no difference between columns. But we
   need this relation to hold in order to guarantee that we can split the
@@ -548,7 +517,6 @@ const CoinPresolveAction
   Create the postsolve action before we start to modify the columns.
 */
       PRESOLVE_STMT(printf("DUPCOL: (%d,%d) %d += %d\n",j1,j2,j1,j2)) ;
-      PRESOLVE_DETAIL_PRINT(printf("pre_dupcol %dC %dC E\n",j2,j1));
 
       action *s = &actions[nactions++] ;	  
       s->thislo = clo[j2] ;
@@ -627,26 +595,14 @@ const CoinPresolveAction
 */
     else
     { int minterm = 0 ;
-#ifdef PRESOLVE_INTEGER_DUPCOL
-      if (!allowIntegers) {
-	if (c2 > c1) {
-	  if (cup1 < upperBound/*!prob->colInfinite(j1)*/ && (prob->isInteger(j1)||prob->isInteger(j2)))
-	    continue ;
-	} else {
-	  if (cup2 < upperBound/*!prob->colInfinite(j2)*/ && (prob->isInteger(j1)||prob->isInteger(j2)))
-	    continue ;
-	}
-	//printf("TakingINTne\n");
-      }
-#endif
       bool swapped = false ;
 #if PRESOLVE_DEBUG
       printf("bounds %g %g\n",lowerBound,upperBound);
 #endif
       if (c2 > c1) minterm |= 1<<0 ;
-      if (cup2 >= PRESOLVE_INF/*prob->colInfinite(j2)*/) minterm |= 1<<1 ;
+      if (cup2 >= PRESOLVE_INF) minterm |= 1<<1 ;
       if (clo2 <= -PRESOLVE_INF) minterm |= 1<<2 ;
-      if (cup1 >= PRESOLVE_INF/*prob->colInfinite(j1)*/) minterm |= 1<<3 ;
+      if (cup1 >= PRESOLVE_INF) minterm |= 1<<3 ;
       if (clo1 <= -PRESOLVE_INF) minterm |= 1<<4 ;
       // for now be careful - just one special case
       if (!clo1&&!clo2) {
@@ -746,10 +702,7 @@ const CoinPresolveAction
 	   nactions,nfixed_down,nfixed_up) ; }
 # endif
   if (nactions)
-  { next = new dupcol_action(nactions,CoinCopyOfArray(actions,nactions),next) ;
-    // we can't go round again in integer
-    prob->presolveOptions_ |= 0x80000000;
-}
+  { next = new dupcol_action(nactions,CoinCopyOfArray(actions,nactions),next) ; }
   deleteAction(actions,action*) ;
 
   if (nfixed_down)
@@ -815,9 +768,6 @@ void dupcol_action::postsolve(CoinPostsolveMatrix *prob) const
     double l_k = f->lastlo;
     double u_k = f->lastup;
     double x_k_sol = sol[icol2];
-    PRESOLVE_DETAIL_PRINT(printf("post icol %d %g %g %g icol2 %d %g %g %g\n",
-	   icol,clo[icol],sol[icol],cup[icol],
-				 icol2,clo[icol2],sol[icol2],cup[icol2]));
     if (l_j>-PRESOLVE_INF&& x_k_sol-l_j>=l_k-tolerance&&x_k_sol-l_j<=u_k+tolerance) {
       // j at lb, leave k
       prob->setColumnStatus(icol,CoinPrePostsolveMatrix::atLowerBound);
@@ -845,13 +795,11 @@ void dupcol_action::postsolve(CoinPostsolveMatrix *prob) const
       sol[icol] = 0.0;	// doesn't matter
       prob->setColumnStatus(icol,CoinPrePostsolveMatrix::isFree);
     }
-    PRESOLVE_DETAIL_PRINT(printf("post2 icol %d %g icol2 %d %g\n",
-	   icol,sol[icol],
-				 icol2,sol[icol2]));
+
     // row activity doesn't change
     // dj of both variables is the same
     rcosts[icol] = rcosts[icol2];
-    // leave until destructor
+    // leave until desctructor
     //    deleteAction(f->colels,double *);
 
 #   if PRESOLVE_DEBUG
@@ -923,9 +871,6 @@ const CoinPresolveAction
   for (int i = 0 ; i < nrows ; i++)
   { if (hinrow[i] == 0) continue ;
     if (prob->rowProhibited2(i)) continue ;
-    // sort
-    CoinSort_2(hcol+mrstrt[i],hcol+mrstrt[i]+hinrow[i],
-	       rowels+mrstrt[i]);
     sort[nlook++] = i ; }
   if (nlook == 0)
   { delete[] sort ;
@@ -979,11 +924,9 @@ const CoinPresolveAction
 	    if (rup2<=rup1) {
 	      /* this is strictly tighter than last */
 	      idelete=ilast;
-	      PRESOLVE_DETAIL_PRINT(printf("pre_duprow %dR %dR E\n",ilast,ithis));
 	    } else if (fabs(rlo1-rlo2)<1.0e-12) {
 	      /* last is strictly tighter than this */
 	      idelete=ithis;
-	      PRESOLVE_DETAIL_PRINT(printf("pre_duprow %dR %dR E\n",ithis,ilast));
 	      // swap so can carry on deleting
 	      sort[jj-1]=ithis;
 	      sort[jj]=ilast;
@@ -1007,7 +950,6 @@ const CoinPresolveAction
 #	      endif
 		// pretend this is stricter than last
 		idelete=ilast;
-		PRESOLVE_DETAIL_PRINT(printf("pre_duprow %dR %dR E\n",ilast,ithis));
 		rup[ithis]=rup1;
 	      }
 	    }
@@ -1016,7 +958,6 @@ const CoinPresolveAction
 	    if (rup1<=rup2) {
 	      /* last is strictly tighter than this */
 	      idelete=ithis;
-	      PRESOLVE_DETAIL_PRINT(printf("pre_duprow %dR %dR E\n",ithis,ilast));
 	      // swap so can carry on deleting
 	      sort[jj-1]=ithis;
 	      sort[jj]=ilast;
@@ -1042,7 +983,6 @@ const CoinPresolveAction
 #	      endif
 		// pretend this is stricter than last
 		idelete=ilast;
-		PRESOLVE_DETAIL_PRINT(printf("pre_duprow %dR %dR E\n",ilast,ithis));
 		rlo[ithis]=rlo1;
 	      }
 	    }

@@ -1,34 +1,28 @@
+//  LAST EDIT: Fri Aug 31 13:54:15 2001 by Tobias Pfender (opt14!bzfpfend) 
 //-----------------------------------------------------------------------------
-// name:     OSI Interface for SoPlex >= 1.4.2c
-// authors:  Tobias Pfender
-//           Ambros Gleixner
-//           Wei Huang
+// name:     OSI Interface for SOPLEX
+// author:   Tobias Pfender
 //           Konrad-Zuse-Zentrum Berlin (Germany)
 //           email: pfender@zib.de
 // date:     01/16/2002
-// license:  this file may be freely distributed under the terms of the EPL
+// license:  this file may be freely distributed under the terms of the CPL
 //-----------------------------------------------------------------------------
 // Copyright (C) 2002, Tobias Pfender, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// Last edit: $Id: OsiSpxSolverInterface.hpp 1764 2011-06-25 18:58:54Z stefan $
 
 #ifndef OsiSpxSolverInterface_H
 #define OsiSpxSolverInterface_H
 
 #include <string>
+#include "spxsolver.h"
 #include "OsiSolverInterface.hpp"
 #include "CoinWarmStartBasis.hpp"
 
-/* forward declarations so the header can be compiled without having to include soplex.h */
-namespace soplex {
-  class DIdxSet;
-  class DVector;
-  class SoPlex;
-}
+/** SOPLEX Solver Interface
 
-/** SoPlex Solver Interface
-    Instantiation of OsiSpxSolverInterface for SoPlex
+    Instantiation of OsiSpxSolverInterface for SOPLEX
 */
+
 class OsiSpxSolverInterface : virtual public OsiSolverInterface {
   friend void OsiSpxSolverInterfaceUnitTest(const std::string & mpsDir, const std::string & netlibDir);
   
@@ -73,10 +67,6 @@ public:
     bool getDblParam(OsiDblParam key, double& value) const;
     // Get a string parameter
     bool getStrParam(OsiStrParam key, std::string& value) const;
-    // Set timelimit
-    void setTimeLimit(double value);
-    // Get timelimit
-    double getTimeLimit() const;
   //@}
 
   //---------------------------------------------------------------------------
@@ -90,13 +80,12 @@ public:
     virtual bool isProvenPrimalInfeasible() const;
     /// Is dual infeasiblity proven?
     virtual bool isProvenDualInfeasible() const;
-    // Is the given primal objective limit reached? - use implementation from OsiSolverInterface
+    /// Is the given primal objective limit reached?
+    virtual bool isPrimalObjectiveLimitReached() const;
     /// Is the given dual objective limit reached?
     virtual bool isDualObjectiveLimitReached() const;
     /// Iteration limit reached?
     virtual bool isIterationLimitReached() const;
-    /// Time limit reached?
-    virtual bool isTimeLimitReached() const;
   //@}
 
   //---------------------------------------------------------------------------
@@ -254,12 +243,6 @@ public:
   
       /** Get as many dual rays as the solver can provide. (In case of proven
           primal infeasibility there should be at least one.)
-
-	  The first getNumRows() ray components will always be associated with
-	  the row duals (as returned by getRowPrice()). If \c fullRay is true,
-	  the final getNumCols() entries will correspond to the ray components
-	  associated with the nonbasic variables. If the full ray is requested
-	  and the method cannot provide it, it will throw an exception.
      
           <strong>NOTE for implementers of solver interfaces:</strong> <br>
           The double pointers in the vector should point to arrays of length
@@ -269,8 +252,7 @@ public:
           It is the user's responsibility to free the double pointers in the
           vector using delete[].
       */
-      virtual std::vector<double*> getDualRays(int maxNumRays,
-					       bool fullRay=false) const;
+      virtual std::vector<double*> getDualRays(int maxNumRays) const;
       /** Get as many primal rays as the solver can provide. (In case of proven
           dual infeasibility there should be at least one.)
      
@@ -304,11 +286,11 @@ public:
       virtual void setObjCoeff( int elementIndex, double elementValue );
 
       /** Set a single column lower bound<br>
-    	  Use -COIN_DBL_MAX for -infinity. */
+    	  Use -DBL_MAX for -infinity. */
       virtual void setColLower( int elementIndex, double elementValue );
       
       /** Set a single column upper bound<br>
-    	  Use COIN_DBL_MAX for infinity. */
+    	  Use DBL_MAX for infinity. */
       virtual void setColUpper( int elementIndex, double elementValue );
       
       /** Set a single column lower and upper bound<br>
@@ -332,11 +314,11 @@ public:
 #endif
       
       /** Set a single row lower bound<br>
-    	  Use -COIN_DBL_MAX for -infinity. */
+    	  Use -DBL_MAX for -infinity. */
       virtual void setRowLower( int elementIndex, double elementValue );
       
       /** Set a single row upper bound<br>
-    	  Use COIN_DBL_MAX for infinity. */
+    	  Use DBL_MAX for infinity. */
       virtual void setRowUpper( int elementIndex, double elementValue );
     
       /** Set a single row lower and upper bound<br>
@@ -624,8 +606,8 @@ protected:
 
   /**@name Protected member data */
   //@{
-  /// SoPlex solver object
-  soplex::SoPlex* soplex_;
+  /// SOPLEX solver object
+  soplex::SPxSolver spxsolver_;
   //@}
 
   
@@ -662,13 +644,13 @@ private:
     /// keep all cached data (similar to getMutableLpPtr())
     KEEPCACHED_ALL     = KEEPCACHED_PROBLEM | KEEPCACHED_RESULTS,
     /// free only cached column and LP solution information
-    FREECACHED_COLUMN  = KEEPCACHED_PROBLEM & ~KEEPCACHED_COLUMN,
+    FREECACHED_COLUMN  = KEEPCACHED_PROBLEM & !KEEPCACHED_COLUMN,
     /// free only cached row and LP solution information
-    FREECACHED_ROW     = KEEPCACHED_PROBLEM & ~KEEPCACHED_ROW,
+    FREECACHED_ROW     = KEEPCACHED_PROBLEM & !KEEPCACHED_ROW,
     /// free only cached matrix and LP solution information
-    FREECACHED_MATRIX  = KEEPCACHED_PROBLEM & ~KEEPCACHED_MATRIX,
+    FREECACHED_MATRIX  = KEEPCACHED_PROBLEM & !KEEPCACHED_MATRIX,
     /// free only cached LP solution information
-    FREECACHED_RESULTS = KEEPCACHED_ALL & ~KEEPCACHED_RESULTS
+    FREECACHED_RESULTS = KEEPCACHED_ALL & !KEEPCACHED_RESULTS
   };
 
   /// free all cached data (except specified entries, see getLpPtr())
@@ -676,22 +658,25 @@ private:
 
   /// free all allocated memory
   void freeAllMemory();
+
+  /// Just for testing purposes
+  void printBounds(); 
   //@}
   
   
   /**@name Private member data */
   //@{
   /// indices of integer variables
-  soplex::DIdxSet*   spxintvars_;
+  soplex::DIdxSet   spxintvars_;
 
   /// Hotstart information
-  void* hotStartCStat_;
-  int   hotStartCStatSize_;
-  void* hotStartRStat_;
-  int   hotStartRStatSize_;
-  int   hotStartMaxIteration_;
+  soplex::SoPlex::VarStatus *hotStartCStat_;
+  int                       hotStartCStatSize_;
+  soplex::SoPlex::VarStatus *hotStartRStat_;
+  int                       hotStartRStatSize_;
+  int                       hotStartMaxIteration_;
 
-  /**@name Cached information derived from the SoPlex model */
+  /**@name Cached information derived from the SOPLEX model */
   //@{
   /// Pointer to objective Vector
   mutable soplex::DVector *obj_;
@@ -727,7 +712,11 @@ private:
 };
 
 //#############################################################################
-/** A function that tests the methods in the OsiSpxSolverInterface class. */
+/** A function that tests the methods in the OsiOslSolverInterface class. The
+    only reason for it not to be a member method is that this way it doesn't
+    have to be compiled into the library. And that's a gain, because the
+    library should be compiled with optimization on, but this method should be
+    compiled with debugging. */
 void OsiSpxSolverInterfaceUnitTest(const std::string & mpsDir, const std::string & netlibDir);
 
 #endif

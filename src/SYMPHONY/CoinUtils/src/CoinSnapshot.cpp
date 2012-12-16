@@ -1,14 +1,12 @@
-/* $Id: CoinSnapshot.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinSnapshot.cpp 1191 2009-07-25 08:38:12Z forrest $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 
 #include "CoinUtilsConfig.h"
 #include "CoinHelperFunctions.hpp"
 #include "CoinSnapshot.hpp"
 #include "CoinPackedMatrix.hpp"
-#include "CoinFinite.hpp"
 
 //#############################################################################
 // Constructors / Destructor / Assignment

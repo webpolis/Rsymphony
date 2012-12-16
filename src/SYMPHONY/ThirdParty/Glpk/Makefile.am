@@ -1,18 +1,22 @@
 # Copyright (C) 2007-2009 Stefan Vigerske
 # All Rights Reserved.
-# This file is distributed under the Eclipse Public License.
+# This file is distributed under the Common Public License.
 
-## $Id: Makefile.am 2310 2011-06-19 14:23:22Z stefan $
+## $Id: Makefile.am 1252 2009-03-31 21:34:31Z stefan $
 
 AUTOMAKE_OPTIONS = foreign
 
 EXTRA_DIST = get.GLPK INSTALL.Glpk glpk.patch
 
-lib_LTLIBRARIES = libcoinglpk.la
+if COIN_BUILD_GLPK
+  noinst_LTLIBRARIES = libcoinglpk.la
+else
+  noinst_LTLIBRARIES =
+endif
 
 GLPKDIR = @GLPKDIR@
 
-libcoinglpk_la_SOURCES = \
+nodist_libcoinglpk_la_SOURCES = \
 $(GLPKDIR)/src/glpapi01.c \
 $(GLPKDIR)/src/glpapi02.c \
 $(GLPKDIR)/src/glpapi03.c \
@@ -32,20 +36,14 @@ $(GLPKDIR)/src/glpapi16.c \
 $(GLPKDIR)/src/glpapi17.c \
 $(GLPKDIR)/src/glpapi18.c \
 $(GLPKDIR)/src/glpapi19.c \
+$(GLPKDIR)/src/glpapi20.c \
+$(GLPKDIR)/src/glpapi21.c \
 $(GLPKDIR)/src/glpavl.c \
 $(GLPKDIR)/src/glpbfd.c \
 $(GLPKDIR)/src/glpbfx.c \
 $(GLPKDIR)/src/glpcpx.c \
 $(GLPKDIR)/src/glpdmp.c \
 $(GLPKDIR)/src/glpdmx.c \
-$(GLPKDIR)/src/glpenv01.c \
-$(GLPKDIR)/src/glpenv02.c \
-$(GLPKDIR)/src/glpenv03.c \
-$(GLPKDIR)/src/glpenv04.c \
-$(GLPKDIR)/src/glpenv05.c \
-$(GLPKDIR)/src/glpenv06.c \
-$(GLPKDIR)/src/glpenv07.c \
-$(GLPKDIR)/src/glpenv08.c \
 $(GLPKDIR)/src/glpfhv.c \
 $(GLPKDIR)/src/glpgmp.c \
 $(GLPKDIR)/src/glphbm.c \
@@ -61,16 +59,29 @@ $(GLPKDIR)/src/glpios07.c \
 $(GLPKDIR)/src/glpios08.c \
 $(GLPKDIR)/src/glpios09.c \
 $(GLPKDIR)/src/glpios10.c \
-$(GLPKDIR)/src/glpios11.c \
-$(GLPKDIR)/src/glpios12.c \
 $(GLPKDIR)/src/glpipm.c \
+$(GLPKDIR)/src/glpipp01.c \
+$(GLPKDIR)/src/glpipp02.c \
 $(GLPKDIR)/src/glplib01.c \
 $(GLPKDIR)/src/glplib02.c \
 $(GLPKDIR)/src/glplib03.c \
+$(GLPKDIR)/src/glplib04.c \
+$(GLPKDIR)/src/glplib05.c \
+$(GLPKDIR)/src/glplib06.c \
+$(GLPKDIR)/src/glplib07.c \
+$(GLPKDIR)/src/glplib08.c \
+$(GLPKDIR)/src/glplib09.c \
+$(GLPKDIR)/src/glplib10.c \
+$(GLPKDIR)/src/glplib11.c \
+$(GLPKDIR)/src/glplib12.c \
 $(GLPKDIR)/src/glplpf.c \
+$(GLPKDIR)/src/glplpp01.c \
+$(GLPKDIR)/src/glplpp02.c \
 $(GLPKDIR)/src/glplpx01.c \
 $(GLPKDIR)/src/glplpx02.c \
 $(GLPKDIR)/src/glplpx03.c \
+$(GLPKDIR)/src/glplpx04.c \
+$(GLPKDIR)/src/glplpx05.c \
 $(GLPKDIR)/src/glpluf.c \
 $(GLPKDIR)/src/glplux.c \
 $(GLPKDIR)/src/glpmat.c \
@@ -80,7 +91,8 @@ $(GLPKDIR)/src/glpmpl03.c \
 $(GLPKDIR)/src/glpmpl04.c \
 $(GLPKDIR)/src/glpmpl05.c \
 $(GLPKDIR)/src/glpmpl06.c \
-$(GLPKDIR)/src/glpmps.c \
+$(GLPKDIR)/src/glpmps01.c \
+$(GLPKDIR)/src/glpmps02.c \
 $(GLPKDIR)/src/glpnet01.c \
 $(GLPKDIR)/src/glpnet02.c \
 $(GLPKDIR)/src/glpnet03.c \
@@ -88,66 +100,41 @@ $(GLPKDIR)/src/glpnet04.c \
 $(GLPKDIR)/src/glpnet05.c \
 $(GLPKDIR)/src/glpnet06.c \
 $(GLPKDIR)/src/glpnet07.c \
-$(GLPKDIR)/src/glpnet08.c \
-$(GLPKDIR)/src/glpnet09.c \
-$(GLPKDIR)/src/glpnpp01.c \
-$(GLPKDIR)/src/glpnpp02.c \
-$(GLPKDIR)/src/glpnpp03.c \
-$(GLPKDIR)/src/glpnpp04.c \
-$(GLPKDIR)/src/glpnpp05.c \
 $(GLPKDIR)/src/glpqmd.c \
 $(GLPKDIR)/src/glprgr.c \
 $(GLPKDIR)/src/glprng01.c \
 $(GLPKDIR)/src/glprng02.c \
 $(GLPKDIR)/src/glpscf.c \
+$(GLPKDIR)/src/glpscg.c \
 $(GLPKDIR)/src/glpscl.c \
-$(GLPKDIR)/src/glpsdf.c \
+$(GLPKDIR)/src/glpsds.c \
 $(GLPKDIR)/src/glpspm.c \
 $(GLPKDIR)/src/glpspx01.c \
 $(GLPKDIR)/src/glpspx02.c \
 $(GLPKDIR)/src/glpsql.c \
 $(GLPKDIR)/src/glpssx01.c \
-$(GLPKDIR)/src/glpssx02.c \
-$(GLPKDIR)/src/amd/amd_1.c \
-$(GLPKDIR)/src/amd/amd_2.c \
-$(GLPKDIR)/src/amd/amd_aat.c \
-$(GLPKDIR)/src/amd/amd_control.c \
-$(GLPKDIR)/src/amd/amd_defaults.c \
-$(GLPKDIR)/src/amd/amd_dump.c \
-$(GLPKDIR)/src/amd/amd_info.c \
-$(GLPKDIR)/src/amd/amd_order.c \
-$(GLPKDIR)/src/amd/amd_postorder.c \
-$(GLPKDIR)/src/amd/amd_post_tree.c \
-$(GLPKDIR)/src/amd/amd_preprocess.c \
-$(GLPKDIR)/src/amd/amd_valid.c \
-$(GLPKDIR)/src/colamd/colamd.c
+$(GLPKDIR)/src/glpssx02.c
+
+libcoinglpk_la_DEPENDENCIES = $(srcdir)/$(GLPKDIR)/include/config.h
+
+# CoinUtils and SYMPHONY include glpmpl.h and have HAVE_CONFIG_H defined
+# so we put a dummy config.h file into the glpk include directory. At least
+# a newline is needed to avoid a bug in Sun Solaris Studio, 64-bit optimised
+# build.
+$(srcdir)/$(GLPKDIR)/include/config.h :
+	echo "" > $(srcdir)/$(GLPKDIR)/include/config.h
 
 DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 
-AM_CPPFLAGS = -I`$(CYGPATH_W) $(srcdir)/$(GLPKDIR)/include` \
-  -I`$(CYGPATH_W) $(srcdir)/$(GLPKDIR)/src` \
-  -I`$(CYGPATH_W) $(srcdir)/$(GLPKDIR)/src/amd` \
-  -I`$(CYGPATH_W) $(srcdir)/$(GLPKDIR)/src/colamd` \
-  -I$(GLPKDIR)
+AM_CPPFLAGS = -I`$(CYGPATH_W) $(srcdir)/$(GLPKDIR)/include` -I$(GLPKDIR)
 
 libcoinglpk_la_LDFLAGS = $(LT_LDFLAGS)
-
-thirdpartyincludedir = $(includedir)/coin/ThirdParty
-thirdpartyinclude_HEADERS = $(GLPKDIR)/include/glpk.h $(GLPKDIR)/src/amd/amd.h
-
-pkgconfiglibdir = $(libdir)/pkgconfig
-pkgconfiglib_DATA = coinglpk.pc
-
-test:
-	@echo "No test available for Glpk."
 
 ########################################################################
 #                         Maintainer Stuff                             #
 ########################################################################
 
-CLEANFILES =
-
 # Files that are generated and should be cleaned with make distclean
 DISTCLEANFILES = $(MAKEOKFILE)
 
-include BuildTools/Makemain.inc
+include ../../BuildTools/Makemain.inc

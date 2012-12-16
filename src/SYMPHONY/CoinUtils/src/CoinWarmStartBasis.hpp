@@ -1,8 +1,7 @@
-/* $Id: CoinWarmStartBasis.hpp 1372 2011-01-03 23:31:00Z lou $ */
+/* $Id: CoinWarmStartBasis.hpp 1215 2009-11-05 11:03:04Z forrest $ */
 /*! \legal
   Copyright (C) 2000 -- 2003, International Business Machines Corporation
   and others.  All Rights Reserved.
-  This code is licensed under the terms of the Eclipse Public License (EPL).
 */
 
 /*! \file CoinWarmStart.hpp

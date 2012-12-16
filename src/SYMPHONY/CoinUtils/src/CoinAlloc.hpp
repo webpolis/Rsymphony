@@ -1,7 +1,6 @@
-/* $Id: CoinAlloc.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinAlloc.hpp 1191 2009-07-25 08:38:12Z forrest $ */
 // Copyright (C) 2007, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #ifndef CoinAlloc_hpp
 #define CoinAlloc_hpp
@@ -14,6 +13,10 @@
 #endif
 
 #if (COINUTILS_MEMPOOL_MAXPOOLED >= 0)
+
+#ifdef HAVE_STDLIB_H
+#include <stdlib.h>
+#endif
 
 #ifndef COINUTILS_MEMPOOL_ALIGNMENT
 #define COINUTILS_MEMPOOL_ALIGNMENT 16

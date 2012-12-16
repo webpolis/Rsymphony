@@ -1,8 +1,4 @@
-/* $Id: CoinUtility.hpp 1372 2011-01-03 23:31:00Z lou $ */
-// Copyright (C) 2004, International Business Machines
-// Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
+/* $Id: CoinUtility.hpp 1215 2009-11-05 11:03:04Z forrest $ */
 #ifndef CoinUtility_h_
 #define CoinUtility_h_
 

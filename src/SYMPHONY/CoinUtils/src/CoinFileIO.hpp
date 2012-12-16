@@ -1,7 +1,5 @@
-/* $Id: CoinFileIO.hpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinFileIO.hpp 1215 2009-11-05 11:03:04Z forrest $ */
 // Copyright (C) 2005, COIN-OR.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #ifndef CoinFileIO_H
 #define CoinFileIO_H
 
@@ -37,11 +35,6 @@ private:
 class CoinFileInput: public CoinFileIOBase
 {
 public:
-  /// indicates whether CoinFileInput supports gzip'ed files
-  static bool haveGzipSupport();
-  /// indicates whether CoinFileInput supports bzip2'ed files
-  static bool haveBzip2Support();
-
   /// Factory method, that creates a CoinFileInput (more precisely
   /// a subclass of it) for the file specified. This method reads the 
   /// first few bytes of the file and determines if this is a compressed

@@ -1,7 +1,6 @@
-/* $Id: ClpDualRowPivot.cpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpDualRowPivot.cpp 1458 2009-11-05 12:34:07Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #include "CoinPragma.hpp"
 #include "ClpSimplex.hpp"
@@ -12,27 +11,27 @@
 //#############################################################################
 
 //-------------------------------------------------------------------
-// Default Constructor
+// Default Constructor 
 //-------------------------------------------------------------------
 ClpDualRowPivot::ClpDualRowPivot () :
-     model_(NULL),
-     type_(-1)
+  model_(NULL), 
+  type_(-1)
 {
 
 }
 
 //-------------------------------------------------------------------
-// Copy constructor
+// Copy constructor 
 //-------------------------------------------------------------------
 ClpDualRowPivot::ClpDualRowPivot (const ClpDualRowPivot & source) :
-     model_(source.model_),
-     type_(source.type_)
-{
+  model_(source.model_),
+  type_(source.type_)
+{  
 
 }
 
 //-------------------------------------------------------------------
-// Destructor
+// Destructor 
 //-------------------------------------------------------------------
 ClpDualRowPivot::~ClpDualRowPivot ()
 {
@@ -40,33 +39,33 @@ ClpDualRowPivot::~ClpDualRowPivot ()
 }
 
 //----------------------------------------------------------------
-// Assignment operator
+// Assignment operator 
 //-------------------------------------------------------------------
 ClpDualRowPivot &
 ClpDualRowPivot::operator=(const ClpDualRowPivot& rhs)
 {
-     if (this != &rhs) {
-          type_ = rhs.type_;
-          model_ = rhs.model_;
-     }
-     return *this;
+  if (this != &rhs) {
+    type_ = rhs.type_;
+    model_ = rhs.model_;
+  }
+  return *this;
 }
-void
-ClpDualRowPivot::saveWeights(ClpSimplex * model, int /*mode*/)
+void 
+ClpDualRowPivot::saveWeights(ClpSimplex * model,int /*mode*/)
 {
-     model_ = model;
+  model_=model;
 }
 // checks accuracy and may re-initialize (may be empty)
-void
+void 
 ClpDualRowPivot::checkAccuracy()
 {
 }
-void
+void 
 ClpDualRowPivot::unrollWeights()
 {
 }
 // Gets rid of all arrays
-void
+void 
 ClpDualRowPivot::clearArrays()
 {
 }

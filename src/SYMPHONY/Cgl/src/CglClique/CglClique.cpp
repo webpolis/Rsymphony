@@ -1,8 +1,3 @@
-// $Id: CglClique.cpp 1033 2011-06-19 16:49:13Z stefan $
-// Copyright (C) 2000, International Business Machines
-// Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #include <cstdio>
 #include <cassert>
 
@@ -27,7 +22,7 @@ CglClique::CglClique(bool setPacking, bool justOriginalRows) :
    sp_row_start(0),
    sp_row_ind(0),
    node_node(0),
-   petol(-1.0),
+   petol(-1),
    do_row_clique(true),
    do_star_clique(true),
    scl_next_node_rule(SCL_MAX_XJ_MAX_DEG),
@@ -83,7 +78,7 @@ CglClique::generateCuts(const OsiSolverInterface& si, OsiCuts & cs,
 			const CglTreeInfo info) const
 {
    int i;
-   bool has_petol_set = petol != -1.0;
+   bool has_petol_set = petol >= 0;
 
    if (! has_petol_set)
       si.getDblParam(OsiPrimalTolerance, petol);
@@ -415,7 +410,7 @@ CglClique::find_scl(OsiCuts& cs) const
 
 int
 CglClique::scl_choose_next_node(const int current_nodenum,
-				const int * /* current_indices */,
+				const int *current_indices,
 				const int *current_degrees,
 				const double *current_values) const
 {
@@ -702,13 +697,12 @@ CglClique::recordClique(const int len, int* indices, OsiCuts& cs) const
    for (int j = len - 1; j >= 0; j--)
       indices[j] = sp_orig_col_ind[indices[j]];
    std::sort(indices, indices + len);
-   OsiRowCut rowcut;
+   OsiRowCut* rowcut = new OsiRowCut();
    double* coef = new double[len];
    std::fill(coef, coef + len, 1.0);
-   rowcut.setRow(len, indices, coef);
-   rowcut.setUb(1.0);
-   CoinAbsFltEq equal(1.0e-12);
-   cs.insertIfNotDuplicate(rowcut,equal);
+   rowcut->setRow(len, indices, coef);
+   rowcut->setUb(1.0);
+   cs.insert(rowcut);
    delete[] coef;
 }
 
@@ -853,13 +847,23 @@ CglFakeClique::generateCuts(const OsiSolverInterface& si, OsiCuts & cs,
     fakeSolver_->setColLower(si.getColLower());
     fakeSolver_->setColSolution(si.getColSolution());
     fakeSolver_->setColUpper(si.getColUpper());
+    int numberRowCutsBefore = cs.sizeRowCuts();
     CglClique::generateCuts(*fakeSolver_,cs,info);
+    int numberRowCutsAfter1 = cs.sizeRowCuts();
+    if (numberRowCutsAfter1>numberRowCutsBefore)
+      printf("fake clique generated %d cuts\n",
+	     numberRowCutsAfter1-numberRowCutsBefore);
     if (probing_) {
       // get and set branch and bound cutoff
-      double cutoff;
-      si.getDblParam(OsiDualObjectiveLimit,cutoff);
-      fakeSolver_->setDblParam(OsiDualObjectiveLimit,cutoff);
+      // No - as can't set djs correctly
+      //double cutoff;
+      //si.getDblParam(OsiDualObjectiveLimit,cutoff);
+      fakeSolver_->setDblParam(OsiDualObjectiveLimit,1.0e100/*cutoff*/);
       probing_->generateCuts(*fakeSolver_,cs,info);
+      int numberRowCutsAfter2 = cs.sizeRowCuts();
+      if (numberRowCutsAfter2>numberRowCutsAfter1)
+	printf("fake probe generated %d cuts\n",
+	       numberRowCutsAfter2-numberRowCutsAfter1);
     }
   } else {
     // just use real solver

@@ -1,14 +1,17 @@
-/* $Id: CoinPackedVectorBase.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinPackedVectorBase.cpp 1239 2009-12-10 16:16:11Z ladanyi $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
+
+#if defined(_MSC_VER)
+// Turn off compiler warning about long names
+#  pragma warning(disable:4786)
+#endif
 
 #include <numeric>
 
-#include "CoinPackedVectorBase.hpp"
-#include "CoinTypes.hpp"
+#include "CoinFinite.hpp"
 #include "CoinHelperFunctions.hpp"
-#include "CoinFloatEqual.hpp"
+#include "CoinPackedVectorBase.hpp"
 
 //#############################################################################
 
@@ -131,18 +134,12 @@ CoinPackedVectorBase::findIndex(int i) const
 
 bool
 CoinPackedVectorBase::operator==(const CoinPackedVectorBase& rhs) const
-{  if (getNumElements() == 0 || rhs.getNumElements() == 0) {
-     if (getNumElements() == 0 && rhs.getNumElements() == 0)
-       return (true) ;
-     else
-       return (false) ;
-   } else {
-     return (getNumElements()==rhs.getNumElements() &&
-	     std::equal(getIndices(),getIndices()+getNumElements(),
-		        rhs.getIndices()) &&
-	     std::equal(getElements(),getElements()+getNumElements(),
-		        rhs.getElements())) ;
-   }
+{
+   return (getNumElements()==rhs.getNumElements() &&
+	   std::equal(getIndices(), getIndices() + getNumElements(),
+		      rhs.getIndices()) &&
+	   std::equal(getElements(), getElements() + getNumElements(),
+		      rhs.getElements()));
 }
 
 //-----------------------------------------------------------------------------
@@ -168,12 +165,6 @@ CoinPackedVectorBase::compare(const CoinPackedVectorBase& rhs) const
     return itmp;
   }
   return memcmp(getElements(), rhs.getElements(), size * sizeof(double));
-}
-
-bool
-CoinPackedVectorBase::isEquivalent(const CoinPackedVectorBase& rhs) const
-{
-   return isEquivalent(rhs,  CoinRelFltEq());
 }
 
 //#############################################################################
@@ -209,14 +200,6 @@ CoinPackedVectorBase::normSquare() const
 {
    return std::inner_product(getElements(), getElements() + getNumElements(),
 			     getElements(), 0.0);
-}
-
-//-----------------------------------------------------------------------------
-
-double
-CoinPackedVectorBase::twoNorm() const
-{
-   return sqrt(normSquare());
 }
 
 //-----------------------------------------------------------------------------

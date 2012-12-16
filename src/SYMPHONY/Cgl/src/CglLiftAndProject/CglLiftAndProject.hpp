@@ -1,7 +1,5 @@
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #ifndef CglLiftAndProject_H
 #define CglLiftAndProject_H
 
@@ -36,7 +34,7 @@ public:
   */
   void setBeta(int oneOrMinusOne){
     if (oneOrMinusOne==1 || oneOrMinusOne==-1){
-      beta_= static_cast<double>(oneOrMinusOne);
+      beta_= (double)oneOrMinusOne;
     }
     else {
       throw CoinError("Unallowable value. Beta must be 1 or -1",

@@ -7,7 +7,7 @@
 //-----------------------------------------------------------------------------
 // Copyright (C) 2004, International Business Machines Corporation and others. 
 // All Rights Reserved.
-// This code is published under the Eclipse Public License.
+// This code is published under the Common Public License.
 
 #ifndef CglMixedIntegerRounding_H
 #define CglMixedIntegerRounding_H
@@ -247,7 +247,7 @@ private:
 			const int* colInds,
 			const int* rowStarts,
 			const int* rowLengths,
-			//const CoinPackedMatrix& matrixByCol,
+			const CoinPackedMatrix& matrixByCol,
 			const double* coefByCol,
 			const int* rowInds,
 			const int* colStarts,
@@ -310,9 +310,9 @@ private:
 			const CoinPackedVector& rowAggregated,
 			const int* listRowsAggregated,
 			const char* sense, const double* RHS,
-			//const double* coefByRow,
-			//const int* colInds, const int* rowStarts,
-			//const int* rowLengths,
+			const double* coefByRow,
+			const int* colInds, const int* rowStarts,
+			const int* rowLengths,
 			const double* xlp, const double sStar,
 			const double* colUpperBound,
 			const double* colLowerBound,

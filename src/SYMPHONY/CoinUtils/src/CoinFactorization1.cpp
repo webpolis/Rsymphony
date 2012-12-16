@@ -1,8 +1,6 @@
-/* $Id: CoinFactorization1.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinFactorization1.cpp 1215 2009-11-05 11:03:04Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -15,7 +13,6 @@
 #include "CoinIndexedVector.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedMatrix.hpp"
-#include "CoinFinite.hpp"
 #include <stdio.h>
 //:class CoinFactorization.  Deals with Factorization and Updates
 //  CoinFactorization.  Constructor
@@ -1299,7 +1296,7 @@ CoinFactorization::getColumnSpace ( int iColumn,
   CoinFactorizationDouble *elementU = elementU_.array();
   int * indexRowU = indexRowU_.array();
 
-  if ( space < extraNeeded + number + 4 ) {
+  if ( space < extraNeeded + number + 2 ) {
     //compression
     int iColumn = nextColumn[maximumColumnsExtra_];
     CoinBigIndex put = 0;
@@ -1387,17 +1384,8 @@ CoinFactorization::getColumnSpace ( int iColumn,
     }
     put += number;
     get += number;
-    //add 2 for luck
-    startColumnU[maximumColumnsExtra_] = put + extraNeeded + 2;
-    if (startColumnU[maximumColumnsExtra_]>lengthAreaU_) {
-      // get more memory
-#ifdef CLP_DEVELOP
-      printf("put %d, needed %d, start %d, length %d\n",
-	     put,extraNeeded,startColumnU[maximumColumnsExtra_],
-	     lengthAreaU_);
-#endif
-      return false;
-    }
+    //add 4 for luck
+    startColumnU[maximumColumnsExtra_] = put + extraNeeded + 4;
   } else {
     //take off space
     startColumnU[maximumColumnsExtra_] = startColumnU[last] +

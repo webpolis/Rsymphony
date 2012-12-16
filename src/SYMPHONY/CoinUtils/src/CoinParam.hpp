@@ -1,12 +1,10 @@
-/* $Id: CoinParam.hpp 1494 2011-11-01 16:58:47Z tkr $ */
+/* $Id: CoinParam.hpp 1191 2009-07-25 08:38:12Z forrest $ */
 #ifndef CoinParam_H
 #define CoinParam_H
 
 /*
   Copyright (C) 2002, International Business Machines
   Corporation and others.  All Rights Reserved.
-
-  This code is licensed under the terms of the Eclipse Public License (EPL).
 */
 
 /*! \file CoinParam.hpp
@@ -15,7 +13,6 @@
 
 #include <vector>
 #include <string>
-#include <cstdio>
 
 /*! \class CoinParam
     \brief A base class for `keyword value' command line parameters.
@@ -370,12 +367,12 @@ private:
   std::string name_ ;
 
   /// Length of parameter name
-  size_t lengthName_ ;
+  unsigned int lengthName_ ;
 
   /*! \brief  Minimum length required to declare a match for the parameter
 	      name.
   */
-  size_t lengthMatch_ ;
+  unsigned int lengthMatch_ ;
 
   /// Lower bound on value for a double parameter
   double lowerDblValue_ ;

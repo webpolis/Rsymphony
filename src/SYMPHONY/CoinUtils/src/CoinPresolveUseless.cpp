@@ -1,8 +1,6 @@
-/* $Id: CoinPresolveUseless.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinPresolveUseless.cpp 1215 2009-11-05 11:03:04Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #include <stdio.h>
 #include <math.h>
 #include "CoinPresolveMatrix.hpp"
@@ -64,7 +62,6 @@ const CoinPresolveAction *useless_constraint_action::presolve(CoinPresolveMatrix
     int irow = useless_rows[i];
     CoinBigIndex krs = mrstrt[irow];
     CoinBigIndex kre = krs + hinrow[irow];
-    PRESOLVE_DETAIL_PRINT(printf("pre_useless %dR E\n",irow));
 
     action *f = &actions[i];
 

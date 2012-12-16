@@ -1,8 +1,6 @@
-/* $Id: CoinPresolveImpliedFree.cpp 1448 2011-06-19 15:34:41Z stefan $ */
+/* $Id: CoinPresolveImpliedFree.cpp 1214 2009-11-04 17:38:46Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #include <stdio.h>
 #include <math.h>
 
@@ -16,7 +14,6 @@
 #include "CoinMessage.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinSort.hpp"
-#include "CoinFinite.hpp"
 
 #if PRESOLVE_DEBUG || PRESOLVE_CONSISTENCY
 #include "CoinPresolvePsdebug.hpp"
@@ -52,12 +49,7 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 
   double tolerance = prob->feasibilityTolerance_;
   int numberChanged=1,iPass=0;
-#define USE_SMALL_LARGE
-#ifdef USE_SMALL_LARGE
-  double large = 1.0e15; // treat bounds > this as infinite
-#else
   double large = 1.0e20; // treat bounds > this as infinite
-#endif
 #ifndef NDEBUG
   double large2= 1.0e10*large;
 #endif
@@ -65,7 +57,7 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 
   int iRow, iColumn;
 
-  char * markRow = reinterpret_cast<char *>(prob->usefulRowInt_); // wasnew int[numberRows];
+  int * markRow = prob->usefulRowInt_; // wasnew int[numberRows];
   for (iRow=0;iRow<numberRows;iRow++) {
     if ((rowLower[iRow]>-large||rowUpper[iRow]<large)&&rowLength[iRow]>0) {
       markRow[iRow]=-1;
@@ -179,7 +171,7 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 		  // relax if original was large
 		  if (fabs(maximumUp)>1.0e8)
 		    newBound -= 1.0e-12*fabs(maximumUp);
-		} else if (infiniteUpper==1&&nowUpper>=large) {
+		} else if (infiniteUpper==1&&nowUpper>large) {
 		  newBound = (lower -maximumUp) / value;
 		  // relax if original was large
 		  if (fabs(maximumUp)>1.0e8)
@@ -210,7 +202,7 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 		  }
 		  // adjust
 		  double now;
-		  if (nowLower<=-large) {
+		  if (nowLower<-large) {
 		    now=0.0;
 		    infiniteLower--;
 		  } else {
@@ -218,80 +210,6 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 		  }
 		  maximumDown += (newBound-now) * value;
 		  nowLower = newBound;
-		  //#define FREE_DEBUG 2
-#if FREE_DEBUG >1
-		  if (fabs((newBound-now)*value)>1.0e8) {
-		    // recompute
-		    infiniteLower = 0;
-		    maximumDown = 0.0;
-		    CoinBigIndex j2;
-		    // Compute possible lower and upper ranges
-		    for (j2 = rStart; j2 < rEnd; ++j2) {
-		      double value=element[j2];
-		      int iColumn = column[j2];
-		      if (value > 0.0) {
-			if (columnLower[iColumn] > -large) 
-			  maximumDown += columnLower[iColumn] * value;
-			else
-			  ++infiniteLower;
-		      } else if (value<0.0) {
-			if (columnUpper[iColumn] < large) 
-			  maximumDown += columnUpper[iColumn] * value;
-			else
-			  ++infiniteLower;
-		      }
-		    }
-		    // Build in a margin of error
-		    maximumDown -= 1.0e-8*fabs(maximumDown);
-		    if (maximumDown > upper && maximumDown < upper +relaxedTolerance)
-		      maximumDown=upper;
-		  }
-#endif 
-#if FREE_DEBUG 
-#define DEBUG_TOLERANCE 1.0e-10
-		  { // DEBUG
-		    int infiniteUpper2 = 0;
-		    int infiniteLower2 = 0;
-		    double maximumUp2 = 0.0;
-		    double maximumDown2 = 0.0;
-		    CoinBigIndex j2;
-		    // Compute possible lower and upper ranges
-		    for (j2 = rStart; j2 < rEnd; ++j2) {
-		      double value=element[j2];
-		      int iColumn = column[j2];
-		      if (value > 0.0) {
-			if (columnUpper[iColumn] < large) 
-			  maximumUp2 += columnUpper[iColumn] * value;
-			else
-			  ++infiniteUpper2;
-			if (columnLower[iColumn] > -large) 
-			  maximumDown2 += columnLower[iColumn] * value;
-			else
-			  ++infiniteLower2;
-		      } else if (value<0.0) {
-			if (columnUpper[iColumn] < large) 
-			  maximumDown2 += columnUpper[iColumn] * value;
-			else
-			  ++infiniteLower2;
-			if (columnLower[iColumn] > -large) 
-			  maximumUp2 += columnLower[iColumn] * value;
-			else
-			  ++infiniteUpper2;
-		      }
-		    }
-		    // Build in a margin of error
-		    maximumUp2 += 1.0e-8*fabs(maximumUp2);
-		    maximumDown2 -= 1.0e-8*fabs(maximumDown2);
-		    if (maximumUp2 < lower && maximumUp2 > lower -relaxedTolerance)
-		      maximumUp2=lower;
-		    if (maximumDown2 > upper && maximumDown2 < upper +relaxedTolerance)
-		      maximumDown2=upper;
-		    assert (infiniteLower==infiniteLower2);
-		    assert (infiniteUpper==infiniteUpper2);
-		    assert (fabs(maximumDown-maximumDown2)<DEBUG_TOLERANCE*(1.0e6+fabs(maximumDown)));
-		    assert (fabs(maximumUp-maximumUp2)<DEBUG_TOLERANCE*(1.0e6+fabs(maximumUp)));
-		  } // END DEBUG
-#endif
 		}
 	      } 
 	      if (upper <large) {
@@ -302,7 +220,7 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 		  // relax if original was large
 		  if (fabs(maximumDown)>1.0e8)
 		    newBound += 1.0e-12*fabs(maximumDown);
-		} else if (infiniteLower==1&&nowLower<=-large) {
+		} else if (infiniteLower==1&&nowLower<-large) {
 		  newBound =   (upper - maximumDown) / value;
 		  // relax if original was large
 		  if (fabs(maximumDown)>1.0e8)
@@ -333,7 +251,7 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 		  }
 		  // adjust 
 		  double now;
-		  if (nowUpper>=large) {
+		  if (nowUpper>large) {
 		    now=0.0;
 		    infiniteUpper--;
 		  } else {
@@ -341,78 +259,6 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 		  }
 		  maximumUp += (newBound-now) * value;
 		  nowUpper = newBound;
-#if FREE_DEBUG >1
-		  if (fabs((newBound-now)*value)>1.0e8) {
-		    // recompute 
-		    infiniteUpper = 0;
-		    maximumUp = 0.0;
-		    CoinBigIndex j2;
-		    // Compute possible lower and upper ranges
-		    for (j2 = rStart; j2 < rEnd; ++j2) {
-		      double value=element[j2];
-		      int iColumn = column[j2];
-		      if (value > 0.0) {
-			if (columnUpper[iColumn] < large) 
-			  maximumUp += columnUpper[iColumn] * value;
-			else
-			  ++infiniteUpper;
-		      } else if (value<0.0) {
-			if (columnLower[iColumn] > -large) 
-			  maximumUp += columnLower[iColumn] * value;
-			else
-			  ++infiniteUpper;
-		      }
-		    }
-		    // Build in a margin of error
-		    maximumUp += 1.0e-8*fabs(maximumUp);
-		    if (maximumUp < lower && maximumUp > lower -relaxedTolerance)
-		      maximumUp=lower;
-		  } 
-#endif 
-#if FREE_DEBUG 
-		  { // DEBUG
-		    int infiniteUpper2 = 0;
-		    int infiniteLower2 = 0;
-		    double maximumUp2 = 0.0;
-		    double maximumDown2 = 0.0;
-		    CoinBigIndex j2;
-		    // Compute possible lower and upper ranges
-		    for (j2 = rStart; j2 < rEnd; ++j2) {
-		      double value=element[j2];
-		      int iColumn = column[j2];
-		      if (value > 0.0) {
-			if (columnUpper[iColumn] < large) 
-			  maximumUp2 += columnUpper[iColumn] * value;
-			else
-			  ++infiniteUpper2;
-			if (columnLower[iColumn] > -large) 
-			  maximumDown2 += columnLower[iColumn] * value;
-			else
-			  ++infiniteLower2;
-		      } else if (value<0.0) {
-			if (columnUpper[iColumn] < large) 
-			  maximumDown2 += columnUpper[iColumn] * value;
-			else
-			  ++infiniteLower2;
-			if (columnLower[iColumn] > -large) 
-			  maximumUp2 += columnLower[iColumn] * value;
-			else
-			  ++infiniteUpper2;
-		      }
-		    }
-		    // Build in a margin of error
-		    maximumUp2 += 1.0e-8*fabs(maximumUp2);
-		    maximumDown2 -= 1.0e-8*fabs(maximumDown2);
-		    if (maximumUp2 < lower && maximumUp2 > lower -relaxedTolerance)
-		      maximumUp2=lower;
-		    if (maximumDown2 > upper && maximumDown2 < upper +relaxedTolerance)
-		      maximumDown2=upper;
-		    assert (infiniteLower==infiniteLower2);
-		    assert (infiniteUpper==infiniteUpper2);
-		    assert (fabs(maximumDown-maximumDown2)<DEBUG_TOLERANCE*(1.0e6+fabs(maximumDown)));
-		    assert (fabs(maximumUp-maximumUp2)<DEBUG_TOLERANCE*(1.0e6+fabs(maximumUp)));
-		  } // END DEBUG
-#endif
 		}
 	      }
 	    } else {
@@ -425,7 +271,7 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 		  // relax if original was large
 		  if (fabs(maximumUp)>1.0e8)
 		    newBound += 1.0e-12*fabs(maximumUp);
-		} else if (infiniteUpper==1&&nowLower<=-large) {
+		} else if (infiniteUpper==1&&nowLower<-large) {
 		  newBound = (lower -maximumUp) / value;
 		  // relax if original was large
 		  if (fabs(maximumUp)>1.0e8)
@@ -456,7 +302,7 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 		  }
 		  // adjust
 		  double now;
-		  if (nowUpper>=large) {
+		  if (nowUpper>large) {
 		    now=0.0;
 		    infiniteLower--;
 		  } else {
@@ -464,78 +310,6 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 		  }
 		  maximumDown += (newBound-now) * value;
 		  nowUpper = newBound;
-#if FREE_DEBUG >1
-		  if (fabs((newBound-now)*value)>1.0e8) {
-		    // recompute
-		    infiniteLower = 0;
-		    maximumDown = 0.0;
-		    CoinBigIndex j2;
-		    // Compute possible lower and upper ranges
-		    for (j2 = rStart; j2 < rEnd; ++j2) {
-		      double value=element[j2];
-		      int iColumn = column[j2];
-		      if (value > 0.0) {
-			if (columnLower[iColumn] > -large) 
-			  maximumDown += columnLower[iColumn] * value;
-			else
-			  ++infiniteLower;
-		      } else if (value<0.0) {
-			if (columnUpper[iColumn] < large) 
-			  maximumDown += columnUpper[iColumn] * value;
-			else
-			  ++infiniteLower;
-		      }
-		    }
-		    // Build in a margin of error
-		    maximumDown -= 1.0e-8*fabs(maximumDown);
-		    if (maximumDown > upper && maximumDown < upper +relaxedTolerance)
-		      maximumDown=upper;
-		  } 
-#endif 
-#if FREE_DEBUG 
-		  { // DEBUG
-		    int infiniteUpper2 = 0;
-		    int infiniteLower2 = 0;
-		    double maximumUp2 = 0.0;
-		    double maximumDown2 = 0.0;
-		    CoinBigIndex j2;
-		    // Compute possible lower and upper ranges
-		    for (j2 = rStart; j2 < rEnd; ++j2) {
-		      double value=element[j2];
-		      int iColumn = column[j2];
-		      if (value > 0.0) {
-			if (columnUpper[iColumn] < large) 
-			  maximumUp2 += columnUpper[iColumn] * value;
-			else
-			  ++infiniteUpper2;
-			if (columnLower[iColumn] > -large) 
-			  maximumDown2 += columnLower[iColumn] * value;
-			else
-			  ++infiniteLower2;
-		      } else if (value<0.0) {
-			if (columnUpper[iColumn] < large) 
-			  maximumDown2 += columnUpper[iColumn] * value;
-			else
-			  ++infiniteLower2;
-			if (columnLower[iColumn] > -large) 
-			  maximumUp2 += columnLower[iColumn] * value;
-			else
-			  ++infiniteUpper2;
-		      }
-		    }
-		    // Build in a margin of error
-		    maximumUp2 += 1.0e-8*fabs(maximumUp2);
-		    maximumDown2 -= 1.0e-8*fabs(maximumDown2);
-		    if (maximumUp2 < lower && maximumUp2 > lower -relaxedTolerance)
-		      maximumUp2=lower;
-		    if (maximumDown2 > upper && maximumDown2 < upper +relaxedTolerance)
-		      maximumDown2=upper;
-		    assert (infiniteLower==infiniteLower2);
-		    assert (infiniteUpper==infiniteUpper2);
-		    assert (fabs(maximumDown-maximumDown2)<DEBUG_TOLERANCE*(1.0e6+fabs(maximumDown)));
-		    assert (fabs(maximumUp-maximumUp2)<DEBUG_TOLERANCE*(1.0e6+fabs(maximumUp)));
-		  } // END DEBUG
-#endif
 		}
 	      }
 	      if (upper <large) {
@@ -546,7 +320,7 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 		  // relax if original was large
 		  if (fabs(maximumDown)>1.0e8)
 		    newBound -= 1.0e-12*fabs(maximumDown);
-		} else if (infiniteLower==1&&nowUpper>=large) {
+		} else if (infiniteLower==1&&nowUpper>large) {
 		  newBound =   (upper - maximumDown) / value;
 		  // relax if original was large
 		  if (fabs(maximumDown)>1.0e8)
@@ -577,7 +351,7 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 		  }
 		  // adjust
 		  double now;
-		  if (nowLower<=-large) {
+		  if (nowLower<-large) {
 		    now=0.0;
 		    infiniteUpper--;
 		  } else {
@@ -585,78 +359,6 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 		  }
 		  maximumUp += (newBound-now) * value;
 		  nowLower = newBound;
-#if FREE_DEBUG >1
-		  if (fabs((newBound-now)*value)>1.0e8) {
-		    // recompute 
-		    infiniteUpper = 0;
-		    maximumUp = 0.0;
-		    CoinBigIndex j2;
-		    // Compute possible lower and upper ranges
-		    for (j2 = rStart; j2 < rEnd; ++j2) {
-		      double value=element[j2];
-		      int iColumn = column[j2];
-		      if (value > 0.0) {
-			if (columnUpper[iColumn] < large) 
-			  maximumUp += columnUpper[iColumn] * value;
-			else
-			  ++infiniteUpper;
-		      } else if (value<0.0) {
-			if (columnLower[iColumn] > -large) 
-			  maximumUp += columnLower[iColumn] * value;
-			else
-			  ++infiniteUpper;
-		      }
-		    }
-		    // Build in a margin of error
-		    maximumUp += 1.0e-8*fabs(maximumUp);
-		    if (maximumUp < lower && maximumUp > lower -relaxedTolerance)
-		      maximumUp=lower;
-		  } 
-#endif 
-#if FREE_DEBUG 
-		  { // DEBUG
-		    int infiniteUpper2 = 0;
-		    int infiniteLower2 = 0;
-		    double maximumUp2 = 0.0;
-		    double maximumDown2 = 0.0;
-		    CoinBigIndex j2;
-		    // Compute possible lower and upper ranges
-		    for (j2 = rStart; j2 < rEnd; ++j2) {
-		      double value=element[j2];
-		      int iColumn = column[j2];
-		      if (value > 0.0) {
-			if (columnUpper[iColumn] < large) 
-			  maximumUp2 += columnUpper[iColumn] * value;
-			else
-			  ++infiniteUpper2;
-			if (columnLower[iColumn] > -large) 
-			  maximumDown2 += columnLower[iColumn] * value;
-			else
-			  ++infiniteLower2;
-		      } else if (value<0.0) {
-			if (columnUpper[iColumn] < large) 
-			  maximumDown2 += columnUpper[iColumn] * value;
-			else
-			  ++infiniteLower2;
-			if (columnLower[iColumn] > -large) 
-			  maximumUp2 += columnLower[iColumn] * value;
-			else
-			  ++infiniteUpper2;
-		      }
-		    }
-		    // Build in a margin of error
-		    maximumUp2 += 1.0e-8*fabs(maximumUp2);
-		    maximumDown2 -= 1.0e-8*fabs(maximumDown2);
-		    if (maximumUp2 < lower && maximumUp2 > lower -relaxedTolerance)
-		      maximumUp2=lower;
-		    if (maximumDown2 > upper && maximumDown2 < upper +relaxedTolerance)
-		      maximumDown2=upper;
-		    assert (infiniteLower==infiniteLower2);
-		    assert (infiniteUpper==infiniteUpper2);
-		    assert (fabs(maximumDown-maximumDown2)<DEBUG_TOLERANCE*(1.0e6+fabs(maximumDown)));
-		    assert (fabs(maximumUp-maximumUp2)<DEBUG_TOLERANCE*(1.0e6+fabs(maximumUp)));
-		  } // END DEBUG
-#endif
 		}
 	      }
 	    }
@@ -813,7 +515,6 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 	      
 	      forcing_constraint_action::action * f = &actions[numActions];
 	      numActions++;
-	      PRESOLVE_DETAIL_PRINT(printf("pre_impliedfree %dR E\n",iRow));
 	      f->row = iRow;
 	      f->nlo = lk-rStart;
 	      f->nup = rEnd-uk;
@@ -868,8 +569,8 @@ const CoinPresolveAction *testRedundant (CoinPresolveMatrix *prob,
 	  assert (columnUpper[i]>columnLower[i]-10.0*tolerance);
 	}
       }
-      //if (nFixed)
-      //printf("could fix %d\n",nFixed);
+      if (nFixed)
+	printf("could fix %d\n",nFixed);
       //next = remove_fixed_action::presolve(prob,fixed,nFixed,next) ; 
     }
 #endif
@@ -1010,24 +711,13 @@ const CoinPresolveAction *implied_free_action::presolve(CoinPresolveMatrix *prob
 #if 1  
   // This needs to be made faster
   int numberInfeasible;
-  //printf("Imp pass %d\n",prob->pass_);
-#ifdef COIN_LIGHTWEIGHT_PRESOLVE
-  if (prob->pass_==1) {
-#endif
-    next = testRedundant(prob,next,numberInfeasible);
-    if ((prob->presolveOptions_&16384)!=0)
-      numberInfeasible=0;
-    if (numberInfeasible) {
-      // infeasible
-      prob->status_|= 1;
-      return (next);
-    }
-#ifdef COIN_LIGHTWEIGHT_PRESOLVE
-  }
-#endif
-  if (prob->pass_>15&&(prob->presolveOptions_&0x10000)!=0) { 
-    fill_level=2;
-    return next;
+  //if (prob->pass_%2!=1)
+  //return next;
+  next = testRedundant(prob,next,numberInfeasible);
+  if (numberInfeasible) {
+    // infeasible
+    prob->status_|= 1;
+    return (next);
   }
 #endif
   //  int nbounds = 0;
@@ -1058,11 +748,7 @@ const CoinPresolveAction *implied_free_action::presolve(CoinPresolveMatrix *prob
     else
       infiniteUp[i]=-2;
   }
-#ifdef USE_SMALL_LARGE
-  double large=1.0e10;
-#else
   double large=1.0e20;
-#endif
 
   int numberLook = prob->numberColsToDo_;
   int iLook;
@@ -1452,7 +1138,6 @@ const CoinPresolveAction *implied_free_action::presolve(CoinPresolveMatrix *prob
 	      
 	s->row = row;
 	s->col = j;
-	PRESOLVE_DETAIL_PRINT(printf("pre_impliedfree2 %dC %dR E\n",j,row));
 
 	s->clo = clo[j];
 	s->cup = cup[j];
@@ -1743,8 +1428,8 @@ void implied_free_action::postsolve(CoinPostsolveMatrix *prob) const
 	rowduals[irow] = possibleDual;
 	if ((rlo[irow] < rup[irow] && rowduals[irow] < 0.0)
 	    || rlo[irow]< -1.0e20) {
-	  //if (rlo[irow]<-1.0e20&&rowduals[irow]>ZTOLDP)
-	  //printf("IMP %g %g %g\n",rlo[irow],rup[irow],rowduals[irow]);
+	  if (rlo[irow]<-1.0e20&&rowduals[irow]>ZTOLDP)
+	    printf("IMP %g %g %g\n",rlo[irow],rup[irow],rowduals[irow]);
 	  sol[icol] = (rup[irow] - act) / coeff;
 	  //assert (sol[icol]>=clo[icol]-1.0e-5&&sol[icol]<=cup[icol]+1.0e-5);
 	  acts[irow] = rup[irow];

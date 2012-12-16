@@ -1,8 +1,6 @@
-/* $Id: ClpPrimalColumnDantzig.hpp 1665 2011-01-04 17:55:54Z lou $ */
+/* $Id: ClpPrimalColumnDantzig.hpp 1458 2009-11-05 12:34:07Z forrest $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #ifndef ClpPrimalColumnDantzig_H
 #define ClpPrimalColumnDantzig_H
 
@@ -17,56 +15,55 @@ This is simplest choice - choose largest infeasibility
 */
 
 class ClpPrimalColumnDantzig : public ClpPrimalColumnPivot {
-
+  
 public:
+  
+  ///@name Algorithmic methods 
+  //@{
+  
+  /** Returns pivot column, -1 if none.
+      Lumbers over all columns - slow 
+      The Packed CoinIndexedVector updates has cost updates - for normal LP
+      that is just +-weight where a feasibility changed.  It also has 
+      reduced cost from last iteration in pivot row
+      Can just do full price if you really want to be slow
+  */
+  virtual int pivotColumn(CoinIndexedVector * updates,
+			  CoinIndexedVector * spareRow1,
+			  CoinIndexedVector * spareRow2,
+			  CoinIndexedVector * spareColumn1,
+			  CoinIndexedVector * spareColumn2);
 
-     ///@name Algorithmic methods
-     //@{
+  /// Just sets model
+  virtual void saveWeights(ClpSimplex * model,int)
+  {model_=model;}
+  //@}
+  
+  
+  ///@name Constructors and destructors
+  //@{
+  /// Default Constructor
+  ClpPrimalColumnDantzig(); 
+  
+  /// Copy constructor 
+  ClpPrimalColumnDantzig(const ClpPrimalColumnDantzig &);
+  
+  /// Assignment operator 
+  ClpPrimalColumnDantzig & operator=(const ClpPrimalColumnDantzig& rhs);
+  
+  /// Destructor 
+  virtual ~ClpPrimalColumnDantzig ();
 
-     /** Returns pivot column, -1 if none.
-         Lumbers over all columns - slow
-         The Packed CoinIndexedVector updates has cost updates - for normal LP
-         that is just +-weight where a feasibility changed.  It also has
-         reduced cost from last iteration in pivot row
-         Can just do full price if you really want to be slow
-     */
-     virtual int pivotColumn(CoinIndexedVector * updates,
-                             CoinIndexedVector * spareRow1,
-                             CoinIndexedVector * spareRow2,
-                             CoinIndexedVector * spareColumn1,
-                             CoinIndexedVector * spareColumn2);
+  /// Clone
+  virtual ClpPrimalColumnPivot * clone(bool copyData = true) const;
+ 
+  //@}
 
-     /// Just sets model
-     virtual void saveWeights(ClpSimplex * model, int) {
-          model_ = model;
-     }
-     //@}
-
-
-     ///@name Constructors and destructors
-     //@{
-     /// Default Constructor
-     ClpPrimalColumnDantzig();
-
-     /// Copy constructor
-     ClpPrimalColumnDantzig(const ClpPrimalColumnDantzig &);
-
-     /// Assignment operator
-     ClpPrimalColumnDantzig & operator=(const ClpPrimalColumnDantzig& rhs);
-
-     /// Destructor
-     virtual ~ClpPrimalColumnDantzig ();
-
-     /// Clone
-     virtual ClpPrimalColumnPivot * clone(bool copyData = true) const;
-
-     //@}
-
-     //---------------------------------------------------------------------------
-
+  //---------------------------------------------------------------------------
+  
 private:
-     ///@name Private member data
-     //@}
+  ///@name Private member data 
+  //@}
 };
 
 #endif

@@ -1,8 +1,5 @@
-// $Id: CglKnapsackCover.cpp 1033 2011-06-19 16:49:13Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -199,12 +196,12 @@ void CglKnapsackCover::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
     if (fabs(sum-upRhs)<1.0e-5) {
       possible=true;
     } else {
-      effectiveUpper[rowIndex]=COIN_DBL_MAX;
+      effectiveUpper[rowIndex]=DBL_MAX;
     }
     if (fabs(sum-loRhs)<1.0e-5) {
       possible=true;
     } else {
-      effectiveLower[rowIndex]=-COIN_DBL_MAX;
+      effectiveLower[rowIndex]=-DBL_MAX;
     }
     if (possible&&numberBinary&&numberBinary+numberContinuous<=maxInKnapsack_) {
       // binding with binary
@@ -844,7 +841,7 @@ CglKnapsackCover::liftAndUncomplementAndAdd(
       }
     }
 #endif
-    rc.setLb(-COIN_DBL_MAX);
+    rc.setLb(-DBL_MAX);
     rc.setUb(cutRhs);
     //  rc.setEffectiveness(0);
     // Todo: put in a more useful measure such as  the violation. 
@@ -908,8 +905,8 @@ CglKnapsackCover::deriveAKnapsack(
 
   CoinPackedVector leMatrixRow(numberElements,index,element); 
 
-  double maxKrowElement = -COIN_DBL_MAX;
-  double minKrowElement = COIN_DBL_MAX;
+  double maxKrowElement = -DBL_MAX;
+  double minKrowElement = DBL_MAX;
   
 
   if (treatAsLRow) {
@@ -1063,7 +1060,7 @@ CglKnapsackCover::deriveAKnapsack(
 #endif
     cc.setLbs( 1, &index, &fakeLb);
     cc.setUbs( 1, &index, &fakeLb);
-    cc.setEffectiveness(COIN_DBL_MAX);
+    cc.setEffectiveness(DBL_MAX);
     cs.insert(cc);
 #ifdef PRINT_DEBUG
     printf("Cgl: Problem is infeasible\n");
@@ -1093,7 +1090,7 @@ CglKnapsackCover::deriveAKnapsack(
     OsiColCut cc;
     cc.setLbs(fixedBnd);
     cc.setUbs(fixedBnd);
-    cc.setEffectiveness(COIN_DBL_MAX);
+    cc.setEffectiveness(DBL_MAX);
     return 0; 
   }  
 
@@ -2731,7 +2728,7 @@ CglKnapsackCover::liftUpDownAndUncomplementAndAdd(
 #else
       if ( fabs(atOne.getElements()[j])<= epsilon_ ) {
 	// exit gracefully
-	cutRhs = COIN_DBL_MAX;
+	cutRhs = DBL_MAX;
 	break;
       }
 #endif
@@ -2959,7 +2956,7 @@ CglKnapsackCover::liftUpDownAndUncomplementAndAdd(
       }
     }
 #endif
-    rc.setLb(-COIN_DBL_MAX);
+    rc.setLb(-DBL_MAX);
     rc.setUb(cutRhs);
     // ToDo: what's the default effectiveness?
     //  rc.setEffectiveness(1.0);
@@ -3227,7 +3224,7 @@ CglKnapsackCover::seqLiftAndUncomplementAndAdd(
       }
     }
 #endif
-    rc.setLb(-COIN_DBL_MAX);
+    rc.setLb(-DBL_MAX);
     rc.setUb(cutRhs);
     // ToDo: what's a meaningful effectivity?
     //  rc.setEffectiveness(1.0);
@@ -3539,7 +3536,7 @@ CglKnapsackCover::exactSolveKnapsack(
   z = 0.0;
   double chat = c+epsilon2_;
   p[n+1] = 0.0;
-  w[n+1]= COIN_DBL_MAX;
+  w[n+1]= DBL_MAX;
   j=1;
 
   while (1){
@@ -3816,8 +3813,7 @@ CglKnapsackCover::createCliques( OsiSolverInterface & si,
 			  int minimumSize, int maximumSize, 
 				 bool /*extendCliques*/)
 {
-  // Should be 0 unless you're debugging!
-  const int logLevel = 0 ;
+  int logLevel=1;
   // get rid of what is there
   deleteCliques();
   CoinPackedMatrix matrixByRow(*si.getMatrixByRow());
@@ -3956,31 +3952,33 @@ CglKnapsackCover::createCliques( OsiSolverInterface & si,
       }
     }
   }
-  if (logLevel > 0) {
-    if (numberCliques_<0) {
-	printf("*** Problem infeasible\n");
+#if 0
+  if (numberCliques_<0) {
+    if (logLevel)
+      printf("*** Problem infeasible\n");
+  } else {
+    if (numberCliques_) {
+      if (logLevel>1)
+        printf("%d cliques of average size %g found, %d P1, %d M1\n",
+               numberCliques_,
+               (static_cast<double>(totalP1+totalM1))/
+	       (static_cast<double> (numberCliques_)),
+               totalP1,totalM1);
     } else {
-      if (numberCliques_) {
-	if (logLevel>1)
-	  printf("%d cliques of average size %g found, %d P1, %d M1\n",
-		 numberCliques_,
-		 (static_cast<double>(totalP1+totalM1))/
-		 (static_cast<double> (numberCliques_)),
-		 totalP1,totalM1);
-      } else {
-	if (logLevel>1)
-	  printf("No cliques found\n");
-      }
-      if (numberBig) {
-	if (logLevel>1)
-	  printf("%d large cliques ( >= %d) found, total %d\n",
-	       numberBig,maximumSize,totalBig);
-      }
-      if (numberFixed) {
-	  printf("%d variables fixed\n",numberFixed);
-      }
+      if (logLevel>1)
+        printf("No cliques found\n");
+    }
+    if (numberBig) {
+      if (logLevel>1)
+        printf("%d large cliques ( >= %d) found, total %d\n",
+	     numberBig,maximumSize,totalBig);
+    }
+    if (numberFixed) {
+      if (logLevel)
+        printf("%d variables fixed\n",numberFixed);
     }
   }
+#endif
   if (numberCliques_>0) {
     cliqueType_ = new cliqueType [numberCliques_];
     cliqueStart_ = new int [numberCliques_+1];

@@ -1,11 +1,11 @@
-// $Id: unitTest.cpp 949 2011-01-04 23:29:33Z lou $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// This code is licensed under the terms of the Eclipse Public License (EPL).
-
 // Test individual classes or groups of classes
 
-#include "CoinPragma.hpp"
+#if defined(_MSC_VER)
+// Turn off compiler warning about long names
+#  pragma warning(disable:4786)
+#endif
 
 #include "CglConfig.h"
 
@@ -15,22 +15,25 @@
 #include <iostream>
 #include <cstdlib>
 
-#ifdef COIN_HAS_OSICPX
+#ifdef COIN_HAS_OSL
+#include <OsiOslSolverInterface.hpp>
+#endif
+#ifdef COIN_HAS_CPX
 #include <OsiCpxSolverInterface.hpp>
 #endif
-#ifdef COIN_HAS_OSIXPR
+#ifdef COIN_HAS_XPR
 #include <OsiXprSolverInterface.hpp>
 #endif
-#ifdef COIN_HAS_OSICLP
+#ifdef COIN_HAS_CLP
 #include <OsiClpSolverInterface.hpp>
 #endif
-#ifdef COIN_HAS_OSIDYLP
+#ifdef COIN_HAS_DYLP
 #include <OsiDylpSolverInterface.hpp>
 #endif
-#ifdef COIN_HAS_OSIGLPK
+#ifdef COIN_HAS_GLPK
 #include <OsiGlpkSolverInterface.hpp>
 #endif
-#ifdef COIN_HAS_OSIVOL
+#ifdef COIN_HAS_VOL
 #include <OsiVolSolverInterface.hpp>
 #endif
 
@@ -51,52 +54,79 @@
 // Function Prototypes. Function definitions is in this file.
 void testingMessage( const char * const msg );
 
-// Command line parameters are directories containing data files.
-// You must specify both mpsDir and testDir, in order.
+// Command line parameter is directory containing data files.
 // If not specified, then "../../Data/Sample/" and
 // "CglTestData/" are used
 
 int main (int argc, const char *argv[])
 {
-  // Initialise directories containing data files.
+  // Set directory containing data files.
   std::string mpsDir;
   std::string testDir;
-  
-  const char dirsep =  CoinFindDirSeparator();
-  if (dirsep == '/') {
-#ifdef SAMPLEDIR
-    mpsDir = SAMPLEDIR "/" ;
-#else
-    mpsDir = "../../Data/Sample/";
-#endif
-#ifdef TESTDIR
-	testDir = TESTDIR "/" ;
-#else
-    testDir = "CglTestData/";
-#endif
-  } else {
-#ifdef SAMPLEDIR
-    mpsDir = SAMPLEDIR "\\" ;
-#else
-    mpsDir = "..\\..\\Data\\Sample\\";
-#endif
-#ifdef TESTDIR
-	testDir = TESTDIR "\\";
-#else
-    testDir = "CglTestData\\";
-#endif
-  }
-  // Check for command line override
   if (argc >= 2) {
     mpsDir = argv[1];
-	mpsDir += dirsep;
-    if (argc >= 3) {
-      testDir = argv[2];
-	  testDir += dirsep;
-	}
+    testDir = argv[1];
+  }
+  else {
+    const char dirsep =  CoinFindDirSeparator();
+    if (dirsep == '/') {
+      mpsDir = "../../Data/Sample/";
+      testDir = "CglTestData/";
+    } else {
+      mpsDir = "..\\..\\Data\\Sample\\";
+      testDir = "CglTestData\\";
+    }
   }
 
-#ifdef COIN_HAS_OSICPX
+#ifdef COIN_HAS_OSL
+  {
+    OsiOslSolverInterface oslSi;
+    testingMessage( "Testing CglGomory with OsiOslSolverInterface\n" );
+    CglGomoryUnitTest(&oslSi,mpsDir);
+  }
+  {
+    OsiOslSolverInterface oslSi;
+    testingMessage( "Testing CglSimpleRounding with OsiOslSolverInterface\n" );
+    CglSimpleRoundingUnitTest(&oslSi,mpsDir);
+  }
+  {
+    OsiOslSolverInterface oslSi;
+    testingMessage( "Testing CglKnapsackCover with OsiOslSolverInterface\n" );
+    CglKnapsackCoverUnitTest(&oslSi,mpsDir);
+  }
+  {
+    OsiOslSolverInterface oslSi;
+    testingMessage( "Testing CglOddHole with OsiOslSolverInterface\n" );
+    CglOddHoleUnitTest(&oslSi,mpsDir);
+  }
+  {
+    OsiOslSolverInterface oslSi;
+    testingMessage( "Testing CglProbing with OsiOslSolverInterface\n" );
+    CglProbingUnitTest(&oslSi,mpsDir);
+  }
+  {
+    OsiOslSolverInterface oslSi;
+    testingMessage( "Testing CglMixedIntegerRounding with OsiOslSolverInterface\n" );
+    CglMixedIntegerRoundingUnitTest(&oslSi, testDir);
+  }
+  {
+    OsiOslSolverInterface oslSi;
+    testingMessage( "Testing CglMixedIntegerRounding2 with OsiOslSolverInterface\n" );
+    CglMixedIntegerRounding2UnitTest(&oslSi, testDir);
+  }
+  {
+    OsiOslSolverInterface oslSi;
+    testingMessage( "Testing CglResidualCapacity with OsiOslSolverInterface\n" );
+    CglResidualCapacityUnitTest(&oslSi, testDir);
+  }
+  {
+    OsiOslSolverInterface oslSi;
+    testingMessage( "Testing CglFlowCover with OsiOslSolverInterface\n" );
+    CglFlowCoverUnitTest(&oslSi,testDir);
+  }
+
+#endif
+#ifdef COIN_HAS_CPX
   {
     OsiCpxSolverInterface cpxSi;
     testingMessage( "Testing CglGomory with OsiCpxSolverInterface\n" );
@@ -161,7 +191,7 @@ int main (int argc, const char *argv[])
 
 #endif
 
-#ifdef COIN_HAS_OSIXPR
+#ifdef COIN_HAS_XPR
   {
     OsiXprSolverInterface xprSi;
     testingMessage( "Testing CglGomory with OsiXprSolverInterface\n" );
@@ -221,7 +251,7 @@ int main (int argc, const char *argv[])
   }
 
 #endif
-#ifdef COIN_HAS_OSICLP
+#ifdef COIN_HAS_CLP
   {
     OsiClpSolverInterface clpSi;
     testingMessage( "Testing CglGomory with OsiClpSolverInterface\n" );
@@ -289,7 +319,7 @@ int main (int argc, const char *argv[])
   }
 
 #endif
-#ifdef COIN_HAS_OSIDYLP
+#ifdef COIN_HAS_DYLP
   {
     OsiDylpSolverInterface dylpSi;
     testingMessage( "Testing CglGomory with OsiDylpSolverInterface\n" );
@@ -353,7 +383,7 @@ int main (int argc, const char *argv[])
   }
 
 #endif
-#ifdef COIN_HAS_OSIGLPK
+#ifdef COIN_HAS_GLPK
   {
     OsiGlpkSolverInterface glpkSi;
     testingMessage( "Testing CglGomory with OsiGlpkSolverInterface\n" );
@@ -418,7 +448,7 @@ int main (int argc, const char *argv[])
 
 #endif
 
-#ifdef COIN_HAS_OSIVOL
+#ifdef COIN_HAS_VOL
   if(0) // p0033: LP not solved to optimality: Finds 2142 versus 2520
   {
     OsiVolSolverInterface volSi;
