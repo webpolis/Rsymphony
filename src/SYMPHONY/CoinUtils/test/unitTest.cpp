@@ -1,11 +1,8 @@
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
-// Test individual classes or groups of classes
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
+// Test individual classes or groups of classes
 
 #ifdef NDEBUG
 #undef NDEBUG
@@ -14,8 +11,8 @@
 #include <cassert>
 #include <iostream>
 
-#undef MY_C_FINITE
-
+#include "CoinPragma.hpp"
+#include "CoinFinite.hpp"
 #include "CoinError.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinSort.hpp"
@@ -34,7 +31,7 @@ void testingMessage( const char * const msg );
 //----------------------------------------------------------------
 // unitTest [-mpsDir=V1] [-netlibDir=V2] [-testModel=V3]
 // 
-// where:
+// where (unix defaults):
 //   -mpsDir: directory containing mps test files
 //       Default value V1="../../Data/Sample"    
 //   -netlibDir: directory containing netlib files
@@ -47,73 +44,77 @@ void testingMessage( const char * const msg );
 
 int main (int argc, const char *argv[])
 {
-  int i;
-
+  /*
+    Set default location for Data directory, assuming traditional
+    package layout.
+  */
+  const char dirsep =  CoinFindDirSeparator();
+  std::string dataDir ;
+  if (dirsep == '/')
+    dataDir = "../../Data" ;
+  else
+    dataDir = "..\\..\\Data" ;
+# ifdef COIN_MSVS
+    // Visual Studio builds are deeper.
+    dataDir = "..\\..\\"+dataDir ;
+# endif
   // define valid parameter keywords
   std::set<std::string> definedKeyWords;
+  // Really should be sampleDir, but let's not rock the boat.
   definedKeyWords.insert("-mpsDir");
+  // Directory for netlib problems.
   definedKeyWords.insert("-netlibDir");
-  // allow for large named model for CoinModel
+  // Allow for large named model for CoinModel
   definedKeyWords.insert("-testModel");
-
-  // Create a map of parameter keys and associated data
+  /*
+    Set parameter defaults.
+  */
+  std::string mpsDir = dataDir + dirsep + "Sample" + dirsep ;
+  std::string netlibDir = dataDir + dirsep + "Netlib" + dirsep ;
+  std::string testModel = "p0033.mps" ;
+  /*
+    Process command line parameters. Assume params of the
+    form 'keyword' or 'keyword=value'.
+  */
   std::map<std::string,std::string> parms;
-  for ( i=1; i<argc; i++ ) {
+  for (int i = 1 ;  i < argc ; i++) {
     std::string parm(argv[i]);
     std::string key,value;
     std::string::size_type eqPos = parm.find('=');
-
-    // Does parm contain and '='
-    if ( eqPos==std::string::npos ) {
-      //Parm does not contain '='
-      key = parm;
+    if (eqPos == std::string::npos) {
+      key = parm ;
+      value = "" ;
     }
     else {
-      key=parm.substr(0,eqPos);
-      value=parm.substr(eqPos+1);
+      key = parm.substr(0,eqPos) ;
+      value = parm.substr(eqPos+1) ;
     }
-
-    // Is specifed key valid?
-    if ( definedKeyWords.find(key) == definedKeyWords.end() ) {
-      // invalid key word.
-      // Write help text
+  /*
+    Check for valid keyword. Print help and exit on failure.
+  */
+    if (definedKeyWords.find(key) == definedKeyWords.end()) {
       std::cerr
-	  <<"Undefined parameter \"" <<key <<"\".\n"
-	  <<"Correct usage: \n"
-	  <<"  unitTest [-mpsDir=V1] [-netlibDir=V2] [-testModel=V3]\n"
-	  <<"  where:\n"
-	  <<"    -mpsDir: directory containing mps test files\n"
-	  <<"        Default value V1=\"../../Data/Sample\"\n"
-	  <<"    -netlibDir: directory containing netlib files\n"
-	  <<"        Default value V2=same as mpsDir\n"
-	  <<"    -testModel: name of model in netlibdir for testing CoinModel\n"
-	  <<"        Default value V3=\"p0033.mps\"\n";
-      return 1;
+	  << "Undefined parameter \"" << key << "\".\n"
+	  << "Correct usage: \n"
+	  << "  unitTest [-mpsDir=V1] [-netlibDir=V2] [-testModel=V3]\n"
+	  << "where:\n"
+	  << "  -mpsDir: directory containing mps test files\n"
+	  << "        Default value V1=\"" << mpsDir << "\"\n"
+	  << "  -netlibDir: directory containing netlib files\n"
+	  << "        Default value V2=\"" << netlibDir << "\"\n"
+	  << "  -testModel: name of model testing CoinModel\n"
+	  << "        Default value V3=\"" << testModel << "\"\n";
+      return 1 ;
     }
-    parms[key]=value;
+    parms[key] = value ;
   }
-  
-  const char dirsep =  CoinFindDirSeparator();
-  // Set directory containing mps data files.
-  std::string mpsDir;
+  // Deal with any values given on the command line 
   if (parms.find("-mpsDir") != parms.end())
-    mpsDir=parms["-mpsDir"] + dirsep;
-  else 
-    mpsDir = dirsep == '/' ? "../../Data/Sample/" : "..\\..\\Data\\Sample\\";
- 
-  // Set directory containing netlib data files.
-  std::string netlibDir;
+    mpsDir = parms["-mpsDir"] + dirsep;
   if (parms.find("-netlibDir") != parms.end())
-    netlibDir=parms["-netlibDir"] + dirsep;
-  else 
-    netlibDir = mpsDir;
-
-  // Set directory containing netlib data files.
-  std::string testModel;
+    netlibDir = parms["-netlibDir"] + dirsep;
   if (parms.find("-testModel") != parms.end())
-    testModel=parms["-testModel"] ;
-  else 
-    testModel = "p0033.mps";
+    testModel = parms["-testModel"] ;
 
   bool allOK = true ;
 
@@ -131,7 +132,7 @@ int main (int argc, const char *argv[])
   double checkVal ;
 
   testingMessage( "Testing CoinFinite ... " ) ;
-# ifdef MY_C_FINITE
+# ifdef COIN_C_FINITE
   checkVal = finiteVal/zero ;
 # else
   checkVal = COIN_DBL_MAX ;
@@ -149,7 +150,7 @@ int main (int argc, const char *argv[])
   { allOK = false ;
     testingMessage( "ERROR.\n" ) ; }
 
-# ifdef MY_C_ISNAN
+# ifdef COIN_C_ISNAN
   testingMessage( "Testing CoinIsnan ... " ) ;
   testingMessage( " finite value: " ) ;
   if (!CoinIsnan(finiteVal))

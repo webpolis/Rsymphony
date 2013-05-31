@@ -5,12 +5,12 @@
 /* SYMPHONY was jointly developed by Ted Ralphs (ted@lehigh.edu) and         */
 /* Laci Ladanyi (ladanyi@us.ibm.com).                                        */
 /*                                                                           */
-/* (c) Copyright 2000-2010 Ted Ralphs. All Rights Reserved.                  */
+/* (c) Copyright 2000-2011 Ted Ralphs. All Rights Reserved.                  */
 /*                                                                           */
 /* The OSI interface in this file was written by Menal Guzelsoy.             */
 /* The OSL interface was written by Ondrej Medek.                            */
 /*                                                                           */
-/* This software is licensed under the Common Public License. Please see     */
+/* This software is licensed under the Eclipse Public License. Please see    */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -154,7 +154,7 @@ void size_lp_arrays(LPdata *lp_data, char do_realloc, char set_max,
 
    if (maxm > lp_data->maxm){
       resize_m = TRUE;
-      lp_data->maxm = maxm + (set_max ? 0 : (int)BB_BUNCH);
+      lp_data->maxm = maxm + (set_max ? 0 : (int)(BB_BUNCH));
       if (! do_realloc){
          FREE(lp_data->dualsol);
          lp_data->dualsol = (double *) malloc(lp_data->maxm * DSIZE);
@@ -173,7 +173,7 @@ void size_lp_arrays(LPdata *lp_data, char do_realloc, char set_max,
    if (maxn > lp_data->maxn){
       // int oldmaxn = MAX(lp_data->maxn, lp_data->n);
       resize_n = TRUE;
-      lp_data->maxn = maxn + (set_max ? 0 : 5 * (int)BB_BUNCH);
+      lp_data->maxn = maxn + (set_max ? 0 : 5 * (int)(BB_BUNCH));
       if (! do_realloc){
          FREE(lp_data->x);
          lp_data->x = (double *) malloc(lp_data->maxn * DSIZE);
@@ -211,7 +211,7 @@ void size_lp_arrays(LPdata *lp_data, char do_realloc, char set_max,
       }
    }
    if (maxnz > lp_data->maxnz){
-      lp_data->maxnz = maxnz + (set_max ? 0 : 20 * (int)BB_BUNCH);
+      lp_data->maxnz = maxnz + (set_max ? 0 : 20 * (int)(BB_BUNCH));
    }
 
    /* re(m)alloc the tmp arrays */
@@ -246,9 +246,10 @@ void size_lp_arrays(LPdata *lp_data, char do_realloc, char set_max,
 
 int read_gmpl(MIPdesc *mip, char *modelfile, char *datafile, char *probname)
 {
-   MPL * mpl;         
+   glp_tran *tran;         
+   glp_prob *prob;         
    int errors;
-   int i, j, k, obj_index = 0, length, type, count, nonzeros;
+   int i, j, k, length, type, nonzeros;
    double *matval;
    int *matind;
    int * matbeg;
@@ -260,23 +261,20 @@ int read_gmpl(MIPdesc *mip, char *modelfile, char *datafile, char *probname)
    double *values;   
    double inf = MAXDOUBLE;//SYM_INFINITY;
 
-   mpl = mpl_initialize();  /* initialize the translator */
+   tran = glp_mpl_alloc_wksp();  /* initialize the translator */
     
-   //   errors = mpl_read_model(mpl, modelfile);   /* read the model file */
-
-   //version > 4.1
-   errors = mpl_read_model(mpl, modelfile, FALSE); 
- 
-   /*if the data is not in the model file and will be given seperately, 
-     then errors=1! */
-   if (errors == 1){  
-      errors = mpl_read_data(mpl, datafile);
+   /*if there are some errors in reading the file(s): then errors != 0*/ 
+   if (glp_mpl_read_model(tran, modelfile, FALSE)){
+      printf("\nError in reading the model (or data) file!"); 
+      glp_mpl_free_wksp(tran);   /* free all the mpl related stuff */
+      return(0);
    }
 
-   /*if there are some errors in reading the file(s): then errors!=2*/ 
-   if (errors != 2){
+   /*if the data is not in the model file and will be given seperately, 
+     then errors=1! */
+   if (glp_mpl_read_data(tran, datafile)){
       printf("\nError in reading the model (or data) file!"); 
-      mpl_terminate(mpl);   /* free all the mpl related stuff */
+      glp_mpl_free_wksp(tran);   /* free all the mpl related stuff */
       return(0);
    }
 
@@ -284,18 +282,21 @@ int read_gmpl(MIPdesc *mip, char *modelfile, char *datafile, char *probname)
      translator database.It is possible to capture the messages in a file by 
      passing the filename instead of NULL.*/
 
-   errors = mpl_generate(mpl, NULL);  
-   if (errors != 3){           
+   if (glp_mpl_generate(tran, NULL)){  
       printf("\nError in generating the model!");  
-      mpl_terminate(mpl);
+      glp_mpl_free_wksp(tran);   /* free all the mpl related stuff */
       return(0);
    }
+
+   prob = glp_create_prob();
+
+   glp_mpl_build_prob(tran, prob);
    
-   strncpy(probname, mpl_get_prob_name(mpl), 80); /* name the problem */
+   strncpy(probname, glp_get_prob_name(prob), 80); /* name the problem */
 
    /* get num of rows and cols */
-   mip->m  = mpl_get_num_rows(mpl)-1; /* subtract the objective row */
-   mip->n  = mpl_get_num_cols(mpl);
+   mip->m  = glp_get_num_rows(prob)-1; /* subtract the objective row */
+   mip->n  = glp_get_num_cols(prob);
    mip->nz = 0; /* for now... */
 
    /*Indices and values of nonzeros will return beginning with indices[1] and
@@ -309,44 +310,21 @@ int read_gmpl(MIPdesc *mip, char *modelfile, char *datafile, char *probname)
    indices = (int *) malloc(ISIZE * (mip->n + 1));
    values = (double *) malloc(DSIZE * (mip->n + 1));
 
-   count = 0;
-   
-   mip->obj_sense = SYM_MINIMIZE; 
-   for(i = 0; i < mip->m + 1; i++){      
-      type = mpl_get_row_kind(mpl, i+1);
-      if (type == MPL_ST){  /* constraints */
-	 /* mpl_get_mat_row returns the # of nonzeros in the row i+1. */
-	 mip->nz += mpl_get_mat_row(mpl, i+1, NULL, NULL); 
-      }else{
-	 obj_index = i;
-	 mip->obj_offset = mpl_get_row_c0(mpl, i+1);
-	 length = mpl_get_mat_row(mpl, i+1, indices, values);
-	 if (type == MPL_MAX){
-	    mip->obj_sense = SYM_MAXIMIZE; 
-
-	    /* this is done in create_subproblem_u function! -but only  */
-	    /* if user creates the problem  */
-	    for (j = 1; j <= length; j++){  
-	       mip->obj[indices[j]-1] = -values[j];
-	    }
-	 }else{   /* type == MPL_MIN */
-	    for( j = 1; j <= length; j++ ) 
-	       mip->obj[indices[j]-1] = values[j]; /* assign the obj coeff. */
-	 }
-	 count++;
-	 if (count > 1){
-	    printf("\nError due to having more than one objective function!"); 
-	    printf("\nSYMPHONY can solve problems with just one "); 
-	    printf("objective function\n");
-	    return(0);
-	 }  
-      }      
+   if (glp_get_obj_dir(prob) == GLP_MIN){
+      mip->obj_sense = SYM_MINIMIZE;
+      for (int i = 0; i < mip->n; i++){
+	 mip->obj[i] = glp_get_obj_coef(prob, i+1);
+      }
+   }else{
+      mip->obj_sense = SYM_MAXIMIZE;
+      for (int i = 0; i < mip->n; i++){
+	 mip->obj[i] = -glp_get_obj_coef(prob, i+1);
+      }
    }
-
-   if (count < 1){
-      printf("\nError in reading the objective function!"); 
-      printf("\nSYMPHONY requires an objective function!");
-      return(0);
+   mip->obj_offset = glp_get_obj_coef(prob, 0);
+   
+   for(i = 1; i < mip->m + 1; i++){      
+      mip->nz += glp_get_mat_row(prob, i+1, NULL, NULL); 
    }
 
    /* Define a row ordered dummy constraint matrix since glpmpl returns the 
@@ -362,36 +340,35 @@ int read_gmpl(MIPdesc *mip, char *modelfile, char *datafile, char *probname)
 
    matbeg[0] = 0;
    nonzeros = 0;
-   for(i = 0, k = 0; i < mip->m+1; i++){
-      if(i != obj_index){
-	 /* read the nonzeros in row i+1 */     
-	 length = mpl_get_mat_row(mpl, i+1, indices, values); 
-	 /* get the row bounds. we use k instead of i since we have the obj 
-	    row somewhere. */
-	 type = mpl_get_row_bnds(mpl, i+1, &row_lb[k],&row_ub[k]); 
-	 switch(type)                                           
-	    {
-	    case MPL_FR:  /* free */
-	       row_lb[k] = -inf;
-	       row_ub[k] =  inf;
-	       break;
-	    case MPL_LO:  /* has lower bound */
-	       row_ub[k] =  inf;
-	       break;	 
-	    case MPL_UP:  /* has upper bound */
-	       row_lb[k] = -inf;
-	       break;
-	    default: /* is bounded from both sides or is an equality */
-	       break;
-	    }
-	 for (j = 0; j < length; j++){
-	    matind[matbeg[k]+j] = indices[j+1] - 1;
-	    matval[matbeg[k]+j] = values[j+1];
-	 }
-	 nonzeros += length;
-	 k++;
-	 matbeg[k] = nonzeros;
+   for(i = 1, k = 0; i < mip->m + 1; i++){
+      /* read the nonzeros in row i+1 */     
+      length = glp_get_mat_row(prob, i+1, indices, values); 
+      /* get the row bounds. we use k instead of i since we have the obj 
+	 row somewhere. */
+      row_lb[k] = glp_get_row_lb(prob, i+1);
+      row_ub[k] = glp_get_row_ub(prob, i+1);
+      type  = glp_get_row_type(prob, i+1);
+      switch(type){
+        case GLP_FR:  /* free */
+	    row_lb[k] = -inf;
+	    row_ub[k] =  inf;
+	    break;
+        case GLP_LO:  /* has lower bound */
+	   row_ub[k] =  inf;
+	   break;	 
+        case GLP_UP:  /* has upper bound */
+	   row_lb[k] = -inf;
+	   break;
+        default: /* is bounded from both sides or is an equality */
+	   break;
       }
+      for (j = 0; j < length; j++){
+	 matind[matbeg[k]+j] = indices[j+1] - 1;
+	 matval[matbeg[k]+j] = values[j+1];
+      }
+      nonzeros += length;
+      k++;
+      matbeg[k] = nonzeros;
    }
 
    /* fill the column related definitions: ub, lb, is_int and colname arrays */
@@ -402,35 +379,38 @@ int read_gmpl(MIPdesc *mip, char *modelfile, char *datafile, char *probname)
    mip->colname = (char **)  malloc(sizeof(char *) * mip->n);   
 
    for (j = 0; j < mip->n; j++){
-      type = mpl_get_col_bnds(mpl, j+1, &mip->lb[j], &mip->ub[j]);
+      mip->lb[j] = glp_get_col_lb(prob, j+1);
+      mip->ub[j] = glp_get_col_ub(prob, j+1);
+      type = glp_get_col_type(prob, j+1);
       switch(type){
-	case  MPL_FR: /* free */
+	case  GLP_FR: /* free */
 	   mip->lb[j] = -inf;
 	   mip->ub[j] =  inf;
 	   break;
-	case MPL_LO:  /* has lower bound */
+	case GLP_LO:  /* has lower bound */
 	    mip->ub[j] =  inf;
 	    break;
-	case MPL_UP:  /* has upper bound */
+	case GLP_UP:  /* has upper bound */
 	    mip->lb[j] = -inf;
 	    break;
-      default:  /* has both lower and upper bound or is a fixed variable */
+        default:  /* has both lower and upper bound or is a fixed variable */
 	    break;
-	 }
+      }
 
-      type = mpl_get_col_kind(mpl, j+1);
-      if(type == MPL_INT || type == MPL_BIN){
+      type = glp_get_col_kind(prob, j+1);
+      if(type == GLP_IV || type == GLP_BV){
 	 mip->is_int[j] = TRUE;
       }  
-      /* bounds for binary variables were probably not assigned.So assign them! */
-      if(type == MPL_BIN){ 
+      /* bounds for binary variables were probably not assigned.
+	 So assign them! */
+      if(type == GLP_BV){ 
 	 mip->ub[j] = 1.0;	 
 	 mip->lb[j] = 0.0;
 
       }
 
       mip->colname[j] = (char *) malloc(CSIZE * 255); 
-      strncpy(mip->colname[j], mpl_get_col_name(mpl,j+1),255);
+      strncpy(mip->colname[j], glp_get_col_name(prob, j+1), 255);
       mip->colname[j][254] = 0;  /* ??? */
    }
 
@@ -2314,9 +2294,11 @@ void open_lp_solver(LPdata *lp_data)
    /* Turn off the OSL messages (There are LOTS of them) */
    lp_data->si->setHintParam(OsiDoReducePrint);
    lp_data->si->messageHandler()->setLogLevel(0);
+#ifdef __OSI_CLP__
    lp_data->si->setupForRepeatedUse();
    //lp_data->si->setupForRepeatedUse(2,0);
    //lp_data->si->getModelPtr()->setFactorizationFrequency(200);
+#endif
 #ifdef __OSI_GLPK__
    lp_data->lpetol = 1e-07; /* glpk doesn't return the value of this param */ 
 #else   
@@ -2581,7 +2563,15 @@ int dual_simplex(LPdata *lp_data, int *iterd)
    int term = 0;
    OsiXSolverInterface  *si = lp_data->si;
 
-    
+#ifdef __OSI_CLP__
+   int sp = si->specialOptions();
+   if((sp&2) != 0) sp ^=2; 
+   si->setSpecialOptions(sp);
+   //si->setSpecialOptions(0x80000000);
+   si->getModelPtr()->setPerturbation(50);    
+   //si->getModelPtr()->setFactorizationFrequency(150); 
+   //si->getModelPtr()->setSubstitution(3);
+#endif
    si->resolve();
    //si->initialSolve();
    
@@ -3357,46 +3347,51 @@ int read_mps(MIPdesc *mip, char *infile, char *probname)
    mip->n  = mps.getNumCols();
    mip->nz = mps.getNumElements();
    
-   mip->obj    = (double *) malloc(DSIZE * mip->n);
-   mip->obj1   = (double *) calloc(mip->n, DSIZE);
-   mip->obj2   = (double *) calloc(mip->n, DSIZE);
-   mip->rhs    = (double *) malloc(DSIZE * mip->m);
-   mip->sense  = (char *)   malloc(CSIZE * mip->m);
-   mip->rngval = (double *) malloc(DSIZE * mip->m);
-   mip->ub     = (double *) malloc(DSIZE * mip->n);
-   mip->lb     = (double *) malloc(DSIZE * mip->n);
-   mip->is_int = (char *)   calloc(CSIZE, mip->n);
+   const CoinPackedMatrix * matrixByCol= mps.getMatrixByCol();
+
+   if (mip->n){
+      mip->obj    = (double *) malloc(DSIZE * mip->n);
+      mip->obj1   = (double *) calloc(mip->n, DSIZE);
+      mip->obj2   = (double *) calloc(mip->n, DSIZE);
+      mip->ub     = (double *) malloc(DSIZE * mip->n);
+      mip->lb     = (double *) malloc(DSIZE * mip->n);
+      mip->is_int = (char *)   calloc(CSIZE, mip->n);
+      memcpy(mip->obj, const_cast <double *> (mps.getObjCoefficients()),
+	     DSIZE * mip->n); 
+      memcpy(mip->ub, const_cast <double *> (mps.getColUpper()),
+	     DSIZE * mip->n); 
+      memcpy(mip->lb, const_cast <double *> (mps.getColLower()),
+	     DSIZE * mip->n); 
    
-   memcpy(mip->obj, const_cast <double *> (mps.getObjCoefficients()),
-	  DSIZE * mip->n); 
-   memcpy(mip->rhs, const_cast <double *> (mps.getRightHandSide()),
-	  DSIZE * mip->m); 
-   memcpy(mip->sense, const_cast <char *> (mps.getRowSense()),
-	  CSIZE * mip->m); 
-   memcpy(mip->rngval, const_cast <double *> (mps.getRowRange()),
-	  DSIZE * mip->m); 
-   memcpy(mip->ub, const_cast <double *> (mps.getColUpper()),
-	  DSIZE * mip->n); 
-   memcpy(mip->lb, const_cast <double *> (mps.getColLower()),
-	  DSIZE * mip->n); 
+      mip->matbeg = (int *) malloc(ISIZE * (mip->n + 1));
+      memcpy(mip->matbeg, const_cast<int *>(matrixByCol->getVectorStarts()),
+	     ISIZE * (mip->n + 1));
+   
+      mip->colname = (char **) malloc(sizeof(char *) * mip->n);  
+   }
+   if (mip->m){
+      mip->rhs    = (double *) malloc(DSIZE * mip->m);
+      mip->sense  = (char *)   malloc(CSIZE * mip->m);
+      mip->rngval = (double *) malloc(DSIZE * mip->m);
+      memcpy(mip->rhs, const_cast <double *> (mps.getRightHandSide()),
+	     DSIZE * mip->m); 
+      memcpy(mip->sense, const_cast <char *> (mps.getRowSense()),
+	     CSIZE * mip->m); 
+      memcpy(mip->rngval, const_cast <double *> (mps.getRowRange()),
+	     DSIZE * mip->m); 
+   }
    
    //user defined matind, matval, matbeg--fill as column ordered
    
-   const CoinPackedMatrix * matrixByCol= mps.getMatrixByCol();
+   if (mip->nz){
+      mip->matval = (double *) malloc(DSIZE*mip->matbeg[mip->n]);
+      mip->matind = (int *)    malloc(ISIZE*mip->matbeg[mip->n]);
    
-   mip->matbeg = (int *) malloc(ISIZE * (mip->n + 1));
-   memcpy(mip->matbeg, const_cast<int *>(matrixByCol->getVectorStarts()),
-	  ISIZE * (mip->n + 1));
-   
-   mip->matval = (double *) malloc(DSIZE*mip->matbeg[mip->n]);
-   mip->matind = (int *)    malloc(ISIZE*mip->matbeg[mip->n]);
-   
-   memcpy(mip->matval, const_cast<double *> (matrixByCol->getElements()),
-	  DSIZE * mip->matbeg[mip->n]);  
-   memcpy(mip->matind, const_cast<int *> (matrixByCol->getIndices()), 
-	  ISIZE * mip->matbeg[mip->n]);  
-
-   mip->colname = (char **) malloc(sizeof(char *) * mip->n);  
+      memcpy(mip->matval, const_cast<double *> (matrixByCol->getElements()),
+	     DSIZE * mip->matbeg[mip->n]);  
+      memcpy(mip->matind, const_cast<int *> (matrixByCol->getIndices()), 
+	     ISIZE * mip->matbeg[mip->n]);
+   }
 
    for (j = 0; j < mip->n; j++){
       mip->is_int[j] = mps.isInteger(j);

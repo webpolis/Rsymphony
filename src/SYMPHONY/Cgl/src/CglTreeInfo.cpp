@@ -1,5 +1,8 @@
+// $Id: CglTreeInfo.cpp 1033 2011-06-19 16:49:13Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -1648,7 +1651,7 @@ CglTreeProbingInfo::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
 	  // infeasible!
 	  // generate infeasible cut and return
 	  OsiRowCut rc;
-	  rc.setLb(DBL_MAX);
+	  rc.setLb(COIN_DBL_MAX);
 	  rc.setUb(0.0);   
 	  cs.insert(rc);
 	  //printf("IMPINFEAS!\n");
@@ -1683,7 +1686,7 @@ CglTreeProbingInfo::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
 	  // infeasible!
 	  // generate infeasible cut and return
 	  OsiRowCut rc;
-	  rc.setLb(DBL_MAX);
+	  rc.setLb(COIN_DBL_MAX);
 	  rc.setUb(0.0);   
 	  cs.insert(rc);
 	  //printf("IMPINFEAS!\n");
@@ -1712,7 +1715,7 @@ CglTreeProbingInfo::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
       // infeasible!
       // generate infeasible cut
       OsiRowCut rc;
-      rc.setLb(DBL_MAX);
+      rc.setLb(COIN_DBL_MAX);
       rc.setUb(0.0);   
       cs.insert(rc);
       //printf("IMPINFEAS!\n");

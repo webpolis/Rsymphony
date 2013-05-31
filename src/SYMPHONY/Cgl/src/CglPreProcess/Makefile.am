@@ -1,8 +1,8 @@
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 598 2007-12-28 03:58:45Z andreasw $
+## $Id: Makefile.am 1041 2011-08-14 10:55:03Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -17,34 +17,28 @@ AUTOMAKE_OPTIONS = foreign
 noinst_LTLIBRARIES = libCglPreProcess.la
 
 # List all source files for this library, including headers
-libCglPreProcess_la_SOURCES = \
-	CglPreProcess.cpp  CglPreProcess.hpp
+libCglPreProcess_la_SOURCES = CglPreProcess.cpp CglPreProcess.hpp
 
 # This is for libtool (on Windows)
 libCglPreProcess_la_LDFLAGS = $(LT_LDFLAGS)
 
 # Here list all include flags, relative to this "srcdir" directory.  This
 # "cygpath" stuff is necessary to compile with native compilers on Windows.
-# "top_srcdir" refers to the basic directory for the main package that is
-# being compiled.
 AM_CPPFLAGS = \
 	-I`$(CYGPATH_W) $(srcdir)/..` \
 	-I`$(CYGPATH_W) $(srcdir)/../CglProbing` \
 	-I`$(CYGPATH_W) $(srcdir)/../CglDuplicateRow` \
-	-I`$(CYGPATH_W) $(COINUTILSSRCDIR)/src` \
-	-I`$(CYGPATH_W) $(COINUTILSOBJDIR)/inc` \
-	-I`$(CYGPATH_W) $(OSISRCDIR)/src`
+	-I`$(CYGPATH_W) $(srcdir)/../CglClique` \
+	$(COINUTILS_CFLAGS) $(OSI_CFLAGS)
 
-# This line is necessary to allow VPATH compilation with MS compilers
-# on Cygwin
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/inc
+# This line is necessary to allow VPATH compilation
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I..
 
 ########################################################################
 #                Headers that need to be installed                     #
 ########################################################################
 
 # Here list all the header files that are required by a user of the library,
-# and that therefore should be installed in 'install/coin'
+# and that therefore should be installed in 'include/coin'
 includecoindir = $(includedir)/coin
-includecoin_HEADERS = \
-	CglPreProcess.hpp
+includecoin_HEADERS = CglPreProcess.hpp

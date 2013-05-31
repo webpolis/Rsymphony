@@ -1,4 +1,4 @@
-/* $Id: CoinModelUseful2.cpp 1239 2009-12-10 16:16:11Z ladanyi $ */
+/* $Id: CoinModelUseful2.cpp 1396 2011-03-01 10:42:29Z forrest $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
 /* A Bison parser, made by GNU Bison 1.875c.  */
@@ -399,7 +399,7 @@ static const unsigned char yystos[] =
 };
 
 #if ! defined (YYSIZE_T) && defined (__SIZE_TYPE__)
-# define YYSIZE_T __SIZE_TYPE__
+# define YYSIZE_T size_t
 #endif
 #if ! defined (YYSIZE_T) && defined (size_t)
 # define YYSIZE_T size_t
@@ -700,7 +700,7 @@ yydestruct (yytype, yyvaluep)
 
   switch (yytype)
     {
-      case 0:  /* Bjarni: Added case 0: to take out MSVC warning of no case */
+
       default:
         break;
     }
@@ -1357,7 +1357,7 @@ yyerrlab:
 `---------------------------------------------------*/
 yyerrorlab:
 
-#if defined(__GNUC__) || defined(_MSC_VER)  /* Bjarni: Added _MSC_VER to pacify MSVC also */
+#ifdef __GNUC__
   /* Pacify GCC when the user code never invokes YYERROR and the label
      yyerrorlab therefore never appears in user code.  */
   if (0)

@@ -1,9 +1,13 @@
-/* $Id: CoinHelperFunctions.hpp 1240 2009-12-10 17:07:20Z ladanyi $ */
+/* $Id: CoinHelperFunctions.hpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #ifndef CoinHelperFunctions_H
 #define CoinHelperFunctions_H
+
+#include "CoinUtilsConfig.h"
+
 #if defined(_MSC_VER)
 #  include <direct.h>
 #  define getcwd _getcwd
@@ -14,8 +18,19 @@
 
 #include <cstdlib>
 #include <cstdio>
+#include <algorithm>
+#include "CoinTypes.hpp"
 #include "CoinError.hpp"
-#include "CoinFinite.hpp"
+
+// Compilers can produce better code if they know about __restrict
+#ifndef COIN_RESTRICT
+#ifdef COIN_USE_RESTRICT
+#define COIN_RESTRICT __restrict
+#else
+#define COIN_RESTRICT
+#endif
+#endif
+
 //#############################################################################
 
 /** This helper function copies an array to another location using Duff's
@@ -74,11 +89,17 @@ CoinCopyN(register const T* from, const int size, register T* to)
 /** This helper function copies an array to another location using Duff's
     device (for a speedup of ~2). The source array is given by its first and
     "after last" entry; the target array is given by its first entry.
-    Overlapping arrays are handled correctly. */
+    Overlapping arrays are handled correctly.
+
+    All of the various CoinCopyN variants use an int for size. On 64-bit
+    architectures, the address diff last-first will be a 64-bit quantity.
+    Given that everything else uses an int, I'm going to choose to kick
+    the difference down to int.  -- lh, 100823 --
+*/
 template <class T> inline void
 CoinCopy(register const T* first, register const T* last, register T* to)
 {
-    CoinCopyN(first, last - first, to);
+    CoinCopyN(first, static_cast<int>(last-first), to);
 }
 
 //-----------------------------------------------------------------------------
@@ -686,7 +707,7 @@ template <class T> inline T *
 CoinDeleteEntriesFromArray(register T * arrayFirst, register T * arrayLast,
 			   const int * firstDelPos, const int * lastDelPos)
 {
-    int delNum = lastDelPos - firstDelPos;
+    int delNum = static_cast<int>(lastDelPos - firstDelPos);
     if (delNum == 0)
 	return arrayLast;
 
@@ -701,7 +722,8 @@ CoinDeleteEntriesFromArray(register T * arrayFirst, register T * arrayLast,
 	delSortedPos = new int[delNum];
 	CoinDisjointCopy(firstDelPos, lastDelPos, delSortedPos);
 	std::sort(delSortedPos, delSortedPos + delNum);
-	delNum = std::unique(delSortedPos, delSortedPos + delNum) - delSortedPos;
+	delNum = static_cast<int>(std::unique(delSortedPos,
+				  delSortedPos+delNum) - delSortedPos);
     }
     const int * delSorted = delSortedPos ? delSortedPos : firstDelPos;
 
@@ -715,7 +737,7 @@ CoinDeleteEntriesFromArray(register T * arrayFirst, register T * arrayLast,
 	size += copyLast - copyFirst;
     }
     const int copyFirst = delSorted[last] + 1;
-    const int copyLast = arrayLast - arrayFirst;
+    const int copyLast = static_cast<int>(arrayLast - arrayFirst);
     CoinCopy(arrayFirst + copyFirst, arrayFirst + copyLast,
 	     arrayFirst + size);
     size += copyLast - copyFirst;
@@ -734,12 +756,19 @@ CoinDeleteEntriesFromArray(register T * arrayFirst, register T * arrayLast,
 /* Thanks to Stefano Gliozzi for providing an operating system
    independent random number generator.  */
 
-// linear congruential generator. given the seed, the generated numbers are  
-// always the same regardless the (32 bit) architecture. This allows to 
-// build & test in different environments (i.e. Wintel, Linux/Intel AIX Power5)
-// getting in most cases the same optimization path. 
-/// Return random number between 0 and 1.
-inline double CoinDrand48(bool isSeed = false, unsigned int seed=1)
+/*! \brief Return a random number between 0 and 1
+
+  A platform-independent linear congruential generator. For a given seed, the
+  generated sequence is always the same regardless of the (32-bit)
+  architecture. This allows to build & test in different environments, getting
+  in most cases the same optimization path.
+
+  Set \p isSeed to true and supply an integer seed to set the seed
+  (vid. #CoinSeedRandom)
+
+  \todo Anyone want to volunteer an upgrade for 64-bit architectures?
+*/
+inline double CoinDrand48 (bool isSeed = false, unsigned int seed = 1)
 {
   static unsigned int last = 123456;
   if (isSeed) { 
@@ -748,9 +777,10 @@ inline double CoinDrand48(bool isSeed = false, unsigned int seed=1)
     last = 1664525*last+1013904223;
     return ((static_cast<double> (last))/4294967296.0);
   }
-  return(0.0);
+  return (0.0);
 }
-/// Seed random number generator
+
+/// Set the seed for the random number generator
 inline void CoinSeedRandom(int iseed)
 {
   CoinDrand48(true, iseed);
@@ -760,12 +790,16 @@ inline void CoinSeedRandom(int iseed)
 
 #if defined(_MSC_VER) || defined(__MINGW32__) || defined(__CYGWIN32__)
 
+/// Return a random number between 0 and 1
 inline double CoinDrand48() { return rand() / (double) RAND_MAX; }
+/// Set the seed for the random number generator
 inline void CoinSeedRandom(int iseed) { srand(iseed + 69822); }
 
 #else
 
+/// Return a random number between 0 and 1
 inline double CoinDrand48() { return drand48(); }
+/// Set the seed for the random number generator
 inline void CoinSeedRandom(int iseed) { srand48(iseed + 69822); }
 
 #endif
@@ -832,22 +866,23 @@ template <class T> inline void CoinSwap (T &x, T &y)
     Returns 0 if OK, 1 if bad write.
 */
 
-/* FIXME64 */
-
 template <class T> inline int
-CoinToFile( const T* array, int size, FILE * fp)
+CoinToFile( const T* array, CoinBigIndex size, FILE * fp)
 {
-    size_t numberWritten;
+    CoinBigIndex numberWritten;
     if (array&&size) {
-	numberWritten = fwrite(&size,sizeof(int),1,fp);
+	numberWritten =
+	    static_cast<CoinBigIndex>(fwrite(&size,sizeof(int),1,fp));
 	if (numberWritten!=1)
 	    return 1;
-	numberWritten = fwrite(array,sizeof(T),size_t(size),fp);
+	numberWritten =
+	    static_cast<CoinBigIndex>(fwrite(array,sizeof(T),size_t(size),fp));
 	if (numberWritten!=size)
 	    return 1;
     } else {
 	size = 0;
-	numberWritten = fwrite(&size,sizeof(int),1,fp);
+	numberWritten = 
+	    static_cast<CoinBigIndex>(fwrite(&size,sizeof(int),1,fp));
 	if (numberWritten!=1)
 	    return 1;
     }
@@ -862,13 +897,12 @@ CoinToFile( const T* array, int size, FILE * fp)
     Returns 0 if OK, 1 if bad read, 2 if size did not match.
 */
 
-/* FIXME64 */
-
 template <class T> inline int
-CoinFromFile( T* &array, int size, FILE * fp,int & newSize)
+CoinFromFile( T* &array, CoinBigIndex size, FILE * fp, CoinBigIndex & newSize)
 {
-    size_t numberRead;
-    numberRead = fread(&newSize,sizeof(int),1,fp);
+    CoinBigIndex numberRead;
+    numberRead =
+        static_cast<CoinBigIndex>(fread(&newSize,sizeof(int),1,fp));
     if (numberRead!=1)
 	return 1;
     int returnCode=0;
@@ -876,7 +910,8 @@ CoinFromFile( T* &array, int size, FILE * fp,int & newSize)
 	returnCode=2;
     if (newSize) {
 	array = new T [newSize];
-	numberRead = fread(array,sizeof(T),size_t(newSize),fp);
+	numberRead =
+	    static_cast<CoinBigIndex>(fread(array,sizeof(T),newSize,fp));
 	if (numberRead!=newSize)
 	    returnCode=1;
     } else {
@@ -888,6 +923,7 @@ CoinFromFile( T* &array, int size, FILE * fp,int & newSize)
 //#############################################################################
 
 /// Cube Root
+#if 0
 inline double CoinCbrt(double x)
 {
 #if defined(_MSC_VER) 
@@ -896,6 +932,8 @@ inline double CoinCbrt(double x)
     return cbrt(x);
 #endif
 }
+#endif
+
 //-----------------------------------------------------------------------------
 
 /// This helper returns "sizeof" as an int 
@@ -1044,5 +1082,10 @@ protected:
   mutable unsigned short seed_[3];
   //@}
 };
+#endif
+#ifndef COIN_DETAIL
+#define COIN_DETAIL_PRINT(s) {}
+#else
+#define COIN_DETAIL_PRINT(s) s
 #endif
 #endif

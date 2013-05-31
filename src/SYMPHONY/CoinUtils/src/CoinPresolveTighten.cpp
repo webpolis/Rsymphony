@@ -1,6 +1,8 @@
-/* $Id: CoinPresolveTighten.cpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinPresolveTighten.cpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #include <stdio.h>
 #include <math.h>
 
@@ -9,6 +11,7 @@
 #include "CoinPresolveTighten.hpp"
 #include "CoinPresolveUseless.hpp"
 #include "CoinHelperFunctions.hpp"
+#include "CoinFinite.hpp"
 
 #if PRESOLVE_DEBUG || PRESOLVE_CONSISTENCY
 #include "CoinPresolvePsdebug.hpp"
@@ -216,6 +219,7 @@ const CoinPresolveAction *do_tighten_action::presolve(CoinPresolveMatrix *prob,
 	    action *s = &actions[nactions];	  
 	    nactions++;
 	    s->col = j;
+	    PRESOLVE_DETAIL_PRINT(printf("pre_tighten %dC E\n",j));
 	    if (integerType[j]) {
 	      assert (iflag==-1||iflag==1);
 	      iflag *= 2; // say integer

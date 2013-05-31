@@ -1,6 +1,7 @@
-/* $Id: CoinModelUseful.cpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinModelUseful.cpp 1543 2012-07-27 22:48:29Z unxusr $ */
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #include "CoinPragma.hpp"
 
@@ -67,6 +68,23 @@ CoinModelLink::operator=(const CoinModelLink& rhs)
   }
   return *this;
 }
+
+namespace {
+ const int mmult[] = {
+    262139, 259459, 256889, 254291, 251701, 249133, 246709, 244247,
+    241667, 239179, 236609, 233983, 231289, 228859, 226357, 223829,
+    221281, 218849, 216319, 213721, 211093, 208673, 206263, 203773,
+    201233, 198637, 196159, 193603, 191161, 188701, 186149, 183761,
+    181303, 178873, 176389, 173897, 171469, 169049, 166471, 163871,
+    161387, 158941, 156437, 153949, 151531, 149159, 146749, 144299,
+    141709, 139369, 136889, 134591, 132169, 129641, 127343, 124853,
+    122477, 120163, 117757, 115361, 112979, 110567, 108179, 105727,
+    103387, 101021, 98639, 96179, 93911, 91583, 89317, 86939, 84521,
+    82183, 79939, 77587, 75307, 72959, 70793, 68447, 66103
+  };
+  const int lengthMult = static_cast<int> (sizeof(mmult) / sizeof(int));
+}
+
 //#############################################################################
 // Constructors / Destructor / Assignment
 //#############################################################################
@@ -400,19 +418,7 @@ CoinModelHash::setName(int which,char * name )
 int 
 CoinModelHash::hashValue(const char * name) const
 {
-  static int mmult[] = {
-    262139, 259459, 256889, 254291, 251701, 249133, 246709, 244247,
-    241667, 239179, 236609, 233983, 231289, 228859, 226357, 223829,
-    221281, 218849, 216319, 213721, 211093, 208673, 206263, 203773,
-    201233, 198637, 196159, 193603, 191161, 188701, 186149, 183761,
-    181303, 178873, 176389, 173897, 171469, 169049, 166471, 163871,
-    161387, 158941, 156437, 153949, 151531, 149159, 146749, 144299,
-    141709, 139369, 136889, 134591, 132169, 129641, 127343, 124853,
-    122477, 120163, 117757, 115361, 112979, 110567, 108179, 105727,
-    103387, 101021, 98639, 96179, 93911, 91583, 89317, 86939, 84521,
-    82183, 79939, 77587, 75307, 72959, 70793, 68447, 66103
-  };
-  static int lengthMult = static_cast<int> (sizeof(mmult) / sizeof(int));
+  
   int n = 0;
   int j;
   int length =  static_cast<int> (strlen(name));
@@ -697,14 +703,17 @@ CoinModelHash2::deleteHash(int index,int row, int column)
     }
   }
 }
+namespace {
+  const int mmult2[] = {
+    262139, 259459, 256889, 254291, 251701, 249133, 246709, 244247,
+    241667, 239179, 236609, 233983, 231289, 228859, 226357, 223829
+  };
+}
 // Returns a hash value
 int 
 CoinModelHash2::hashValue(int row, int column) const
 {
-  static int mmult[] = {
-    262139, 259459, 256889, 254291, 251701, 249133, 246709, 244247,
-    241667, 239179, 236609, 233983, 231289, 228859, 226357, 223829
-  };
+  
   // Optimizer should take out one side of if
   if (sizeof(int)==4*sizeof(char)) {
     unsigned char tempChar[4];
@@ -712,15 +721,15 @@ CoinModelHash2::hashValue(int row, int column) const
     unsigned int n = 0;
     int * temp = reinterpret_cast<int *> (tempChar);
     *temp=row;
-    n += mmult[0] * tempChar[0];
-    n += mmult[1] * tempChar[1];
-    n += mmult[2] * tempChar[2];
+    n += mmult2[0] * tempChar[0];
+    n += mmult2[1] * tempChar[1];
+    n += mmult2[2] * tempChar[2];
     n += mmult[3] * tempChar[3];
     *temp=column;
-    n += mmult[0+8] * tempChar[0];
-    n += mmult[1+8] * tempChar[1];
-    n += mmult[2+8] * tempChar[2];
-    n += mmult[3+8] * tempChar[3];
+    n += mmult2[0+8] * tempChar[0];
+    n += mmult2[1+8] * tempChar[1];
+    n += mmult2[2+8] * tempChar[2];
+    n += mmult2[3+8] * tempChar[3];
     return n % (maximumItems_<<1);
   } else {
     // ints are 8
@@ -732,12 +741,12 @@ CoinModelHash2::hashValue(int row, int column) const
     *temp=row;
     for ( j = 0; j < sizeof(int); ++j ) {
       int itemp = tempChar[j];
-      n += mmult[j] * itemp;
+      n += mmult2[j] * itemp;
     }
     *temp=column;
     for ( j = 0; j < sizeof(int); ++j ) {
       int itemp = tempChar[j];
-      n += mmult[j+8] * itemp;
+      n += mmult2[j+8] * itemp;
     }
     int maxHash = 4 * maximumItems_;
     int absN = abs(n);
@@ -1419,15 +1428,12 @@ CoinModelLinkedList::validateLinks(const CoinModelTriple * triples) const
     int lastPosition=-1;
     while (position>=0) {
       int iMajor;
-      int iMinor;
       if (position!=first_[i])
         assert (next_[previous_[position]]==position);
       if (!type_) {
         // for rows
         iMajor=static_cast<int> (rowInTriple(triples[position]));
-        iMinor=triples[position].column;
       } else {
-        iMinor=static_cast<int> (rowInTriple(triples[position]));
         iMajor=triples[position].column;
       }
       assert (triples[position].column>=0);

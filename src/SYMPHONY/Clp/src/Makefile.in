@@ -16,7 +16,7 @@
 
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -44,17 +44,34 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+
+# if AMD, CHOLMOD, or GLPK is available, then compile ClpCholeskyUfl.cpp
+@COIN_HAS_AMD_TRUE@am__append_1 = ClpCholeskyUfl.cpp ClpCholeskyUfl.hpp
+@COIN_HAS_AMD_FALSE@@COIN_HAS_CHOLMOD_TRUE@am__append_2 = ClpCholeskyUfl.cpp ClpCholeskyUfl.hpp
+@COIN_HAS_AMD_FALSE@@COIN_HAS_CHOLMOD_FALSE@@COIN_HAS_GLPK_TRUE@am__append_3 = ClpCholeskyUfl.cpp ClpCholeskyUfl.hpp
+@COIN_HAS_MUMPS_TRUE@am__append_4 = ClpCholeskyMumps.cpp ClpCholeskyMumps.hpp
+@COIN_HAS_WSMP_TRUE@am__append_5 = ClpCholeskyWssmp.cpp ClpCholeskyWssmp.hpp ClpCholeskyWssmpKKT.cpp ClpCholeskyWssmpKKT.hpp
 bin_PROGRAMS = clp$(EXEEXT)
+@COIN_HAS_CHOLMOD_TRUE@am__append_6 = -I`$(CYGPATH_W) $(CHOLMODINCDIR)`
+@COIN_HAS_AMD_TRUE@am__append_7 = -I`$(CYGPATH_W) $(AMDINCDIR)`
+
+# if AMD, CHOLMOD, or GLPK is available, then install ClpCholeskyUfl.hpp (for advanced users)
+@COIN_HAS_AMD_TRUE@am__append_8 = ClpCholeskyUfl.hpp
+@COIN_HAS_AMD_FALSE@@COIN_HAS_CHOLMOD_TRUE@am__append_9 = ClpCholeskyUfl.hpp
+@COIN_HAS_AMD_FALSE@@COIN_HAS_CHOLMOD_FALSE@@COIN_HAS_GLPK_TRUE@am__append_10 = ClpCholeskyUfl.hpp
+@COIN_HAS_MUMPS_TRUE@am__append_11 = ClpCholeskyMumps.hpp
+@COIN_HAS_WSMP_TRUE@am__append_12 = ClpCholeskyWssmp.hpp ClpCholeskyWssmpKKT.hpp
 subdir = src
-DIST_COMMON = $(includecoin_HEADERS) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in
+DIST_COMMON = $(am__includecoin_HEADERS_DIST) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
+	$(srcdir)/config_clp.h.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
-CONFIG_HEADER = $(top_builddir)/inc/config_clp.h
+CONFIG_HEADER = config.h config_clp.h
 CONFIG_CLEAN_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -67,9 +84,52 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libClp_la_LIBADD =
+am__libClp_la_SOURCES_DIST = ClpConfig.h ClpCholeskyBase.cpp \
+	ClpCholeskyBase.hpp ClpCholeskyDense.cpp ClpCholeskyDense.hpp \
+	ClpConstraint.cpp ClpConstraint.hpp ClpConstraintLinear.cpp \
+	ClpConstraintLinear.hpp ClpConstraintQuadratic.cpp \
+	ClpConstraintQuadratic.hpp Clp_C_Interface.cpp \
+	Clp_C_Interface.h ClpDualRowDantzig.cpp ClpDualRowDantzig.hpp \
+	ClpDualRowPivot.cpp ClpDualRowPivot.hpp ClpDualRowSteepest.cpp \
+	ClpDualRowSteepest.hpp ClpDummyMatrix.cpp ClpDummyMatrix.hpp \
+	ClpDynamicExampleMatrix.cpp ClpDynamicExampleMatrix.hpp \
+	ClpDynamicMatrix.cpp ClpDynamicMatrix.hpp ClpEventHandler.cpp \
+	ClpEventHandler.hpp ClpFactorization.cpp ClpFactorization.hpp \
+	ClpGubDynamicMatrix.cpp ClpGubDynamicMatrix.hpp \
+	ClpGubMatrix.cpp ClpGubMatrix.hpp ClpHelperFunctions.cpp \
+	ClpHelperFunctions.hpp ClpInterior.cpp ClpInterior.hpp \
+	ClpLinearObjective.cpp ClpLinearObjective.hpp \
+	ClpMatrixBase.cpp ClpMatrixBase.hpp ClpMessage.cpp \
+	ClpMessage.hpp ClpModel.cpp ClpModel.hpp ClpNetworkBasis.cpp \
+	ClpNetworkBasis.hpp ClpNetworkMatrix.cpp ClpNetworkMatrix.hpp \
+	ClpNonLinearCost.cpp ClpNonLinearCost.hpp ClpNode.cpp \
+	ClpNode.hpp ClpObjective.cpp ClpObjective.hpp \
+	ClpPackedMatrix.cpp ClpPackedMatrix.hpp ClpParameters.hpp \
+	ClpPlusMinusOneMatrix.cpp ClpPlusMinusOneMatrix.hpp \
+	ClpPredictorCorrector.cpp ClpPredictorCorrector.hpp \
+	ClpPdco.cpp ClpPdco.hpp ClpPdcoBase.cpp ClpPdcoBase.hpp \
+	ClpLsqr.cpp ClpLsqr.hpp ClpPresolve.cpp ClpPresolve.hpp \
+	ClpPrimalColumnDantzig.cpp ClpPrimalColumnDantzig.hpp \
+	ClpPrimalColumnPivot.cpp ClpPrimalColumnPivot.hpp \
+	ClpPrimalColumnSteepest.cpp ClpPrimalColumnSteepest.hpp \
+	ClpQuadraticObjective.cpp ClpQuadraticObjective.hpp \
+	ClpSimplex.cpp ClpSimplex.hpp ClpSimplexDual.cpp \
+	ClpSimplexDual.hpp ClpSimplexNonlinear.cpp \
+	ClpSimplexNonlinear.hpp ClpSimplexOther.cpp \
+	ClpSimplexOther.hpp ClpSimplexPrimal.cpp ClpSimplexPrimal.hpp \
+	ClpSolve.cpp ClpSolve.hpp Idiot.cpp Idiot.hpp IdiSolve.cpp \
+	ClpCholeskyUfl.cpp ClpCholeskyUfl.hpp ClpCholeskyMumps.cpp \
+	ClpCholeskyMumps.hpp ClpCholeskyWssmp.cpp ClpCholeskyWssmp.hpp \
+	ClpCholeskyWssmpKKT.cpp ClpCholeskyWssmpKKT.hpp
+@COIN_HAS_AMD_TRUE@am__objects_1 = ClpCholeskyUfl.lo
+@COIN_HAS_AMD_FALSE@@COIN_HAS_CHOLMOD_TRUE@am__objects_2 =  \
+@COIN_HAS_AMD_FALSE@@COIN_HAS_CHOLMOD_TRUE@	ClpCholeskyUfl.lo
+@COIN_HAS_AMD_FALSE@@COIN_HAS_CHOLMOD_FALSE@@COIN_HAS_GLPK_TRUE@am__objects_3 = ClpCholeskyUfl.lo
+@COIN_HAS_MUMPS_TRUE@am__objects_4 = ClpCholeskyMumps.lo
+@COIN_HAS_WSMP_TRUE@am__objects_5 = ClpCholeskyWssmp.lo \
+@COIN_HAS_WSMP_TRUE@	ClpCholeskyWssmpKKT.lo
 am_libClp_la_OBJECTS = ClpCholeskyBase.lo ClpCholeskyDense.lo \
-	ClpCholeskyUfl.lo ClpCholeskyMumps.lo ClpCholeskyWssmp.lo \
-	ClpCholeskyWssmpKKT.lo ClpConstraint.lo ClpConstraintLinear.lo \
+	ClpConstraint.lo ClpConstraintLinear.lo \
 	ClpConstraintQuadratic.lo Clp_C_Interface.lo \
 	ClpDualRowDantzig.lo ClpDualRowPivot.lo ClpDualRowSteepest.lo \
 	ClpDummyMatrix.lo ClpDynamicExampleMatrix.lo \
@@ -84,7 +144,9 @@ am_libClp_la_OBJECTS = ClpCholeskyBase.lo ClpCholeskyDense.lo \
 	ClpPrimalColumnPivot.lo ClpPrimalColumnSteepest.lo \
 	ClpQuadraticObjective.lo ClpSimplex.lo ClpSimplexDual.lo \
 	ClpSimplexNonlinear.lo ClpSimplexOther.lo ClpSimplexPrimal.lo \
-	ClpSolve.lo Idiot.lo IdiSolve.lo
+	ClpSolve.lo Idiot.lo IdiSolve.lo $(am__objects_1) \
+	$(am__objects_2) $(am__objects_3) $(am__objects_4) \
+	$(am__objects_5)
 libClp_la_OBJECTS = $(am_libClp_la_OBJECTS)
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
@@ -92,8 +154,8 @@ am_clp_OBJECTS = ClpMain.$(OBJEXT) CbcOrClpParam.$(OBJEXT) \
 	MyEventHandler.$(OBJEXT) MyMessageHandler.$(OBJEXT) \
 	unitTest.$(OBJEXT)
 clp_OBJECTS = $(am_clp_OBJECTS)
-clp_DEPENDENCIES = libClp.la $(COINUTILSOBJDIR)/src/libCoinUtils.la
-depcomp = $(SHELL) $(top_srcdir)/../depcomp
+am__DEPENDENCIES_1 =
+depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
@@ -112,20 +174,48 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(libClp_la_SOURCES) $(clp_SOURCES)
-DIST_SOURCES = $(libClp_la_SOURCES) $(clp_SOURCES)
+DIST_SOURCES = $(am__libClp_la_SOURCES_DIST) $(clp_SOURCES)
+RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
+	html-recursive info-recursive install-data-recursive \
+	install-exec-recursive install-info-recursive \
+	install-recursive installcheck-recursive installdirs-recursive \
+	pdf-recursive ps-recursive uninstall-info-recursive \
+	uninstall-recursive
+am__includecoin_HEADERS_DIST = Clp_C_Interface.h ClpCholeskyBase.hpp \
+	ClpCholeskyDense.hpp ClpConstraint.hpp ClpConstraintLinear.hpp \
+	ClpConstraintQuadratic.hpp ClpDualRowDantzig.hpp \
+	ClpDualRowPivot.hpp ClpDualRowSteepest.hpp ClpDummyMatrix.hpp \
+	ClpDynamicExampleMatrix.hpp ClpDynamicMatrix.hpp \
+	ClpEventHandler.hpp ClpFactorization.hpp \
+	ClpGubDynamicMatrix.hpp ClpGubMatrix.hpp ClpInterior.hpp \
+	ClpLinearObjective.hpp ClpMatrixBase.hpp ClpMessage.hpp \
+	ClpModel.hpp ClpNetworkMatrix.hpp ClpNonLinearCost.hpp \
+	ClpNode.hpp ClpObjective.hpp ClpPackedMatrix.hpp \
+	ClpPdcoBase.hpp ClpPlusMinusOneMatrix.hpp ClpParameters.hpp \
+	ClpPresolve.hpp ClpPrimalColumnDantzig.hpp \
+	ClpPrimalColumnPivot.hpp ClpPrimalColumnSteepest.hpp \
+	ClpQuadraticObjective.hpp ClpSimplex.hpp \
+	ClpSimplexNonlinear.hpp ClpSimplexOther.hpp \
+	ClpSimplexPrimal.hpp ClpSolve.hpp CbcOrClpParam.hpp Idiot.hpp \
+	ClpCholeskyUfl.hpp ClpCholeskyMumps.hpp ClpCholeskyWssmp.hpp \
+	ClpCholeskyWssmpKKT.hpp CbcOrClpParam.cpp
 includecoinHEADERS_INSTALL = $(INSTALL_HEADER)
 HEADERS = $(includecoin_HEADERS)
 ETAGS = etags
 CTAGS = ctags
+DIST_SUBDIRS = OsiClp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
+ABSBUILDDIR = @ABSBUILDDIR@
 ACLOCAL = @ACLOCAL@
-ADDLIBS = @ADDLIBS@
 ADD_CFLAGS = @ADD_CFLAGS@
 ADD_CXXFLAGS = @ADD_CXXFLAGS@
+ADD_FFLAGS = @ADD_FFLAGS@
 ALWAYS_FALSE_FALSE = @ALWAYS_FALSE_FALSE@
 ALWAYS_FALSE_TRUE = @ALWAYS_FALSE_TRUE@
 AMDEP_FALSE = @AMDEP_FALSE@
 AMDEP_TRUE = @AMDEP_TRUE@
+AMDINCDIR = @AMDINCDIR@
+AMDLIB = @AMDLIB@
 AMTAR = @AMTAR@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
@@ -133,21 +223,65 @@ AUTOHEADER = @AUTOHEADER@
 AUTOMAKE = @AUTOMAKE@
 AUX_DIR = @AUX_DIR@
 AWK = @AWK@
+BLAS_CFLAGS = @BLAS_CFLAGS@
+BLAS_CFLAGS_INSTALLED = @BLAS_CFLAGS_INSTALLED@
+BLAS_DATA = @BLAS_DATA@
+BLAS_DATA_INSTALLED = @BLAS_DATA_INSTALLED@
+BLAS_DEPENDENCIES = @BLAS_DEPENDENCIES@
+BLAS_LIBS = @BLAS_LIBS@
+BLAS_LIBS_INSTALLED = @BLAS_LIBS_INSTALLED@
 BUILDTOOLSDIR = @BUILDTOOLSDIR@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CDEFS = @CDEFS@
 CFLAGS = @CFLAGS@
-CLPDOCDIR = @CLPDOCDIR@
-CLPOBJDIR = @CLPOBJDIR@
-CLPSRCDIR = @CLPSRCDIR@
-COINUTILSDOCDIR = @COINUTILSDOCDIR@
-COINUTILSOBJDIR = @COINUTILSOBJDIR@
-COINUTILSSRCDIR = @COINUTILSSRCDIR@
-COIN_HAS_CLP_FALSE = @COIN_HAS_CLP_FALSE@
-COIN_HAS_CLP_TRUE = @COIN_HAS_CLP_TRUE@
+CHOLMODINCDIR = @CHOLMODINCDIR@
+CHOLMODLIB = @CHOLMODLIB@
+CLPLIB_CFLAGS = @CLPLIB_CFLAGS@
+CLPLIB_CFLAGS_INSTALLED = @CLPLIB_CFLAGS_INSTALLED@
+CLPLIB_DEPENDENCIES = @CLPLIB_DEPENDENCIES@
+CLPLIB_LIBS = @CLPLIB_LIBS@
+CLPLIB_LIBS_INSTALLED = @CLPLIB_LIBS_INSTALLED@
+CLPLIB_PCLIBS = @CLPLIB_PCLIBS@
+CLPLIB_PCREQUIRES = @CLPLIB_PCREQUIRES@
+CLP_SVN_REV = @CLP_SVN_REV@
+COINUTILS_CFLAGS = @COINUTILS_CFLAGS@
+COINUTILS_CFLAGS_INSTALLED = @COINUTILS_CFLAGS_INSTALLED@
+COINUTILS_DATA = @COINUTILS_DATA@
+COINUTILS_DATA_INSTALLED = @COINUTILS_DATA_INSTALLED@
+COINUTILS_DEPENDENCIES = @COINUTILS_DEPENDENCIES@
+COINUTILS_LIBS = @COINUTILS_LIBS@
+COINUTILS_LIBS_INSTALLED = @COINUTILS_LIBS_INSTALLED@
+COIN_CC_IS_CL_FALSE = @COIN_CC_IS_CL_FALSE@
+COIN_CC_IS_CL_TRUE = @COIN_CC_IS_CL_TRUE@
+COIN_CXX_IS_CL_FALSE = @COIN_CXX_IS_CL_FALSE@
+COIN_CXX_IS_CL_TRUE = @COIN_CXX_IS_CL_TRUE@
+COIN_HAS_AMD_FALSE = @COIN_HAS_AMD_FALSE@
+COIN_HAS_AMD_TRUE = @COIN_HAS_AMD_TRUE@
+COIN_HAS_BLAS_FALSE = @COIN_HAS_BLAS_FALSE@
+COIN_HAS_BLAS_TRUE = @COIN_HAS_BLAS_TRUE@
+COIN_HAS_CHOLMOD_FALSE = @COIN_HAS_CHOLMOD_FALSE@
+COIN_HAS_CHOLMOD_TRUE = @COIN_HAS_CHOLMOD_TRUE@
 COIN_HAS_COINUTILS_FALSE = @COIN_HAS_COINUTILS_FALSE@
 COIN_HAS_COINUTILS_TRUE = @COIN_HAS_COINUTILS_TRUE@
+COIN_HAS_GLPK_FALSE = @COIN_HAS_GLPK_FALSE@
+COIN_HAS_GLPK_TRUE = @COIN_HAS_GLPK_TRUE@
+COIN_HAS_MUMPS_FALSE = @COIN_HAS_MUMPS_FALSE@
+COIN_HAS_MUMPS_TRUE = @COIN_HAS_MUMPS_TRUE@
+COIN_HAS_NETLIB_FALSE = @COIN_HAS_NETLIB_FALSE@
+COIN_HAS_NETLIB_TRUE = @COIN_HAS_NETLIB_TRUE@
+COIN_HAS_OSITESTS_FALSE = @COIN_HAS_OSITESTS_FALSE@
+COIN_HAS_OSITESTS_TRUE = @COIN_HAS_OSITESTS_TRUE@
+COIN_HAS_OSI_FALSE = @COIN_HAS_OSI_FALSE@
+COIN_HAS_OSI_TRUE = @COIN_HAS_OSI_TRUE@
+COIN_HAS_PKGCONFIG_FALSE = @COIN_HAS_PKGCONFIG_FALSE@
+COIN_HAS_PKGCONFIG_TRUE = @COIN_HAS_PKGCONFIG_TRUE@
+COIN_HAS_SAMPLE_FALSE = @COIN_HAS_SAMPLE_FALSE@
+COIN_HAS_SAMPLE_TRUE = @COIN_HAS_SAMPLE_TRUE@
+COIN_HAS_WSMP_FALSE = @COIN_HAS_WSMP_FALSE@
+COIN_HAS_WSMP_TRUE = @COIN_HAS_WSMP_TRUE@
+COIN_PKG_CONFIG_PATH = @COIN_PKG_CONFIG_PATH@
+COIN_PKG_CONFIG_PATH_UNINSTALLED = @COIN_PKG_CONFIG_PATH_UNINSTALLED@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CXX = @CXX@
@@ -158,6 +292,7 @@ CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DBG_CFLAGS = @DBG_CFLAGS@
 DBG_CXXFLAGS = @DBG_CXXFLAGS@
+DBG_FFLAGS = @DBG_FFLAGS@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 ECHO = @ECHO@
@@ -167,8 +302,15 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 F77 = @F77@
-FADDLIBS = @FADDLIBS@
 FFLAGS = @FFLAGS@
+FLIBS = @FLIBS@
+GLPK_CFLAGS = @GLPK_CFLAGS@
+GLPK_CFLAGS_INSTALLED = @GLPK_CFLAGS_INSTALLED@
+GLPK_DATA = @GLPK_DATA@
+GLPK_DATA_INSTALLED = @GLPK_DATA_INSTALLED@
+GLPK_DEPENDENCIES = @GLPK_DEPENDENCIES@
+GLPK_LIBS = @GLPK_LIBS@
+GLPK_LIBS_INSTALLED = @GLPK_LIBS_INSTALLED@
 HAVE_EXTERNALS_FALSE = @HAVE_EXTERNALS_FALSE@
 HAVE_EXTERNALS_TRUE = @HAVE_EXTERNALS_TRUE@
 INSTALL_DATA = @INSTALL_DATA@
@@ -178,10 +320,7 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
 LIBEXT = @LIBEXT@
 LIBOBJS = @LIBOBJS@
-
-# Here we add additional libraries
-LIBS = @LIBS@ $(ADDLIBS) `cat \
-	$(COINUTILSOBJDIR)/coinutils_addlibs.txt`
+LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIBTOOLM4 = @LIBTOOLM4@
 LN_S = @LN_S@
@@ -193,9 +332,46 @@ MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
 MPICC = @MPICC@
 MPICXX = @MPICXX@
+MPIF77 = @MPIF77@
+MUMPS_CFLAGS = @MUMPS_CFLAGS@
+MUMPS_CFLAGS_INSTALLED = @MUMPS_CFLAGS_INSTALLED@
+MUMPS_DATA = @MUMPS_DATA@
+MUMPS_DATA_INSTALLED = @MUMPS_DATA_INSTALLED@
+MUMPS_DEPENDENCIES = @MUMPS_DEPENDENCIES@
+MUMPS_LIBS = @MUMPS_LIBS@
+MUMPS_LIBS_INSTALLED = @MUMPS_LIBS_INSTALLED@
+NETLIB_CFLAGS = @NETLIB_CFLAGS@
+NETLIB_CFLAGS_INSTALLED = @NETLIB_CFLAGS_INSTALLED@
+NETLIB_DATA = @NETLIB_DATA@
+NETLIB_DATA_INSTALLED = @NETLIB_DATA_INSTALLED@
+NETLIB_DEPENDENCIES = @NETLIB_DEPENDENCIES@
+NETLIB_LIBS = @NETLIB_LIBS@
+NETLIB_LIBS_INSTALLED = @NETLIB_LIBS_INSTALLED@
 OBJEXT = @OBJEXT@
 OPT_CFLAGS = @OPT_CFLAGS@
 OPT_CXXFLAGS = @OPT_CXXFLAGS@
+OPT_FFLAGS = @OPT_FFLAGS@
+OSICLPLIB_CFLAGS = @OSICLPLIB_CFLAGS@
+OSICLPLIB_CFLAGS_INSTALLED = @OSICLPLIB_CFLAGS_INSTALLED@
+OSICLPLIB_DEPENDENCIES = @OSICLPLIB_DEPENDENCIES@
+OSICLPLIB_LIBS = @OSICLPLIB_LIBS@
+OSICLPLIB_LIBS_INSTALLED = @OSICLPLIB_LIBS_INSTALLED@
+OSICLPLIB_PCLIBS = @OSICLPLIB_PCLIBS@
+OSICLPLIB_PCREQUIRES = @OSICLPLIB_PCREQUIRES@
+OSITESTS_CFLAGS = @OSITESTS_CFLAGS@
+OSITESTS_CFLAGS_INSTALLED = @OSITESTS_CFLAGS_INSTALLED@
+OSITESTS_DATA = @OSITESTS_DATA@
+OSITESTS_DATA_INSTALLED = @OSITESTS_DATA_INSTALLED@
+OSITESTS_DEPENDENCIES = @OSITESTS_DEPENDENCIES@
+OSITESTS_LIBS = @OSITESTS_LIBS@
+OSITESTS_LIBS_INSTALLED = @OSITESTS_LIBS_INSTALLED@
+OSI_CFLAGS = @OSI_CFLAGS@
+OSI_CFLAGS_INSTALLED = @OSI_CFLAGS_INSTALLED@
+OSI_DATA = @OSI_DATA@
+OSI_DATA_INSTALLED = @OSI_DATA_INSTALLED@
+OSI_DEPENDENCIES = @OSI_DEPENDENCIES@
+OSI_LIBS = @OSI_LIBS@
+OSI_LIBS_INSTALLED = @OSI_LIBS_INSTALLED@
 PACKAGE = @PACKAGE@
 PACKAGE_BUGREPORT = @PACKAGE_BUGREPORT@
 PACKAGE_NAME = @PACKAGE_NAME@
@@ -203,8 +379,16 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKG_CONFIG = @PKG_CONFIG@
 RANLIB = @RANLIB@
 RPATH_FLAGS = @RPATH_FLAGS@
+SAMPLE_CFLAGS = @SAMPLE_CFLAGS@
+SAMPLE_CFLAGS_INSTALLED = @SAMPLE_CFLAGS_INSTALLED@
+SAMPLE_DATA = @SAMPLE_DATA@
+SAMPLE_DATA_INSTALLED = @SAMPLE_DATA_INSTALLED@
+SAMPLE_DEPENDENCIES = @SAMPLE_DEPENDENCIES@
+SAMPLE_LIBS = @SAMPLE_LIBS@
+SAMPLE_LIBS_INSTALLED = @SAMPLE_LIBS_INSTALLED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -222,6 +406,7 @@ ac_ct_F77 = @ac_ct_F77@
 ac_ct_RANLIB = @ac_ct_RANLIB@
 ac_ct_STRIP = @ac_ct_STRIP@
 ac_cxx_preproc_warn_flag = @ac_cxx_preproc_warn_flag@
+ac_pt_PKG_CONFIG = @ac_pt_PKG_CONFIG@
 am__fastdepCC_FALSE = @am__fastdepCC_FALSE@
 am__fastdepCC_TRUE = @am__fastdepCC_TRUE@
 am__fastdepCXX_FALSE = @am__fastdepCXX_FALSE@
@@ -237,11 +422,18 @@ build_alias = @build_alias@
 build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
+coin_doxy_excludes = @coin_doxy_excludes@
+coin_doxy_logname = @coin_doxy_logname@
+coin_doxy_tagfiles = @coin_doxy_tagfiles@
+coin_doxy_tagname = @coin_doxy_tagname@
+coin_doxy_usedot = @coin_doxy_usedot@
+coin_have_doxygen = @coin_have_doxygen@
 datadir = @datadir@
 exec_prefix = @exec_prefix@
 have_autoconf = @have_autoconf@
 have_automake = @have_automake@
 have_svn = @have_svn@
+have_svnversion = @have_svnversion@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -264,6 +456,7 @@ sol_cc_compiler = @sol_cc_compiler@
 sysconfdir = @sysconfdir@
 target_alias = @target_alias@
 AUTOMAKE_OPTIONS = foreign
+@COIN_HAS_OSI_TRUE@SUBDIRS = OsiClp
 
 ########################################################################
 #                               libClp                                 #
@@ -274,62 +467,44 @@ AUTOMAKE_OPTIONS = foreign
 lib_LTLIBRARIES = libClp.la
 
 # List all source files for this library, including headers
-libClp_la_SOURCES = \
-	ClpConfig.h \
-	ClpCholeskyBase.cpp ClpCholeskyBase.hpp \
-	ClpCholeskyDense.cpp ClpCholeskyDense.hpp \
-	ClpCholeskyUfl.cpp ClpCholeskyUfl.hpp \
-	ClpCholeskyMumps.cpp ClpCholeskyMumps.hpp \
-	ClpCholeskyWssmp.cpp ClpCholeskyWssmp.hpp \
-	ClpCholeskyWssmpKKT.cpp ClpCholeskyWssmpKKT.hpp \
-	ClpConstraint.cpp ClpConstraint.hpp \
-	ClpConstraintLinear.cpp ClpConstraintLinear.hpp \
-	ClpConstraintQuadratic.cpp ClpConstraintQuadratic.hpp \
-	Clp_C_Interface.cpp Clp_C_Interface.h \
-	ClpDualRowDantzig.cpp ClpDualRowDantzig.hpp \
-	ClpDualRowPivot.cpp ClpDualRowPivot.hpp \
-	ClpDualRowSteepest.cpp ClpDualRowSteepest.hpp \
-	ClpDummyMatrix.cpp ClpDummyMatrix.hpp \
+libClp_la_SOURCES = ClpConfig.h ClpCholeskyBase.cpp \
+	ClpCholeskyBase.hpp ClpCholeskyDense.cpp ClpCholeskyDense.hpp \
+	ClpConstraint.cpp ClpConstraint.hpp ClpConstraintLinear.cpp \
+	ClpConstraintLinear.hpp ClpConstraintQuadratic.cpp \
+	ClpConstraintQuadratic.hpp Clp_C_Interface.cpp \
+	Clp_C_Interface.h ClpDualRowDantzig.cpp ClpDualRowDantzig.hpp \
+	ClpDualRowPivot.cpp ClpDualRowPivot.hpp ClpDualRowSteepest.cpp \
+	ClpDualRowSteepest.hpp ClpDummyMatrix.cpp ClpDummyMatrix.hpp \
 	ClpDynamicExampleMatrix.cpp ClpDynamicExampleMatrix.hpp \
-	ClpDynamicMatrix.cpp ClpDynamicMatrix.hpp \
-	ClpEventHandler.cpp ClpEventHandler.hpp \
-	ClpFactorization.cpp ClpFactorization.hpp \
+	ClpDynamicMatrix.cpp ClpDynamicMatrix.hpp ClpEventHandler.cpp \
+	ClpEventHandler.hpp ClpFactorization.cpp ClpFactorization.hpp \
 	ClpGubDynamicMatrix.cpp ClpGubDynamicMatrix.hpp \
-	ClpGubMatrix.cpp ClpGubMatrix.hpp \
-	ClpHelperFunctions.cpp ClpHelperFunctions.hpp \
-	ClpInterior.cpp ClpInterior.hpp \
+	ClpGubMatrix.cpp ClpGubMatrix.hpp ClpHelperFunctions.cpp \
+	ClpHelperFunctions.hpp ClpInterior.cpp ClpInterior.hpp \
 	ClpLinearObjective.cpp ClpLinearObjective.hpp \
-	ClpMatrixBase.cpp ClpMatrixBase.hpp \
-	ClpMessage.cpp ClpMessage.hpp \
-	ClpModel.cpp ClpModel.hpp \
-	ClpNetworkBasis.cpp ClpNetworkBasis.hpp \
-	ClpNetworkMatrix.cpp ClpNetworkMatrix.hpp \
-	ClpNonLinearCost.cpp ClpNonLinearCost.hpp \
-	ClpNode.cpp ClpNode.hpp \
-	ClpObjective.cpp ClpObjective.hpp \
-	ClpPackedMatrix.cpp ClpPackedMatrix.hpp \
-	ClpParameters.hpp \
+	ClpMatrixBase.cpp ClpMatrixBase.hpp ClpMessage.cpp \
+	ClpMessage.hpp ClpModel.cpp ClpModel.hpp ClpNetworkBasis.cpp \
+	ClpNetworkBasis.hpp ClpNetworkMatrix.cpp ClpNetworkMatrix.hpp \
+	ClpNonLinearCost.cpp ClpNonLinearCost.hpp ClpNode.cpp \
+	ClpNode.hpp ClpObjective.cpp ClpObjective.hpp \
+	ClpPackedMatrix.cpp ClpPackedMatrix.hpp ClpParameters.hpp \
 	ClpPlusMinusOneMatrix.cpp ClpPlusMinusOneMatrix.hpp \
 	ClpPredictorCorrector.cpp ClpPredictorCorrector.hpp \
-	ClpPdco.cpp ClpPdco.hpp \
-	ClpPdcoBase.cpp ClpPdcoBase.hpp \
-	ClpLsqr.cpp ClpLsqr.hpp \
-	ClpPresolve.cpp ClpPresolve.hpp \
+	ClpPdco.cpp ClpPdco.hpp ClpPdcoBase.cpp ClpPdcoBase.hpp \
+	ClpLsqr.cpp ClpLsqr.hpp ClpPresolve.cpp ClpPresolve.hpp \
 	ClpPrimalColumnDantzig.cpp ClpPrimalColumnDantzig.hpp \
 	ClpPrimalColumnPivot.cpp ClpPrimalColumnPivot.hpp \
 	ClpPrimalColumnSteepest.cpp ClpPrimalColumnSteepest.hpp \
 	ClpQuadraticObjective.cpp ClpQuadraticObjective.hpp \
-	ClpSimplex.cpp ClpSimplex.hpp \
-	ClpSimplexDual.cpp ClpSimplexDual.hpp \
-	ClpSimplexNonlinear.cpp ClpSimplexNonlinear.hpp \
-	ClpSimplexOther.cpp ClpSimplexOther.hpp \
-	ClpSimplexPrimal.cpp ClpSimplexPrimal.hpp \
-	ClpSolve.cpp ClpSolve.hpp \
-	Idiot.cpp Idiot.hpp \
-	IdiSolve.cpp
+	ClpSimplex.cpp ClpSimplex.hpp ClpSimplexDual.cpp \
+	ClpSimplexDual.hpp ClpSimplexNonlinear.cpp \
+	ClpSimplexNonlinear.hpp ClpSimplexOther.cpp \
+	ClpSimplexOther.hpp ClpSimplexPrimal.cpp ClpSimplexPrimal.hpp \
+	ClpSolve.cpp ClpSolve.hpp Idiot.cpp Idiot.hpp IdiSolve.cpp \
+	$(am__append_1) $(am__append_2) $(am__append_3) \
+	$(am__append_4) $(am__append_5)
 
-
-# This is for libtool (on Windows)
+# This is for libtool
 libClp_la_LDFLAGS = $(LT_LDFLAGS)
 
 # List all source files for this executable, including headers
@@ -341,93 +516,52 @@ clp_SOURCES = \
 	unitTest.cpp
 
 
-# List all additionally required COIN libraries
-clp_LDADD = libClp.la \
-	$(COINUTILSOBJDIR)/src/libCoinUtils.la
+# List all additionally required libraries
+clp_LDADD = libClp.la $(CLPLIB_LIBS)
 
-
-# Finally, the -rpath flag is used by libtool to make sure that the shared
-# library is found (in the lib install directory) when we are using dynamic
-# libraries.
-clp_LDFLAGS = -rpath $(libdir)
+# List all dependency libraries (similar to LDADD, but without -l, -L flags)
+clp_DEPENDENCIES = libClp.la $(CLPLIB_DEPENDENCIES)
 
 ########################################################################
 #                            Additional flags                          #
 ########################################################################
 
-# Here list all include flags, relative to this "srcdir" directory.  This
-# "cygpath" stuff is necessary to compile with native compilers on Windows.
-AM_CPPFLAGS = \
-	-I`$(CYGPATH_W) $(COINUTILSSRCDIR)/src` \
-	-I`$(CYGPATH_W) $(COINUTILSOBJDIR)/inc`
+# CbcOrClpParam seem to require COIN_HAS_CLP so that it knows that it is build within Clp
+AM_CPPFLAGS = $(CLPLIB_CFLAGS) -DCOIN_HAS_CLP $(am__append_6) \
+	$(am__append_7)
 
-
-# This line is necessary to allow VPATH compilation with MS compilers
-# on Cygwin
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/inc
+# This line is necessary to allow VPATH compilation
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 
 ########################################################################
 #                Headers that need to be installed                     #
 ########################################################################
 
 # Here list all the header files that are required by a user of the library,
-# and that therefore should be installed in 'install/coin'
+# and that therefore should be installed in 'include/coin'
 includecoindir = $(includedir)/coin
-includecoin_HEADERS = \
-	../inc/config_clp.h \
-	Clp_C_Interface.h \
-	ClpCholeskyBase.hpp \
-	ClpCholeskyDense.hpp \
-	ClpCholeskyWssmp.hpp \
-	ClpConstraint.hpp \
-	ClpConstraintLinear.hpp \
-	ClpConstraintQuadratic.hpp \
-	ClpDualRowDantzig.hpp \
-	ClpDualRowPivot.hpp \
-	ClpDualRowSteepest.hpp \
-	ClpDummyMatrix.hpp \
-	ClpDynamicExampleMatrix.hpp \
-	ClpDynamicMatrix.hpp \
-	ClpEventHandler.hpp \
-	ClpFactorization.hpp \
-	ClpGubDynamicMatrix.hpp \
-	ClpGubMatrix.hpp \
-	ClpInterior.hpp \
-	ClpLinearObjective.hpp \
-	ClpMatrixBase.hpp \
-	ClpMessage.hpp \
-	ClpModel.hpp \
-	ClpNetworkMatrix.hpp \
-	ClpNonLinearCost.hpp \
-	ClpNode.hpp \
-	ClpObjective.hpp \
-	ClpPackedMatrix.hpp \
-	ClpPdcoBase.hpp \
-	ClpPlusMinusOneMatrix.hpp \
-	ClpParameters.hpp \
-	ClpPresolve.hpp \
-	ClpPrimalColumnDantzig.hpp \
-	ClpPrimalColumnPivot.hpp \
-	ClpPrimalColumnSteepest.hpp \
-	ClpQuadraticObjective.hpp \
-	ClpSimplex.hpp \
-	ClpSimplexDual.hpp \
-	ClpSimplexNonlinear.hpp \
-	ClpSimplexOther.hpp \
-	ClpSimplexPrimal.hpp \
-	ClpSolve.hpp \
-	CbcOrClpParam.hpp \
-	CbcOrClpParam.cpp \
-	Idiot.hpp
 
-
-#############################################################################
-# Create the Config.h file that always defines HAVE_CONFIG_H and install it #
-#############################################################################
-
-# You only need to adapt the following line
-ConfigHeader = ClpConfig.h
-all: all-am
+# needed by Cbc
+includecoin_HEADERS = Clp_C_Interface.h ClpCholeskyBase.hpp \
+	ClpCholeskyDense.hpp ClpConstraint.hpp ClpConstraintLinear.hpp \
+	ClpConstraintQuadratic.hpp ClpDualRowDantzig.hpp \
+	ClpDualRowPivot.hpp ClpDualRowSteepest.hpp ClpDummyMatrix.hpp \
+	ClpDynamicExampleMatrix.hpp ClpDynamicMatrix.hpp \
+	ClpEventHandler.hpp ClpFactorization.hpp \
+	ClpGubDynamicMatrix.hpp ClpGubMatrix.hpp ClpInterior.hpp \
+	ClpLinearObjective.hpp ClpMatrixBase.hpp ClpMessage.hpp \
+	ClpModel.hpp ClpNetworkMatrix.hpp ClpNonLinearCost.hpp \
+	ClpNode.hpp ClpObjective.hpp ClpPackedMatrix.hpp \
+	ClpPdcoBase.hpp ClpPlusMinusOneMatrix.hpp ClpParameters.hpp \
+	ClpPresolve.hpp ClpPrimalColumnDantzig.hpp \
+	ClpPrimalColumnPivot.hpp ClpPrimalColumnSteepest.hpp \
+	ClpQuadraticObjective.hpp ClpSimplex.hpp \
+	ClpSimplexNonlinear.hpp ClpSimplexOther.hpp \
+	ClpSimplexPrimal.hpp ClpSolve.hpp CbcOrClpParam.hpp Idiot.hpp \
+	$(am__append_8) $(am__append_9) $(am__append_10) \
+	$(am__append_11) $(am__append_12) CbcOrClpParam.cpp
+all: config.h config_clp.h
+	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
 .SUFFIXES:
 .SUFFIXES: .cpp .lo .o .obj
@@ -460,6 +594,33 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
+
+config.h: stamp-h1
+	@if test ! -f $@; then \
+	  rm -f stamp-h1; \
+	  $(MAKE) stamp-h1; \
+	else :; fi
+
+stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
+	@rm -f stamp-h1
+	cd $(top_builddir) && $(SHELL) ./config.status src/config.h
+$(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps) 
+	cd $(top_srcdir) && $(AUTOHEADER)
+	rm -f stamp-h1
+	touch $@
+
+config_clp.h: stamp-h2
+	@if test ! -f $@; then \
+	  rm -f stamp-h2; \
+	  $(MAKE) stamp-h2; \
+	else :; fi
+
+stamp-h2: $(srcdir)/config_clp.h.in $(top_builddir)/config.status
+	@rm -f stamp-h2
+	cd $(top_builddir) && $(SHELL) ./config.status src/config_clp.h
+
+distclean-hdr:
+	-rm -f config.h stamp-h1 config_clp.h stamp-h2
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(libdir)" || $(mkdir_p) "$(DESTDIR)$(libdir)"
@@ -631,6 +792,77 @@ uninstall-includecoinHEADERS:
 	  rm -f "$(DESTDIR)$(includecoindir)/$$f"; \
 	done
 
+# This directory's subdirectories are mostly independent; you can cd
+# into them and run `make' without going through this Makefile.
+# To change the values of `make' variables: instead of editing Makefiles,
+# (1) if the variable is set in `config.status', edit `config.status'
+#     (which will cause the Makefiles to be regenerated when you run `make');
+# (2) otherwise, pass the desired values on the `make' command line.
+$(RECURSIVE_TARGETS):
+	@failcom='exit 1'; \
+	for f in x $$MAKEFLAGS; do \
+	  case $$f in \
+	    *=* | --[!k]*);; \
+	    *k*) failcom='fail=yes';; \
+	  esac; \
+	done; \
+	dot_seen=no; \
+	target=`echo $@ | sed s/-recursive//`; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    dot_seen=yes; \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	  || eval $$failcom; \
+	done; \
+	if test "$$dot_seen" = "no"; then \
+	  $(MAKE) $(AM_MAKEFLAGS) "$$target-am" || exit 1; \
+	fi; test -z "$$fail"
+
+mostlyclean-recursive clean-recursive distclean-recursive \
+maintainer-clean-recursive:
+	@failcom='exit 1'; \
+	for f in x $$MAKEFLAGS; do \
+	  case $$f in \
+	    *=* | --[!k]*);; \
+	    *k*) failcom='fail=yes';; \
+	  esac; \
+	done; \
+	dot_seen=no; \
+	case "$@" in \
+	  distclean-* | maintainer-clean-*) list='$(DIST_SUBDIRS)' ;; \
+	  *) list='$(SUBDIRS)' ;; \
+	esac; \
+	rev=''; for subdir in $$list; do \
+	  if test "$$subdir" = "."; then :; else \
+	    rev="$$subdir $$rev"; \
+	  fi; \
+	done; \
+	rev="$$rev ."; \
+	target=`echo $@ | sed s/-recursive//`; \
+	for subdir in $$rev; do \
+	  echo "Making $$target in $$subdir"; \
+	  if test "$$subdir" = "."; then \
+	    local_target="$$target-am"; \
+	  else \
+	    local_target="$$target"; \
+	  fi; \
+	  (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) $$local_target) \
+	  || eval $$failcom; \
+	done && test -z "$$fail"
+tags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) tags); \
+	done
+ctags-recursive:
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  test "$$subdir" = . || (cd $$subdir && $(MAKE) $(AM_MAKEFLAGS) ctags); \
+	done
+
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
@@ -641,11 +873,24 @@ ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	mkid -fID $$unique
 tags: TAGS
 
-TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+TAGS: tags-recursive $(HEADERS) $(SOURCES) config.h.in config_clp.h.in $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	tags=; \
 	here=`pwd`; \
-	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	if ($(ETAGS) --etags-include --version) >/dev/null 2>&1; then \
+	  include_option=--etags-include; \
+	  empty_fix=.; \
+	else \
+	  include_option=--include; \
+	  empty_fix=; \
+	fi; \
+	list='$(SUBDIRS)'; for subdir in $$list; do \
+	  if test "$$subdir" = .; then :; else \
+	    test ! -f $$subdir/TAGS || \
+	      tags="$$tags $$include_option=$$here/$$subdir/TAGS"; \
+	  fi; \
+	done; \
+	list='$(SOURCES) $(HEADERS) config.h.in config_clp.h.in $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
@@ -657,11 +902,11 @@ TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
 	    $$tags $$unique; \
 	fi
 ctags: CTAGS
-CTAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) \
+CTAGS: ctags-recursive $(HEADERS) $(SOURCES) config.h.in config_clp.h.in $(TAGS_DEPENDENCIES) \
 		$(TAGS_FILES) $(LISP)
 	tags=; \
 	here=`pwd`; \
-	list='$(SOURCES) $(HEADERS)  $(LISP) $(TAGS_FILES)'; \
+	list='$(SOURCES) $(HEADERS) config.h.in config_clp.h.in $(LISP) $(TAGS_FILES)'; \
 	unique=`for i in $$list; do \
 	    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
 	  done | \
@@ -680,7 +925,6 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
 distdir: $(DISTFILES)
-	$(mkdir_p) $(distdir)/../inc
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -707,24 +951,41 @@ distdir: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
+	list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
+	  if test "$$subdir" = .; then :; else \
+	    test -d "$(distdir)/$$subdir" \
+	    || $(mkdir_p) "$(distdir)/$$subdir" \
+	    || exit 1; \
+	    distdir=`$(am__cd) $(distdir) && pwd`; \
+	    top_distdir=`$(am__cd) $(top_distdir) && pwd`; \
+	    (cd $$subdir && \
+	      $(MAKE) $(AM_MAKEFLAGS) \
+	        top_distdir="$$top_distdir" \
+	        distdir="$$distdir/$$subdir" \
+	        distdir) \
+	      || exit 1; \
+	  fi; \
+	done
 check-am: all-am
-check: check-am
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(HEADERS)
+check: check-recursive
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(HEADERS) config.h \
+		config_clp.h
 install-binPROGRAMS: install-libLTLIBRARIES
 
-installdirs:
+installdirs: installdirs-recursive
+installdirs-am:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(includecoindir)"; do \
 	  test -z "$$dir" || $(mkdir_p) "$$dir"; \
 	done
-install: install-am
-install-exec: install-exec-am
-install-data: install-data-am
-uninstall: uninstall-am
+install: install-recursive
+install-exec: install-exec-recursive
+install-data: install-data-recursive
+uninstall: uninstall-recursive
 
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 
-installcheck: installcheck-am
+installcheck: installcheck-recursive
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) INSTALL_PROGRAM="$(INSTALL_STRIP_PROGRAM)" \
 	  install_sh_PROGRAM="$(INSTALL_STRIP_PROGRAM)" INSTALL_STRIP_FLAG=-s \
@@ -740,24 +1001,24 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-clean: clean-am
+clean: clean-recursive
 
 clean-am: clean-binPROGRAMS clean-generic clean-libLTLIBRARIES \
 	clean-libtool mostlyclean-am
 
-distclean: distclean-am
+distclean: distclean-recursive
 	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
-	distclean-libtool distclean-tags
+	distclean-hdr distclean-libtool distclean-tags
 
-dvi: dvi-am
+dvi: dvi-recursive
 
 dvi-am:
 
-html: html-am
+html: html-recursive
 
-info: info-am
+info: info-recursive
 
 info-am:
 
@@ -766,59 +1027,59 @@ install-data-am: install-includecoinHEADERS
 install-exec-am: install-binPROGRAMS install-exec-local \
 	install-libLTLIBRARIES
 
-install-info: install-info-am
+install-info: install-info-recursive
 
 install-man:
 
 installcheck-am:
 
-maintainer-clean: maintainer-clean-am
+maintainer-clean: maintainer-clean-recursive
 	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
-mostlyclean: mostlyclean-am
+mostlyclean: mostlyclean-recursive
 
 mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool
 
-pdf: pdf-am
+pdf: pdf-recursive
 
 pdf-am:
 
-ps: ps-am
+ps: ps-recursive
 
 ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-includecoinHEADERS \
 	uninstall-info-am uninstall-libLTLIBRARIES uninstall-local
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean clean-binPROGRAMS \
-	clean-generic clean-libLTLIBRARIES clean-libtool ctags \
-	distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-binPROGRAMS \
-	install-data install-data-am install-exec install-exec-am \
-	install-exec-local install-includecoinHEADERS install-info \
-	install-info-am install-libLTLIBRARIES install-man \
-	install-strip installcheck installcheck-am installdirs \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags uninstall uninstall-am \
+uninstall-info: uninstall-info-recursive
+
+.PHONY: $(RECURSIVE_TARGETS) CTAGS GTAGS all all-am check check-am \
+	clean clean-binPROGRAMS clean-generic clean-libLTLIBRARIES \
+	clean-libtool clean-recursive ctags ctags-recursive distclean \
+	distclean-compile distclean-generic distclean-hdr \
+	distclean-libtool distclean-recursive distclean-tags distdir \
+	dvi dvi-am html html-am info info-am install install-am \
+	install-binPROGRAMS install-data install-data-am install-exec \
+	install-exec-am install-exec-local install-includecoinHEADERS \
+	install-info install-info-am install-libLTLIBRARIES \
+	install-man install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic maintainer-clean-recursive \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool mostlyclean-recursive pdf pdf-am ps ps-am \
+	tags tags-recursive uninstall uninstall-am \
 	uninstall-binPROGRAMS uninstall-includecoinHEADERS \
 	uninstall-info-am uninstall-libLTLIBRARIES uninstall-local
 
 
 install-exec-local:
-	echo "#ifndef HAVE_CONFIG_H" >bla
-	echo "#define HAVE_CONFIG_H" >>bla
-	echo "#endif" >> bla
-	cat $(srcdir)/$(ConfigHeader) >> bla
-	$(install_sh_DATA) bla $(DESTDIR)$(includecoindir)/$(ConfigHeader)
-	rm -f bla
+	$(install_sh_DATA) config_clp.h $(DESTDIR)$(includecoindir)/ClpConfig.h
 
 uninstall-local:
-	rm -f $(DESTDIR)$(includecoindir)/$(ConfigHeader)
+	rm -f $(DESTDIR)$(includecoindir)/ClpConfig.h
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

@@ -1,5 +1,6 @@
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
@@ -30,13 +31,13 @@ CoinPackedMatrixUnitTest()
     CoinPackedMatrix lhs = m;    
     CoinPackedMatrix mCopy(m);
     
-    assert( eq(m.getExtraGap(),.25) );
-    assert( eq(lhs.getExtraGap(),.25) );
-    assert( eq(mCopy.getExtraGap(),.25) );
+    assert( eq(m.getExtraGap(),0.0) );
+    assert( eq(lhs.getExtraGap(),0.0) );
+    assert( eq(mCopy.getExtraGap(),0.0) );
     
-    assert( eq(m.getExtraMajor(),.25) );
-    assert( eq(lhs.getExtraMajor(),.25) );
-    assert( eq(mCopy.getExtraMajor(),.25) );
+    assert( eq(m.getExtraMajor(),0.0) );
+    assert( eq(lhs.getExtraMajor(),0.0) );
+    assert( eq(mCopy.getExtraMajor(),0.0) );
     
     assert(       m.isColOrdered() );
     assert(     lhs.isColOrdered() );
@@ -131,7 +132,11 @@ CoinPackedMatrixUnitTest()
       std::copy(indBase,indBase+numels,ind);
       std::copy(startsBase,startsBase+major+1,starts);
       std::copy(lenBase,lenBase+major,lens);
-      
+ 
+      /*
+	Explicitly request gap on this matrix, so we can see it propagate
+	in subsequent copy & assignment.
+      */
       CoinPackedMatrix pm(false,minor,major,numels,elem,ind,starts,lens,
 			 .25,.25);
       
@@ -276,9 +281,9 @@ CoinPackedMatrixUnitTest()
         // Test assignment
         {
           CoinPackedMatrix pmA;
-          // Gap should be 0.25
-          assert( eq(pmA.getExtraGap(),0.25) );
-          assert( eq(pmA.getExtraMajor(),0.25) );
+          // Gap should be 0.0
+          assert( eq(pmA.getExtraGap(),0.0) );
+          assert( eq(pmA.getExtraMajor(),0.0) );
           
           pmA = pm;
           
@@ -379,6 +384,38 @@ CoinPackedMatrixUnitTest()
     assert( eq(ev[16],  5.6) );
     assert( eq(ev[17],  1.0) );
     assert( eq(ev[18],  1.9) );
+
+    // Check printMatrixElement
+    std::cout << "Testing printMatrixElement:" << std::endl ;
+    std::cout << "Expecting 1.1, 0.0, -1.2." << std::endl ;
+    std::cout << "a(1,2) = " ;
+    globalP->printMatrixElement(1,2) ;
+    std::cout << "; a(3,5) = " ;
+    globalP->printMatrixElement(3,5) ;
+    std::cout << "; a(3,6) = " ;
+    globalP->printMatrixElement(3,6) ;
+    std::cout << std::endl ;
+    std::cout << "Expecting bounds error messages." << std::endl ;
+    std::cout << "a(-1,-1) = " ;
+    globalP->printMatrixElement(-1,-1) ;
+    std::cout << "a(0,-1) = " ;
+    globalP->printMatrixElement(0,-1) ;
+    std::cout << "a(4,8) = " ;
+    globalP->printMatrixElement(4,8) ;
+    std::cout << "a(5,8) = " ;
+    globalP->printMatrixElement(5,8) ;
+#   if 0
+    /* If you want an exhaustive test, enable these loops. */
+    for (CoinBigIndex rowndx = -1 ;
+         rowndx <= globalP->getMajorDim() ; rowndx++) {
+      for (CoinBigIndex colndx = -1 ;
+           colndx < globalP->getMinorDim() ; colndx++) {
+        std::cout << "a(" << rowndx << "," << colndx << ") = " ;
+	globalP->printMatrixElement(rowndx,colndx) ;
+	std::cout << std::endl ;
+      }
+    }
+#   endif
     
     const CoinBigIndex * mi = globalP->getVectorStarts();
     assert( mi[0]==0 );

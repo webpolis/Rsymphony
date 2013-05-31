@@ -5,9 +5,9 @@
 /* SYMPHONY was jointly developed by Ted Ralphs (ted@lehigh.edu) and         */
 /* Laci Ladanyi (ladanyi@us.ibm.com).                                        */
 /*                                                                           */
-/* (c) Copyright 2000-2010 Ted Ralphs. All Rights Reserved.                  */
+/* (c) Copyright 2000-2011 Ted Ralphs. All Rights Reserved.                  */
 /*                                                                           */
-/* This software is licensed under the Common Public License. Please see     */
+/* This software is licensed under the Eclipse Public License. Please see    */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -506,8 +506,10 @@ int select_branching_object(lp_prob *p, int *cuts, branch_obj **candidate)
 				  p->mip->mip_inf->max_row_ratio > rel_limit))||
 	     (p->mip->nz > 1e5 && p->mip->mip_inf->mat_density > rel_limit/50) ||
 	     (p->mip->mip_inf->max_row_ratio < rel_limit/5 &&
-	      p->mip->mip_inf->prob_type != BIN_CONT_TYPE)))){ 
+	      p->mip->mip_inf->prob_type != BIN_CONT_TYPE)))){
+#ifdef __OSI_CLP__
 	    lp_data->si->setupForRepeatedUse(2,0);
+#endif
 	 }
 
 	 if(p->mip->mip_inf && !check_off &&

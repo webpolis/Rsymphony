@@ -5,9 +5,9 @@
 /* SYMPHONY was jointly developed by Ted Ralphs (ted@lehigh.edu) and         */
 /* Laci Ladanyi (ladanyi@us.ibm.com).                                        */
 /*                                                                           */
-/* (c) Copyright 2000-2010 Ted Ralphs. All Rights Reserved.                  */
+/* (c) Copyright 2000-2011 Ted Ralphs. All Rights Reserved.                  */
 /*                                                                           */
-/* This software is licensed under the Common Public License. Please see     */
+/* This software is licensed under the Eclipse Public License. Please see    */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -73,6 +73,7 @@ void OSL_check_error PROTO((const char *erring_func));
 #endif
 
 #ifdef __OSI_CPLEX__
+#include "cplex.h"
 #include "OsiCpxSolverInterface.hpp"
 typedef OsiCpxSolverInterface OsiXSolverInterface;
 #endif
@@ -129,7 +130,7 @@ typedef OsiGlpkSolverInterface OsiXSolverInterface;
 #ifdef USE_GLPMPL
 extern "C"
 {
-   #include "glpmpl.h"
+   #include "glpk.h"
 }
 #endif
 

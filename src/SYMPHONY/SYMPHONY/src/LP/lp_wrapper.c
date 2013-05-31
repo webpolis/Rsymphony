@@ -5,12 +5,12 @@
 /* SYMPHONY was jointly developed by Ted Ralphs (ted@lehigh.edu) and         */
 /* Laci Ladanyi (ladanyi@us.ibm.com).                                        */
 /*                                                                           */
-/* (c) Copyright 2000-2010 Ted Ralphs. All Rights Reserved.                  */
+/* (c) Copyright 2000-2011 Ted Ralphs. All Rights Reserved.                  */
 /*                                                                           */
 /* The OSI interface in this file was written by Menal Guzelsoy.             */
 /* The OSL interface was written by Ondrej Medek.                            */
 /*                                                                           */
-/* This software is licensed under the Common Public License. Please see     */
+/* This software is licensed under the Eclipse Public License. Please see    */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -1002,10 +1002,13 @@ int is_feasible_u(lp_prob *p, char branching, char is_last_iter)
 	 }
       }
 #ifdef COMPILE_IN_LP
-      install_new_ub(p->tm, p->ub, p->proc_index, p->bc_index, branching,
-		     feasible);
-      if (p->bc_index>0) {
-         tighten_root_bounds(p);
+#pragma omp critical (new_ub)
+      {
+	 install_new_ub(p->tm, p->ub, p->proc_index, p->bc_index, branching,
+			feasible);
+	 if (p->bc_index>0) {
+	    tighten_root_bounds(p);
+	 }
       }
       if (!p->par.multi_criteria){
 	 display_lp_solution_u(p, DISP_FEAS_SOLUTION);
@@ -2543,15 +2546,18 @@ int analyze_multicriteria_solution(lp_prob *p, int *indices, double *values,
   int i;
   char new_solution = FALSE;
   int continue_with_node = FALSE;
+  bool has_artificial = false;
   
   for (i = 0; i < length; i++){
      if (indices[i] == p->mip->n){
+	has_artificial = true;
 	continue;
      }
      obj[0] += p->mip->obj1[indices[i]]*values[i];
      obj[1] += p->mip->obj2[indices[i]]*values[i];
   }
-
+  if (has_artificial) length--;
+  
   if (p->has_mc_ub && *true_objval-p->par.mc_rho*(obj[0]+obj[1]) >
       p->mc_ub + etol + MAX(0, MIN(p->par.mc_gamma, p->par.mc_tau))){
      return(FALSE);

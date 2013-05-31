@@ -4,11 +4,16 @@
 //           Carnegie Mellon University, Pittsburgh, PA 15213
 //           email: fmargot@andrew.cmu.edu
 // Date:     11/24/06
+//
+// $Id: CglParam.hpp 1033 2011-06-19 16:49:13Z stefan $
+//
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 //-----------------------------------------------------------------------------
 // Copyright (C) 2006, Francois Margot and others.  All Rights Reserved.
 
 #ifndef CglParam_H
 #define CglParam_H
+#include "CglConfig.h"
 #include "CoinFinite.hpp"
 /** Class collecting parameters for all cut generators. Each generator
     may have a derived class to add parameters. Each generator might
@@ -45,7 +50,7 @@ public:
   /**@name Constructors and destructors */
   //@{
   /// Default constructor 
-  CglParam(const double inf = DBL_MAX, const double eps = 1e-6, 
+  CglParam(const double inf = COIN_DBL_MAX, const double eps = 1e-6,
 	   const double eps_c = 1e-5, const int max_s = COIN_INT_MAX);
  
   /// Copy constructor 
@@ -68,7 +73,7 @@ protected:
   /**@name Protected member data */
 
   //@{
-  // Value for infinity. Default: DBL_MAX. 
+  // Value for infinity. Default: COIN_DBL_MAX.
   double INFINIT;
 
   // EPSILON for double comparisons. Default: 1e-6.

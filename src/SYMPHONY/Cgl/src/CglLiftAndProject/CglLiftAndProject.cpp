@@ -1,5 +1,7 @@
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -21,7 +23,7 @@
 // Generate Lift-and-Project cuts
 //------------------------------------------------------------------- 
 void CglLiftAndProject::generateCuts(const OsiSolverInterface& si, OsiCuts& cs,
-				     const CglTreeInfo info) const
+				     const CglTreeInfo /*info*/) const
 {
   // Assumes the mixed 0-1 problem 
   //
@@ -385,9 +387,9 @@ CglLiftAndProject::generateCpp( FILE * fp)
   fprintf(fp,"0#include \"CglLiftAndProject.hpp\"\n");
   fprintf(fp,"3  CglLiftAndProject liftAndProject;\n");
   if (beta_!=other.beta_)
-    fprintf(fp,"3  liftAndProject.setBeta(%d);\n",(int) beta_);
+    fprintf(fp,"3  liftAndProject.setBeta(%d);\n",static_cast<int> (beta_));
   else
-    fprintf(fp,"4  liftAndProject.setBeta(%d);\n",(int) beta_);
+    fprintf(fp,"4  liftAndProject.setBeta(%d);\n",static_cast<int> (beta_));
   fprintf(fp,"3  liftAndProject.setAggressiveness(%d);\n",getAggressiveness());
   if (getAggressiveness()!=other.getAggressiveness())
     fprintf(fp,"3  liftAndProject.setAggressiveness(%d);\n",getAggressiveness());

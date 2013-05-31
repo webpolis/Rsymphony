@@ -7,9 +7,9 @@
 #                                                                           #
 # The author of this file is Menal Guzelsoy                                 #
 #                                                                           #
-# (c) Copyright 2006-2010 Lehigh University. All Rights Reserved.           #
+# (c) Copyright 2006-2011 Lehigh University. All Rights Reserved.           #
 #                                                                           #
-# This software is licensed under the Common Public License. Please see     #
+# This software is licensed under the Eclipse Public License. Please see    #
 # accompanying file for terms.                                              #
 #                                                                           #
 #===========================================================================#
@@ -46,48 +46,66 @@ endif
 #                           Extra Targets                              #
 ########################################################################
 
- test: all
+test: all
 	cd test; $(MAKE) test
 
- unitTest: test
+unitTest: test
 
- fulltest: all
+fulltest: all
 	cd test; $(MAKE) fulltest
 
- ptest: all
+ptest: all
 	cd test; $(MAKE) ptest
 
- punitTest: ptest
+punitTest: ptest
 
- pfulltest: all
+pfulltest: all
 	cd test; $(MAKE) pfulltest
 
- clean-local:
+clean-local:
 	if test -r test/Makefile; then cd test; $(MAKE) clean; fi
 
- distclean-local:
+distclean-local:
 	if test -r test/Makefile; then cd test; $(MAKE) distclean; fi
 
- .PHONY: test unitTest ptest punitTest
+install-exec-local: install-doc
+
+uninstall-local: uninstall-doc
+
+.PHONY: test unitTest ptest punitTest
 
 ########################################################################
 #                  Installation of the addlibs file                    #
 ########################################################################
 
-addlibsfile = sym_addlibs.txt
-addlibsdir = $(prefix)/share/doc/coin/$(PACKAGE_NAME)
+pkgconfiglibdir = $(libdir)/pkgconfig
+pkgconfiglib_DATA = symphony.pc symphony-app.pc osi-sym.pc
 
-install-exec-local: install-doc
-	$(install_sh_DATA) $(addlibsfile) $(DESTDIR)$(addlibsdir)/$(addlibsfile)
+addlibsdir = $(DESTDIR)$(datadir)/coin/doc/SYMPHONY
 
-uninstall-local: uninstall-doc
-	rm -f $(DESTDIR)$(addlibsdir)/$(addlibsfile)
+install-data-hook:
+	@$(mkdir_p) "$(addlibsdir)"
+if COIN_HAS_PKGCONFIG
+	PKG_CONFIG_PATH=@COIN_PKG_CONFIG_PATH@ \
+	$(PKG_CONFIG) --libs symphony > $(addlibsdir)/sym_addlibs.txt
+else
+if COIN_CXX_IS_CL
+	echo "-libpath:`$(CYGPATH_W) @abs_lib_dir@` libSym.lib @SYMPHONYLIB_LIBS_INSTALLED@" > $(addlibsdir)/sym_addlibs.txt
+else
+	echo -L@abs_lib_dir@ -lSym @SYMPHONYLIB_LIBS_INSTALLED@ > $(addlibsdir)/sym_addlibs.txt
+endif
+endif
+
+uninstall-hook:
+	rm -f $(addlibsdir)/sym_addlibs.txt
 
 ########################################################################
 #                         Maintainer Stuff                             #
 ########################################################################
 
+CLEANFILES =
+
 # Files that are generated and should be cleaned with make distclean
 DISTCLEANFILES =
 
-include ../BuildTools/Makemain.inc
+include BuildTools/Makemain.inc

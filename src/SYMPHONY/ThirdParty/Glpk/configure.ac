@@ -1,8 +1,8 @@
-# Copyright (C) 2007-2008 Stefan Vigerske and others.
+# Copyright (C) 2007-2010 Stefan Vigerske and others.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 1419 2009-10-06 17:02:50Z stefan $
+## $Id: configure.ac 2595 2012-07-31 13:53:53Z stefan $
 
 #############################################################################
 #                       Names and other basic things                        #
@@ -10,17 +10,17 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([ThirdPartyGlpk],[1.5.1],[http://projects.coin-or.org/BuildTools/newticket])
+AC_INIT([ThirdPartyGlpk],[1.8.3],[http://projects.coin-or.org/BuildTools/newticket])
 
 AC_COPYRIGHT([
-Copyright 2007-2009 Stefan Vigerske and others.
+Copyright 2007-2010 Stefan Vigerske and others.
 All Rights Reserved.
 This file is part of the open source package Coin which is distributed
-under the Common Public License.])
+under the Eclipse Public License.])
 
 # List one file in the package so that the configure script can test
 # whether the package is actually there
-AC_CONFIG_SRCDIR(Makefile.am)
+AC_CONFIG_SRCDIR(glpk/include/glpk.h)
 
 # Where should everything be installed by default?  Here, we want it
 # to be installed directly in 'bin', 'lib', 'include' subdirectories
@@ -28,7 +28,7 @@ AC_CONFIG_SRCDIR(Makefile.am)
 # /usr/local.
 AC_PREFIX_DEFAULT([`pwd`])
 
-AC_COIN_PROJECTDIR_INIT
+AC_COIN_PROJECTDIR_INIT(Glpk,9:3:8)
 
 #############################################################################
 #                         Standard build tool stuff                         #
@@ -47,48 +47,205 @@ AC_COIN_DEBUG_COMPILE(Glpk)
 # Get the name of the C compiler
 AC_COIN_PROG_CC
 
+# Check if pkg-config is available (to setup addlibs file)
+AC_COIN_HAS_PKGCONFIG
+
 # Initialize automake
 AC_COIN_INIT_AUTO_TOOLS
 
 ###########################################################################
-#                            COIN_HAS_GLPK                                #
+#                            check GLPK version                           #
 ###########################################################################
 
-# This macro checks for a library containing the GLPK library.  It
-# checks if the user has provided an argument for the GLPK library,
-# and if not, it checks whether the GLPK ThirdParty/GLPK directory has
-# been configured.  It adds to ADDLIBS any flags required to link with
-# an externally provided GLPK.  It defines the makefile conditional
-# and preprocessor macro COIN_HAS_GLPK, if GLPK is available, and it
-# defines the makefile conditional COIN_BUILD_GLPK, if GLPK is
-# compiled within COIN.
-
-## Check if GLPK is already provided by user
-AC_COIN_HAS_GLPK(Glpk)
-
-rm -f $MAKEOKFILE
-if test x"$use_thirdpartyglpk" = xbuild ; then
-  touch $MAKEOKFILE
-  AC_MSG_CHECKING([GLPK version])
-  majorver=`awk '/define GLP_MAJOR_VERSION/ {print $3}' ${GLPKINCDIR}/glpk.h`
-  minorver=`awk '/define GLP_MINOR_VERSION/ {print $3}' ${GLPKINCDIR}/glpk.h`
-  AC_MSG_RESULT([${majorver}.${minorver}])
-  if test $majorver != 4 || test $minorver != 37 ; then
-    AC_MSG_ERROR(["Incorrect GLPK version. This build system is made for GLPK 4.37. Please update by rerunning get.GLPK"])
-  fi
-else
-  if test x$coin_has_glpk = xtrue ; then
-    AC_MSG_NOTICE([The Glpk sources don't need to be compiled])
-  else
-    AC_MSG_WARN([Glpk source is available but will not be built. No valid external library is detected. Are you sure this is what you want?])
-  fi
-  MAKEOKFILE=
+AC_MSG_CHECKING([GLPK version])
+glpkmajorver=`awk '/define GLP_MAJOR_VERSION/ {print $3}' $srcdir/glpk/include/glpk.h`
+glpkminorver=`awk '/define GLP_MINOR_VERSION/ {print $3}' $srcdir/glpk/include/glpk.h`
+AC_MSG_RESULT([${glpkmajorver}.${glpkminorver}])
+if test x$glpkmajorver != x4 || ( test x$glpkminorver != x44 && test x$glpkminorver != x45 ); then
+  AC_MSG_ERROR(["Incorrect GLPK version. This build system is made for GLPK 4.44 or 4.45. Please update by rerunning get.GLPK"])
 fi
-AC_SUBST(MAKEOKFILE)
+AC_SUBST(glpkmajorver)
+AC_SUBST(glpkminorver)
+
+###########################################################################
+#                 Other packages and C functions                          #
+###########################################################################
+
+AC_LANG_PUSH(C)
+
+AC_COIN_CHECK_GNU_ZLIB(GLPK)
+if test $coin_has_zlib = "yes"; then
+  AC_DEFINE([HAVE_ZLIB], [1], [Define to 1 if GNU zlib is available])
+fi
+
+AC_COIN_CHECK_GMP(Glpk)
+if test $coin_has_gmp = yes; then
+  AC_DEFINE([HAVE_GMP],[1],[Define to 1 if GMP is available])
+fi
+
+AC_CHECK_FUNC([vsnprintf])
+
+AC_LANG_POP(C)
+
+###########################################################################
+#                     Database connectivity                               #
+###########################################################################
+
+#whether we have any means to load shared libraries
+enable_dl=no
+
+AC_LANG_PUSH(C)
+
+AC_COIN_CHECK_HEADER([dlfcn.h],[enable_dl=yes])
+if test "$enable_dl" = "yes"; then
+  #if dlfcn.h is there, check also if libdl is there; if so, set corresponding define for GLPK 
+  AC_CHECK_LIB(dl,[dlopen],[AC_DEFINE([HAVE_DLFCN],[1],[Define to 1 if dlfcn support is available])],[enable_dl=no])
+  if test $enable_dl = yes; then
+    GLPK_LIBS="-ldl $GLPK_LIBS"
+    GLPK_PCLIBS="-ldl $GLPK_PCLIBS"
+  fi
+fi
+
+if test "$enable_dl" = "no"; then
+  AC_COIN_CHECK_HEADER([ltdl.h],[enable_dl=yes])
+  if test "$enable_dl" = "yes"; then
+    #if ltdl.h is there, check also if libltdl is there; if so, set corresponding define for GLPK 
+    AC_CHECK_LIB(ldtl,[lt_dlopen],[AC_DEFINE([HAVE_LTDL],[1],[Define to 1 if ltdl support is available])],[enable_dl=no])
+    if test $enable_dl = yes; then
+      GLPK_LIBS="-lltdl $GLPK_LIBS"
+      GLPK_PCLIBS="-lltdl $GLPK_PCLIBS"
+    fi
+  fi
+fi
+
+if test "$enable_dl" = "no"; then
+  AC_COIN_CHECK_HEADER([windows.h],[enable_dl=yes])
+  if test "$enable_dl" = "yes"; then
+    AC_DEFINE([__WOE__],[1],[Define to 1 if windows dll support is available])
+  fi
+fi
+
+AC_ARG_ENABLE(odbc,
+  AC_HELP_STRING([--enable-odbc],[enable MathProg ODBC support [[default=auto]]]),
+  [case $enableval in
+     yes | unix)
+       AC_COIN_CHECK_HEADER([sql.h],,[AC_MSG_ERROR(["need sql.h to enable ODBC support"])])
+       enable_odbc="$enableval"
+     ;;
+     no)
+       enable_odbc="no"
+     ;;
+     *)
+       AC_MSG_ERROR([invalid value '$enableval' for --enable-odbc])
+     ;;
+   esac],
+  [AC_COIN_CHECK_HEADER([sql.h],[enable_odbc=yes],[enable_odbc=no])]
+)
+
+AC_ARG_ENABLE(mysql,
+  AC_HELP_STRING([--enable-mysql],[enable MathProg MySQL support [[default=auto]]]),
+  [case $enableval in
+     yes)
+       AC_COIN_CHECK_HEADER([mysql.h mysql/mysql.h],,[AC_MSG_ERROR(["need mysql.h to enable MySQL support"])])
+       enable_mysql="$enableval"
+     ;;
+     no)
+       enable_mysql="no"
+     ;;
+     *)
+       AC_MSG_ERROR([invalid value '$enableval' for --enable-mysql])
+     ;;
+   esac],
+  [AC_COIN_CHECK_HEADER([mysql.h mysql/mysql.h],[enable_mysql=yes],[enable_mysql=no])]
+)
+
+AC_LANG_POP(C)
+
+if test "$enable_dl" = "yes" && ( test "$enable_odbc" = "yes" || test "$enable_odbc" = "unix"); then
+  AC_MSG_CHECKING([checking name of ODBC library])
+  case $build in
+    *-cygwin* |  *-mingw32*)
+       case "$CC" in
+         *cl* )
+            odbclibname="odbc32.dll"
+         ;;
+         *) #FIXME: what are the correct library names for using ODBC with gnu compiler under Windows?
+            if test "$enable_odbc" = "yes"; then
+              odbclibname="libiodbc.dll"
+            else
+              odbclibname="libodbc.dll"
+            fi
+         ;;
+       esac
+    ;;
+    *-mingw64*)
+       case "$CC" in
+         *cl* )
+            odbclibname="odbc64.dll"
+         ;;
+         *) #FIXME: what are the correct library names for using ODBC with gnu compiler under Windows?
+            if test "$enable_odbc" = "yes"; then
+              odbclibname="libiodbc.dll"
+            else
+              odbclibname="libodbc.dll"
+            fi
+         ;;
+       esac
+    ;;
+    *-darwin*)
+       if test "$enable_odbc" = "yes"; then
+          odbclibname="libiodbc.dylib"
+       else
+          odbclibname="libodbc.dylib"
+       fi
+    ;;
+    *)
+       if test "$enable_odbc" = "yes"; then
+          odbclibname="libiodbc.so"
+       else
+          odbclibname="libodbc.so"
+       fi
+    ;;
+  esac
+
+  AC_DEFINE_UNQUOTED([ODBC_DLNAME], ["$odbclibname"], ["Set to the name of the ODBC dynamic library"])
+  AC_MSG_RESULT([$odbclibname])
+fi
+
+if test "$enable_dl" = "yes" && test "$enable_mysql" = "yes" ; then
+  AC_MSG_CHECKING([checking name of MySQL library])
+  case $build in
+    *-cygwin* |  *-mingw*)
+       case "$CC" in
+         *cl* )
+            mysqllibname="libmysql.dll"
+         ;;
+         *) #FIXME: what is the correct library name for using MySQL with gnu compiler under Windows?
+            mysqllibname="libmysqlclient.dll"
+            CFLAGS="-I/usr/include/mysql $CFLAGS"
+         ;;
+       esac
+    ;;
+    *-darwin*)
+       mysqllibname="libmysqlclient.dylib"
+       CFLAGS="-I/usr/include/mysql $CFLAGS"
+    ;;
+    *)
+       mysqllibname="libmysqlclient.so"
+       CFLAGS="-I/usr/include/mysql $CFLAGS"
+    ;;
+  esac
+
+  AC_DEFINE_UNQUOTED([MYSQL_DLNAME], ["$mysqllibname"], ["Set to the name of the MySQL dynamic library"])
+  AC_MSG_RESULT([$mysqllibname])
+fi
 
 GLPKDIR=glpk
 AC_SUBST(GLPKDIR)
 
-AC_CONFIG_FILES([Makefile])
+AC_CONFIG_FILES([Makefile coinglpk.pc coinglpk-uninstalled.pc])
+AC_CONFIG_HEADER([config_glpk.h])
+
+AC_SUBST(GLPK_PCLIBS)
 
 AC_COIN_FINALIZE

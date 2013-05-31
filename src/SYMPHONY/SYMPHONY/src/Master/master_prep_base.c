@@ -7,13 +7,12 @@
 /*                                                                           */
 /* The author of this file is Menal Guzelsoy                                 */
 /*                                                                           */
-/* (c) Copyright 2006-2010 Lehigh University. All Rights Reserved.           */
+/* (c) Copyright 2006-2011 Lehigh University. All Rights Reserved.           */
 /*                                                                           */
-/* This software is licensed under the Common Public License. Please see     */
+/* This software is licensed under the Eclipse Public License. Please see    */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
-/* last modified: June 09, menal*/
 
 #include <memory.h>
 #include <string.h>
@@ -1335,12 +1334,12 @@ int prep_delete_duplicate_rows_cols(PREPdesc *P, char check_rows,
       FREE(col_fix_val);
 
       FREE(col_sum);
-      FREE(col_factor);
+      FREE(row_factor);
       FREE(c_loc);
    }
    if (check_rows){
       FREE(row_sum);
-      FREE(row_factor);
+      FREE(col_factor);
       FREE(r_loc);
    }
    
@@ -4477,7 +4476,7 @@ int prep_report(PREPdesc *P, int termcode)
 	 break;
        case PREP_SOLVED:
 	 printf("Preprocessing found the optimum:\n");	  	  	 
-	 printf("Solution Cost: %f\n:", 
+	 printf("Solution Cost: %.10f\n:", 
 		mip->obj_sense == SYM_MAXIMIZE ? -(mip->obj_offset) : 
 		mip->obj_offset);
 	 if (mip->colname){ 
@@ -4485,7 +4484,7 @@ int prep_report(PREPdesc *P, int termcode)
 	    printf("Column names and values of nonzeros in the solution\n");
 	    printf("+++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 	    for (i = 0; i < mip->fixed_n; i++){
-	       printf("%8s %10.3f\n", P->orig_mip->colname[mip->fixed_ind[i]],
+	       printf("%8s %10.10f\n", P->orig_mip->colname[mip->fixed_ind[i]],
 		      mip->fixed_val[i]);
 	    }
 	    printf("\n");
@@ -4494,7 +4493,7 @@ int prep_report(PREPdesc *P, int termcode)
 	    printf("User indices and values of nonzeros in the solution\n");
 	    printf("+++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 	    for (i = 0; i < mip->fixed_n; i++){
-	       printf("%7d %10.3f\n", mip->fixed_ind[i], mip->fixed_val[i]);
+	       printf("%7d %10.10f\n", mip->fixed_ind[i], mip->fixed_val[i]);
 	    }
 	    printf("\n");
 	 }
@@ -4545,7 +4544,7 @@ int prep_report(PREPdesc *P, int termcode)
      report_input = TRUE;
    }
    
-   if(report_input){
+   if (report_input && P->params.verbosity >= 0){
      printf("Problem has \n"
 	    "\t %i constraints \n"
 	    "\t %i variables \n"

@@ -1,3 +1,8 @@
+// $Id: CglClique.hpp 933 2011-01-04 23:16:49Z lou $
+// Copyright (C) 2000, International Business Machines
+// Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #ifndef _CglClique_h_
 #define _CglClique_h_
 

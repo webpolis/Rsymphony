@@ -1,6 +1,7 @@
-/* $Id: CoinFactorization.hpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinFactorization.hpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 /* 
    Authors
@@ -16,8 +17,10 @@
 #include <string>
 #include <cassert>
 #include <cstdio>
-#include "CoinFinite.hpp"
+#include <cmath>
+#include "CoinTypes.hpp"
 #include "CoinIndexedVector.hpp"
+
 class CoinPackedMatrix;
 /** This deals with Factorization and Updates
 
@@ -993,6 +996,7 @@ protected:
 
       if ( absValue > tolerance ) {
 	work[j] = 0.0;
+	assert (put<lengthAreaU_); 
 	elementU[put] = value;
 	indexRowU[put] = indexL[j];
 	if ( absValue > largest ) {

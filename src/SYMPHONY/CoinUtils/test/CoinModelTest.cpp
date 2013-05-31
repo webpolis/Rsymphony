@@ -1,5 +1,7 @@
 // Copyright (C) 2005, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -14,7 +16,7 @@
 #include "CoinMpsIO.hpp"
 #include "CoinModel.hpp"
 #include "CoinHelperFunctions.hpp"
-#include  "CoinTime.hpp"
+#include "CoinTime.hpp"
 
 //#############################################################################
 
@@ -134,7 +136,7 @@ void buildRandom(CoinModel & baseModel, double random, double & timeIt, int iPas
         assert (i>=model.numberRows());
         if (i>model.numberRows()) {
           assert (i==lastRow[jRow]);
-          printf("need to fill in rows\n");
+	  std::cout << "need to fill in rows" << std::endl ;
           for (int k=0;k<jRow;k++) {
             int start = CoinMax(lastRow[k],model.numberRows());
             int end = lastRow[k+1];
@@ -176,7 +178,7 @@ void buildRandom(CoinModel & baseModel, double random, double & timeIt, int iPas
         assert (i>=model.numberColumns());
         if (i>model.numberColumns()) {
           assert (i==lastColumn[jColumn]);
-          printf("need to fill in columns\n");
+	  std::cout << "need to fill in columns" << std::endl ;
           for (int k=0;k<jColumn;k++) {
             int start = CoinMax(lastColumn[k],model.numberColumns());
             int end = lastColumn[k+1];
@@ -252,7 +254,7 @@ void buildRandom(CoinModel & baseModel, double random, double & timeIt, int iPas
           // scan through backwards
           const CoinModelTriple * elements = baseModel.elements();
           for (i=baseModel.numberElements()-1;i>=0;i--) {
-            int iRow = (int) elements[i].row;
+            int iRow = (int) rowInTriple(elements[i]);
             int iColumn = elements[i].column;
             if (iRow>=lastRow[jRow]&&iRow<lastRow[jRow+1]&&
                 iColumn>=lastColumn[jColumn]&&iColumn<lastColumn[jColumn+1])
@@ -287,7 +289,7 @@ void buildRandom(CoinModel & baseModel, double random, double & timeIt, int iPas
           // scan through backwards
           const CoinModelTriple * elements = baseModel.elements();
           for (i=baseModel.numberElements()-1;i>=0;i--) {
-            int iRow = (int) elements[i].row;
+            int iRow = (int) rowInTriple(elements[i]);
             int iColumn = elements[i].column;
             if (iRow>=lastRow[jRow]&&iRow<lastRow[jRow+1]&&
                 iColumn>=lastColumn[jColumn]&&iColumn<lastColumn[jColumn+1])
@@ -332,7 +334,7 @@ void buildRandom(CoinModel & baseModel, double random, double & timeIt, int iPas
             while (triple.column()>=0) {
               int iColumn = triple.column();
               assert (j==triple.row());
-              dTriple[numberElements].row = static_cast<unsigned>(j);
+              setRowInTriple(dTriple[numberElements],j);
               dTriple[numberElements].column=iColumn;
               dTriple[numberElements].value = triple.value();
               numberElements++;
@@ -364,7 +366,7 @@ void buildRandom(CoinModel & baseModel, double random, double & timeIt, int iPas
               int iRow = triple.row();
               assert (j==triple.column());
               dTriple[numberElements].column = j;
-              dTriple[numberElements].row=static_cast<unsigned>(iRow);
+              setRowInTriple(dTriple[numberElements],iRow);
               dTriple[numberElements].value = triple.value();
               numberElements++;
               triple=model.next(triple);
@@ -386,13 +388,13 @@ void buildRandom(CoinModel & baseModel, double random, double & timeIt, int iPas
         //model.validateLinks();
         const CoinModelTriple * elements = baseModel.elements();
         for (i=0;i<model.numberElements();i++) {
-          int iRow = (int) elements[i].row;
+          int iRow = (int) rowInTriple(elements[i]);
           int iColumn = elements[i].column;
           if (iRow>=lastRow[jRow]&&iRow<lastRow[jRow+1]&&
               iColumn>=lastColumn[jColumn]&&iColumn<lastColumn[jColumn+1]) {
             if (CoinDrand48()<randomDelete) {
               dTriple[numberElements].column = iColumn;
-              dTriple[numberElements].row=static_cast<unsigned>(iRow);
+              setRowInTriple(dTriple[numberElements],iRow);
               dTriple[numberElements].value = elements[i].value;
               int position = model.deleteElement(iRow,iColumn);
               if (position>=0)
@@ -424,7 +426,7 @@ void buildRandom(CoinModel & baseModel, double random, double & timeIt, int iPas
   }
   // Put back any elements
   for (i=0;i<numberElements;i++) {
-    model(dTriple[i].row,dTriple[i].column,dTriple[i].value);
+    model(rowInTriple(dTriple[i]),dTriple[i].column,dTriple[i].value);
   }
   delete [] dTriple;
   timeIt +=  CoinCpuTime()-time1;
@@ -613,14 +615,28 @@ CoinModelUnitTest(const std::string & mpsDir,
   }
   // Test with various ways of generating
   {
-    // Get a model
+    /*
+      Get a model. Try first with netlibDir, fall back to mpsDir (sampleDir)
+      if that fails.
+    */
     CoinMpsIO m;
     std::string fn = netlibDir+testModel;
     double time1 = CoinCpuTime();
     int numErr = m.readMps(fn.c_str(),"");
-    if ( numErr== 0 ) {
-      printf("Time for readMps is %g seconds\n",
-             CoinCpuTime()-time1);
+    if (numErr != 0) {
+      std::cout
+	<< "Could not read " << testModel << " in " << netlibDir
+	<< "; falling back to " << mpsDir << "." << std::endl ;
+      fn = mpsDir+testModel ;
+      numErr = m.readMps(fn.c_str(),"") ;
+      if (numErr != 0) {
+	std::cout << "Could not read " << testModel << "; skipping test." << std::endl ;
+      }
+    }
+    if (numErr == 0) {
+      std::cout
+	<< "Time for readMps is "
+	<< (CoinCpuTime()-time1) << " seconds." << std::endl ;
       int numberRows = m.getNumRows();
       int numberColumns = m.getNumCols();
       // Build model
@@ -657,12 +673,13 @@ CoinModelUnitTest(const std::string & mpsDir,
         int iSeed = (int) (random*1000000);
         //iSeed = 776151;
         CoinSeedRandom(iSeed);
-        printf("before pass %d with seed of %d\n",i,iSeed);
+	std::cout << "before pass " << i << " with seed of " << iSeed << std::endl ;
         buildRandom(model,CoinDrand48(),time1,i);
         model.validateLinks();
       }
-      printf("Time for %d CoinModel passes is %g seconds\n",
-             nPass,time1);
+      std::cout
+	<< "Time for " << nPass << " CoinModel passes is "
+	<< time1 << " seconds\n" << std::endl ;
     }
   }
 }

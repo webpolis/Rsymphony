@@ -1,18 +1,6 @@
 /* This is the header file for the Microsoft compiler, defining all
  * system and compiler dependent configuration macros */
 
-/* Define to 64bit integer types */
-#if _MSC_VER==1200
-#define COIN_INT64_T __int64
-#define COIN_UINT64_T __uint64
-#else
-#define COIN_INT64_T long long
-#define COIN_UINT64_T unsigned long long
-#endif
-
-/* Define to integer type capturing pointer */
-#define COIN_INTPTR_T long
-
 /* Define to dummy `main' function (if any) required to link to the Fortran
    libraries. */
 /* #undef F77_DUMMY_MAIN */
@@ -35,9 +23,6 @@
 
 /* Define if F77 and FC dummy `main' functions are identical. */
 /* #undef FC_DUMMY_MAIN_EQ_F77 */
-
-/* Define to the C type corresponding to Fortran INTEGER */
-#define FORTRAN_INTEGER_TYPE int
 
 /* Define to 1 if you have the <assert.h> header file. */
 /* #undef HAVE_ASSERT_H */
@@ -71,6 +56,9 @@
 
 /* Define to 1 if you have the <ctime> header file. */
 #define HAVE_CTIME 1
+
+/* Define to 1 if you have the <cstddef> header file. */
+#define HAVE_CSTDDEF 1
 
 /* Define to 1 if you have the <ctype.h> header file. */
 /* #undef HAVE_CTYPE_H */
@@ -140,12 +128,6 @@
 
 /* Define to 1 if you have the `_snprintf' function. */
 #define HAVE__SNPRINTF 1
-
-/* Define to be the name of C-function for Inf check */
-#define MY_C_FINITE _finite
-
-/* Define to be the name of C-function for NaN check */
-#define MY_C_ISNAN _isnan
 
 /* The size of a `double', as computed by sizeof. */
 #define SIZEOF_DOUBLE 8

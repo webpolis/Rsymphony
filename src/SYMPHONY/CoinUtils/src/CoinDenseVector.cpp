@@ -1,6 +1,8 @@
-/* $Id: CoinDenseVector.cpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinDenseVector.cpp 1373 2011-01-03 23:57:44Z lou $ */
 // Copyright (C) 2003, International Business Machines
 // Corporation and others.  All Rights Resized.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)

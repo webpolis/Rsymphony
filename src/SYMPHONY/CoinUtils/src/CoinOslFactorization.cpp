@@ -1,19 +1,19 @@
-/* $Id: CoinOslFactorization.cpp 1199 2009-09-15 15:49:54Z forrest $ */
+/* $Id: CoinOslFactorization.cpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 1987, 2009, International Business Machines
 // Corporation and others.  All Rights Reserved.
-#if defined(_MSC_VER)
-// Turn off compiler warning about long names
-#  pragma warning(disable:4786)
-#endif
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #include "CoinUtilsConfig.h"
 
 #include <cassert>
+#include "CoinPragma.hpp"
 #include "CoinOslFactorization.hpp"
+#include "CoinOslC.h"
 #include "CoinIndexedVector.hpp"
 #include "CoinHelperFunctions.hpp"
 #include "CoinPackedMatrix.hpp"
 #include "CoinTypes.hpp"
+#include "CoinFinite.hpp"
 #include <stdio.h>
 static void c_ekksmem(EKKfactinfo *fact,int numberRows,int maximumPivots);
 static void c_ekksmem_copy(EKKfactinfo *fact,const EKKfactinfo * rhsFact);
@@ -143,6 +143,12 @@ CoinOslFactorization::getAreas ( int numberOfRows,
   CoinBigIndex size = static_cast<CoinBigIndex>(factInfo_.areaFactor*
 						(maximumL+maximumU));
   factInfo_.zeroTolerance=zeroTolerance_;
+  // If wildly out redo
+  if (maximumRows_>numberRows_+1000) {
+    maximumRows_=0;
+    maximumSpace_=0;
+    factInfo_.last_eta_size=0;
+  }
   if (size>maximumSpace_) {
     //delete [] elements_;
     //elements_ = new CoinFactorizationDouble [size];
@@ -307,7 +313,7 @@ CoinOslFactorization::makeNonSingular(int * sequence, int numberColumns)
       } else {
 	goodPass=false;
 	assert(numberDone);
-	printf("BAD singular at row %d\n",i);
+	//printf("BAD singular at row %d\n",i);
 	break;
       }
     }
@@ -345,6 +351,16 @@ CoinOslFactorization::postProcess(const int * sequence, int * pivotVariable)
     int k = sequence[j];
     pivotVariable[i]=k;
   }
+#ifdef CLP_REUSE_ETAS
+  int * start = factInfo_.xcsadr+1;
+  int * putSeq = factInfo_.xrsadr+2*factInfo_.nrowmx+2;
+  int * position = putSeq+factInfo_.maxinv;
+  int * putStart = position+factInfo_.maxinv;
+  memcpy(putStart,start,numberRows_*sizeof(int));
+  int iLast=start[numberRows_-1];
+  putStart[numberRows_]=iLast+factInfo_.xeradr[iLast]+1;
+  factInfo_.save_nnentu=factInfo_.nnentu;
+#endif
 #ifndef NDEBUG
   {
     int lstart=numberRows_+factInfo_.maxinv+5;
@@ -655,9 +671,41 @@ CoinOslFactorization::wantsTableauColumn() const
    0 - iteration number
    whereFrom is 0 for factorize and 1 for replaceColumn
 */
+#ifdef CLP_REUSE_ETAS
 void 
+CoinOslFactorization::setUsefulInformation(const int * info,int whereFrom)
+{ 
+  factInfo_.iterno=info[0]; 
+  if (whereFrom) {
+    factInfo_.reintro=-1;
+    if( factInfo_.first_dense>=factInfo_.last_dense) {
+      int * putSeq = factInfo_.xrsadr+2*factInfo_.nrowmx+2;
+      int * position = putSeq+factInfo_.maxinv;
+      //int * putStart = position+factInfo_.maxinv;
+      int iSequence=info[1];
+      if (whereFrom==1) {
+	putSeq[factInfo_.npivots]=iSequence;
+      } else {
+	int i;
+	for (i=factInfo_.npivots-1;i>=0;i--) {
+	  if (putSeq[i]==iSequence)
+	    break;
+	}
+	if (i>=0) {
+	  factInfo_.reintro=position[i];
+	} else {
+	  factInfo_.reintro=-1;
+	}
+	factInfo_.nnentu=factInfo_.save_nnentu;
+      }
+    }
+  }
+}
+#else
+void
 CoinOslFactorization::setUsefulInformation(const int * info,int /*whereFrom*/)
 { factInfo_.iterno=info[0]; }
+#endif
 
 // Get rid of all memory
 void 
@@ -666,6 +714,10 @@ CoinOslFactorization::clearArrays()
   factInfo_.nR_etas=0;
   factInfo_.nnentu=0;
   factInfo_.nnentl=0;
+  maximumRows_=0;
+  maximumSpace_=0;
+  factInfo_.last_eta_size=0;
+  gutsOfDestructor(false);
 }
 void 
 CoinOslFactorization::maximumPivots (  int value )
@@ -871,12 +923,12 @@ void clp_setup_pointers(EKKfactinfo * fact)
 #ifndef NDEBUG
 int ets_count=0;
 int ets_check=-1;
-static int adjust_count=0;
-static int adjust_check=-1;
+//static int adjust_count=0;
+//static int adjust_check=-1;
 #endif
 static void clp_adjust_pointers(EKKfactinfo * fact, int adjust)
 {
-#ifndef NDEBUG
+#if 0 //ndef NDEBUG
   adjust_count++;
   if (adjust_check>=0&&adjust_count>=adjust_check) {
     printf("trouble\n");
@@ -909,7 +961,6 @@ clp_alloc_memory(EKKfactinfo * fact,int type, int * length)
   int ntot1;
   int ntot2;
   int ntot3;
-  int ntot4;
   int nrowmx;
   int * tempI;
   double * tempD;
@@ -918,7 +969,6 @@ clp_alloc_memory(EKKfactinfo * fact,int type, int * length)
   ntot1 = nrowmxp;
   ntot2 = 3*nrowmx+5; /* space for three lists */
   ntot3 = 2*nrowmx;
-  ntot4 = (5*nrowmx)/2+4;
   if ((ntot1<<1)<ntot2) {
     ntot1=ntot2>>1;
   }
@@ -937,7 +987,6 @@ clp_alloc_memory(EKKfactinfo * fact,int type, int * length)
   tempD+=nrowmxp;
   tempD = reinterpret_cast<double *>( clp_align(tempD));
   fact->kp1adr=reinterpret_cast<EKKHlink *>(tempD);
-  //tempD+=CoinMax(nrowmxp,ntot4);
   tempD+=nrowmxp;
   tempD = reinterpret_cast<double *>( clp_align(tempD));
   fact->kp2adr=reinterpret_cast<EKKHlink *>(tempD);
@@ -952,10 +1001,18 @@ clp_alloc_memory(EKKfactinfo * fact,int type, int * length)
   tempI = reinterpret_cast<int *>( tempD);
   tempI = reinterpret_cast<int *>( clp_align(tempI));
   fact->xrsadr = tempI;
-  tempI +=( (nrowmx<<1)+1);
+#ifdef CLP_REUSE_ETAS
+  tempI +=( 3*(nrowmx+fact->maxinv+1));
+#else
+  tempI +=( (nrowmx<<1)+fact->maxinv+1);
+#endif
   tempI = reinterpret_cast<int *>( clp_align(tempI));
   fact->xcsadr = tempI;
+#if 1 //def CLP_REUSE_ETAS
+  tempI += ( 2*nrowmx+8+2*fact->maxinv);
+#else
   tempI += ( 2*nrowmx+8+fact->maxinv);
+#endif
   tempI += FIX_ADD+FIX_ADD2;
   tempI = reinterpret_cast<int *>( clp_align(tempI));
   fact->xrnadr = tempI;

@@ -1,8 +1,8 @@
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 636 2006-10-25 18:29:49Z ladanyi $
+## $Id: Makefile.am 1448 2011-06-19 15:34:41Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -26,23 +26,29 @@ unitTest_SOURCES = \
 	CoinShallowPackedVectorTest.cpp \
 	unitTest.cpp
 
-# List libraries of COIN projects
-unitTest_LDADD = $(COINUTILSOBJDIR)/src/libCoinUtils.la
+# List libraries to link into binary
+unitTest_LDADD = ../src/libCoinUtils.la $(COINUTILSLIB_LIBS)
 
-# List additional libraries
-LIBS += $(ADDLIBS)
+# Dependencies of binaries are mostly the same as given in LDADD, but with -l and -L removed
+unitTest_DEPENDENCIES = ../src/libCoinUtils.la $(COINUTILSLIB_DEPENDENCIES)
 
 # Here list all include flags, relative to this "srcdir" directory.  This
 # "cygpath" stuff is necessary to compile with native compilers on Cygwin
-AM_CPPFLAGS = \
-        -I`$(CYGPATH_W) $(COINUTILSSRCDIR)/src`
+AM_CPPFLAGS = -I`$(CYGPATH_W) $(srcdir)/../src`
 
-# This line is necessary to allow VPATH compilation with MS compilers
-# on Cygwin
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/inc
+# This line is necessary to allow VPATH compilation
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/src
+
+unittestflags =
+if COIN_HAS_SAMPLE
+  unittestflags += -mpsDir=`$(CYGPATH_W) $(SAMPLE_DATA)`
+endif
+if COIN_HAS_NETLIB
+  unittestflags += -netlibDir=`$(CYGPATH_W) $(NETLIB_DATA)` -testModel=adlittle.mps
+endif
 
 test: unitTest$(EXEEXT)
-	./unitTest$(EXEEXT)
+	./unitTest$(EXEEXT) $(unittestflags)
 
 .PHONY: test
 

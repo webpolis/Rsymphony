@@ -1,5 +1,8 @@
+// $Id: CglOddHoleTest.cpp 941 2011-01-04 23:24:38Z lou $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)

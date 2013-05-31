@@ -8,7 +8,7 @@
 /*                                                                           */
 /* This application was developed by Ted Ralphs (ted@lehigh.edu)             */
 /*                                                                           */
-/* This software is licensed under the Common Public License. Please see     */
+/* This software is licensed under the Eclipse Public License. Please see    */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -16,6 +16,7 @@
 /* system include files */
 #include <stdio.h>
 #include <math.h>
+#include <stdlib.h>
 
 /* SYMPHONY include files */
 #include "sym_constants.h"

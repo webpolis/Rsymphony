@@ -1,6 +1,7 @@
-/* $Id: CoinPresolveFixed.cpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinPresolveFixed.cpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 2002, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #include <stdio.h>
 #include <math.h>
@@ -8,6 +9,7 @@
 #include "CoinPresolveMatrix.hpp"
 #include "CoinPresolveFixed.hpp"
 #include "CoinHelperFunctions.hpp"
+#include "CoinFinite.hpp"
 
 #if PRESOLVE_DEBUG || PRESOLVE_CONSISTENCY
 #include "CoinPresolvePsdebug.hpp"
@@ -694,8 +696,8 @@ transferCosts(CoinPresolveMatrix * prob)
       }
     }
   }
-  if (nchanged)
-    printf("%d singleton columns have transferred costs\n",nchanged);
+  //if (nchanged)
+  //printf("%d singleton columns have transferred costs\n",nchanged);
   if (numberIntegers) {
     int changed=-1;
     while (changed) {
@@ -733,12 +735,12 @@ transferCosts(CoinPresolveMatrix * prob)
       }
       if (changed) {
         nchanged+=changed;
-        printf("%d changed this pass\n",changed);
+        //printf("%d changed this pass\n",changed);
       }
     }
   }
-  if (bias!=prob->dobias_)
-    printf("new bias %g\n",bias);
+  //if (bias!=prob->dobias_)
+  //printf("new bias %g\n",bias);
   prob->dobias_ = bias;
 }
 

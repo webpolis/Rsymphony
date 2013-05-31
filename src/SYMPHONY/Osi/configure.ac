@@ -1,8 +1,8 @@
 # Copyright (C) 2006 International Business Machines.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 1452 2010-01-11 20:40:38Z stefan $
+## $Id: configure.ac 1878 2012-12-15 11:52:32Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,17 +12,17 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([Osi],[0.102stable],[coin-osi@list.coin-or.org])
+AC_INIT([Osi],[0.105.7],[osi@list.coin-or.org])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
 All Rights Reserved.
 This file is part of the open source package Coin which is distributed
-under the Common Public License.])
+under the Eclipse Public License.])
 
 # List one file in the package so that the configure script can test
 # whether the package is actually there
-AC_CONFIG_SRCDIR(src/OsiAuxInfo.cpp)
+AC_CONFIG_SRCDIR(src/Osi/OsiAuxInfo.cpp)
 
 # Where should everything be installed by default?  Here, we want it
 # to be installed directly in 'bin', 'lib', 'include' subdirectories
@@ -37,8 +37,8 @@ AC_PREFIX_DEFAULT([`pwd`])
 # Get the system type
 AC_CANONICAL_BUILD
 
-# A bit of initial setup (ADDLIBS, FADDLIBS)
-AC_COIN_PROJECTDIR_INIT
+# A bit of initial setup
+AC_COIN_PROJECTDIR_INIT(Osi,11:7:10)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(Osi)
@@ -50,17 +50,17 @@ AC_COIN_PROG_CXX
 AC_COIN_INIT_AUTO_TOOLS
 
 #############################################################################
-#                              COIN components                              #
+#                              COIN-OR components                           #
 #############################################################################
 
-AC_COIN_HAS_PROJECT(Cbc)
-AC_COIN_HAS_PROJECT(Cgl)
-AC_COIN_HAS_PROJECT(Clp)
-AC_COIN_HAS_PROJECT(CoinUtils)
-AC_COIN_HAS_PROJECT(DyLP)
-AC_COIN_HAS_PROJECT(Osi)
-AC_COIN_HAS_PROJECT(SYMPHONY)
-AC_COIN_HAS_PROJECT(Vol)
+AC_COIN_CHECK_PACKAGE(CoinUtils, [coinutils], [OsiLib])
+if test $coin_has_coinutils != yes ; then
+  AC_MSG_ERROR([Required package CoinUtils not available.])
+fi
+AC_COIN_CHECK_PACKAGE(Glpk,      [coinglpk],  [OsiGlpkLib])
+AC_COIN_CHECK_PACKAGE(SoPlex,    [coinsoplex],[OsiSpxLib])
+AC_COIN_CHECK_PACKAGE(Sample,    [coindatasample])
+AC_COIN_CHECK_PACKAGE(Netlib,    [coindatanetlib])
 
 #############################################################################
 #                            Third party solvers                            #
@@ -71,27 +71,62 @@ AC_COIN_HAS_PROJECT(Vol)
 # the rest, it's anyone's guess.  -- lh, 080529 --
 # fixed detection of Mosek and Xpress -- stefan, 091003 (linux32, gcc) --
 
-AC_COIN_HAS_USER_LIBRARY([Cplex],[CPX],[cplex.h],[CPXgetstat])
-AC_COIN_HAS_USER_LIBRARY([FortMP],[FMP])  #ToDo! is Fortran?
-AC_COIN_HAS_USER_LIBRARY([Mosek],[MSK],[mosek.h],[MSK_makeenv])
-AC_COIN_HAS_USER_LIBRARY([Osl],[OSL],[ekk_c_api.h],[ekk_simplex])
-AC_COIN_HAS_USER_LIBRARY([Soplex],[SPX],[spxsolver.h]) # ToDo
-AC_COIN_HAS_USER_LIBRARY([Xpress],[XPR],[xprs.h],[XPRSinit])
-AC_COIN_HAS_USER_LIBRARY([Gurobi],[GRB],[gurobi_c.h],[GRBloadenv])
-
-# Glpk can be supplied as a ThirdParty code, or as an external library in the
-# same was as the previous solvers.
-
-AC_COIN_HAS_GLPK(Glpk)
-
-# We need Ampl in case we're using Cbc and it's build with Ampl.
-
-AC_COIN_HAS_ASL
-
+AC_COIN_CHECK_USER_LIBRARY([Cplex], [CPX],[cplex.h],   [CPXgetstat])
+AC_COIN_CHECK_USER_LIBRARY([Mosek], [MSK],[mosek.h],   [MSK_makeenv])
+AC_COIN_CHECK_USER_LIBRARY([Xpress],[XPR],[xprs.h],    [XPRSinit])
+AC_COIN_CHECK_USER_LIBRARY([Gurobi],[GRB],[gurobi_c.h],[GRBloadenv])
 
 #############################################################################
-#		  Capability Tests					    #
+#                            Examples solver                                #
 #############################################################################
+
+# choose a solver interface that can be used in the examples
+
+if test $coin_has_glpk = yes ; then
+  OSI_EXAMPLES_SOLVER_NAME=OsiGlpkSolverInterface
+  OSI_EXAMPLES_SOLVER_CFLAGS="$GLPK_CFLAGS"
+  OSI_EXAMPLES_SOLVER_LIBS="-lOsiGlpk $GLPK_LIBS_INSTALLED"
+  OSI_EXAMPLES_SOLVER_PCNAME=osi-glpk
+elif test $coin_has_cpx = true ; then
+  OSI_EXAMPLES_SOLVER_NAME=OsiCpxSolverInterface
+  OSI_EXAMPLES_SOLVER_CFLAGS="-I$CPXINCDIR"
+  OSI_EXAMPLES_SOLVER_LIBS="-lOsiCpx $CPXLIB"
+  OSI_EXAMPLES_SOLVER_PCNAME=osi-cplex
+elif test $coin_has_grb = true ; then
+  OSI_EXAMPLES_SOLVER_NAME=OsiGrbSolverInterface
+  OSI_EXAMPLES_SOLVER_CFLAGS="-I$GRBINCDIR"
+  OSI_EXAMPLES_SOLVER_LIBS="-lOsiGrb $GRBLIB"
+  OSI_EXAMPLES_SOLVER_PCNAME=osi-gurobi
+elif test $coin_has_msk = true ; then
+  OSI_EXAMPLES_SOLVER_NAME=OsiMskSolverInterface
+  OSI_EXAMPLES_SOLVER_CFLAGS="-I$MSKINCDIR"
+  OSI_EXAMPLES_SOLVER_LIBS="-lOsiMsk $MSKLIB"
+  OSI_EXAMPLES_SOLVER_PCNAME=osi-mosek
+elif test $coin_has_xpr = true ; then
+  OSI_EXAMPLES_SOLVER_NAME=OsiXprSolverInterface
+  OSI_EXAMPLES_SOLVER_CFLAGS="-I$XPRINCDIR"
+  OSI_EXAMPLES_SOLVER_LIBS="-lOsiXpr $XPRLIB"
+  OSI_EXAMPLES_SOLVER_PCNAME=osi-xpress
+elif test $coin_has_soplex = yes ; then
+  OSI_EXAMPLES_SOLVER_NAME=OsiSpxSolverInterface
+  OSI_EXAMPLES_SOLVER_CFLAGS="$SOPLEX_CFLAGS"
+  OSI_EXAMPLES_SOLVER_LIBS="-lOsiSpx $SOPLEX_LIBS_INSTALLED"
+  OSI_EXAMPLES_SOLVER_PCNAME=osi-soplex
+else
+  AC_MSG_WARN([No solver available, examples will not work.])
+fi
+
+# adjust linker flags for (i)cl compiler
+if test x$coin_cxx_is_cl = xtrue || test x$coin_cc_is_cl = xtrue ;
+then
+  [OSI_EXAMPLES_SOLVER_LIBS=`echo " $OSI_EXAMPLES_SOLVER_LIBS" | sed -e 's/ -l\([^ ]*\)/ lib\1.lib/g' -e 's/ -L\([^ ]*\)/ -libpath:\`$(CYGPATH_W) \1\`/g'`]
+fi
+
+AC_SUBST(OSI_EXAMPLES_SOLVER_NAME)
+AC_SUBST(OSI_EXAMPLES_SOLVER_CFLAGS)
+AC_SUBST(OSI_EXAMPLES_SOLVER_LIBS)
+AC_SUBST(OSI_EXAMPLES_SOLVER_PCNAME)
+
 
 #############################################################################
 #                 Configuration options for individual OSIs                 #
@@ -100,37 +135,24 @@ AC_COIN_HAS_ASL
 # If any of the tests performed in this section actually require the presence
 # of the solver (file presence, link checks, etc.) be sure to guard the call.
 
-AC_OSICBC_CONFIG(clp)
-AC_ODSI_INFO(yes)
-AC_ODSI_STATISTICS(no)
-AC_ODSI_PARANOIA(1)
+# We assume that GLPK is not too old
 
-# If glpk is available, choose the MIP solver. lpx_intopt is preferred;
-# lpx_integer will be used as a fallback. coin_has_glpk and glpk_libcheck
-# are defined and set by COIN_HAS_GLPK. If we're building ThirdParty/Glpk,
-# we already know the answer. Make it look like we're checking.
+AC_DEFINE(GLPK_HAS_INTOPT, [1],
+	  [Define to 1 if GLPK has the advanced B&B solver lpx_intopt])
 
-if test x"$use_thirdpartyglpk" = xbuild; then
-  AC_MSG_CHECKING([for glpk mip solver ])
-  AC_DEFINE(GLPK_HAS_INTOPT,[1],
-	    [Define to 1 if GLPK has the advanced B&B solver lpx_intopt])
-  AC_MSG_RESULT([lpx_intopt])
-else
-  if test "x$coin_has_glpk" = "xtrue" && test "x$glpk_libcheck" = "xyes" ; then
-    AC_OGSI_MIPSOLVER()
-  fi
-fi
+#############################################################################
+#                  Check for doxygen                                        #
+#############################################################################
 
-if test "$GXX" = "yes"; then
-  case "$CXX" in
-    icpc* | */icpc* | icc )
-      ;;
-    *)
-      MSKCXXFLAGS="-Wno-long-long"
-      ;;
-  esac
-fi
-AC_SUBST(MSKCXXFLAGS)
+AC_COIN_DOXYGEN(CoinUtils)
+
+#############################################################################
+#                  System header                                            #
+#############################################################################
+
+AC_COIN_CHECK_CXX_CHEADER(math)
+AC_COIN_CHECK_CXX_CHEADER(float)
+AC_COIN_CHECK_CXX_CHEADER(ieeefp)
 
 ##############################################################################
 #                   Finishing up by writing all the output                   #
@@ -140,25 +162,52 @@ AC_SUBST(MSKCXXFLAGS)
 # configuration header file)
 AC_CONFIG_FILES([Makefile
                  examples/Makefile
-                 src/Makefile
-                 src/OsiCbc/Makefile
-                 src/OsiClp/Makefile
+                 src/Osi/Makefile
                  src/OsiCpx/Makefile
-                 src/OsiDylp/Makefile
-                 src/OsiFmp/Makefile
                  src/OsiGlpk/Makefile
                  src/OsiMsk/Makefile
-                 src/OsiOsl/Makefile
-                 src/OsiSpx/Makefile
-                 src/OsiSym/Makefile
-                 src/OsiVol/Makefile
                  src/OsiXpr/Makefile
                  src/OsiGrb/Makefile
+                 src/OsiSpx/Makefile
+                 src/OsiCommonTest/Makefile
                  test/Makefile
-		 osi_addlibs.txt])
+                 osi.pc osi-uninstalled.pc
+                 osi-unittests.pc osi-unittests-uninstalled.pc])
+
+if test $coin_has_cpx = true ; then
+  AC_CONFIG_FILES([osi-cplex.pc:src/OsiCpx/osi-cplex.pc.in
+                   osi-cplex-uninstalled.pc:src/OsiCpx/osi-cplex-uninstalled.pc.in])
+fi
+
+if test $coin_has_glpk = yes ; then
+  AC_CONFIG_FILES([osi-glpk.pc:src/OsiGlpk/osi-glpk.pc.in
+                   osi-glpk-uninstalled.pc:src/OsiGlpk/osi-glpk-uninstalled.pc.in])
+fi
+
+if test $coin_has_grb = true ; then
+  AC_CONFIG_FILES([osi-gurobi.pc:src/OsiGrb/osi-gurobi.pc.in
+                   osi-gurobi-uninstalled.pc:src/OsiGrb/osi-gurobi-uninstalled.pc.in])
+fi
+
+if test $coin_has_msk = true ; then
+  AC_CONFIG_FILES([osi-mosek.pc:src/OsiMsk/osi-mosek.pc.in
+                   osi-mosek-uninstalled.pc:src/OsiMsk/osi-mosek-uninstalled.pc.in])
+fi
+
+if test $coin_has_xpr = true ; then
+  AC_CONFIG_FILES([osi-xpress.pc:src/OsiXpr/osi-xpress.pc.in
+                   osi-xpress-uninstalled.pc:src/OsiXpr/osi-xpress-uninstalled.pc.in])
+fi
+
+if test $coin_has_soplex = yes ; then
+  AC_CONFIG_FILES([osi-soplex.pc:src/OsiSpx/osi-soplex.pc.in
+                   osi-soplex-uninstalled.pc:src/OsiSpx/osi-soplex-uninstalled.pc.in])
+fi
+
+AC_CONFIG_FILES([doxydoc/doxygen.conf])
 
 # Here put the location and name of the configuration header file
-AC_CONFIG_HEADER([inc/config_osi.h])
+AC_CONFIG_HEADER([src/Osi/config.h src/Osi/config_osi.h])
 
 # Finally, we let configure write all the output...
 AC_COIN_FINALIZE

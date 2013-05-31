@@ -33,7 +33,7 @@ main ()
 }
 EOF
 
-${R} CMD SHLIB conftest.cc ${SYMPHONY_CPPFLAGS} ${SYMPHONY_LIBS} >/dev/null 2>&1
+_R_SHLIB_BUILD_OBJECTS_SYMBOL_TABLES_=false ${R} CMD SHLIB conftest.cc ${SYMPHONY_CPPFLAGS} ${SYMPHONY_LIBS} >/dev/null 2>&1
 status=${?}
 
 rm -f conftest.*

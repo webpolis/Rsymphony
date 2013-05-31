@@ -1,6 +1,7 @@
-/* $Id: CoinOslFactorization.hpp 1191 2009-07-25 08:38:12Z forrest $ */
+/* $Id: CoinOslFactorization.hpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 1987, 2009, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 /* 
    Authors
@@ -13,10 +14,9 @@
 #include <iostream>
 #include <string>
 #include <cassert>
-#include "CoinFinite.hpp"
+#include "CoinTypes.hpp"
 #include "CoinIndexedVector.hpp"
 #include "CoinDenseFactorization.hpp"
-#include "CoinOslC.h"
 class CoinPackedMatrix;
 /** This deals with Factorization and Updates
     This is ripped off from OSL!!!!!!!!!
@@ -25,7 +25,83 @@ class CoinPackedMatrix;
     may be redefined to get 64 bits.
  */
 
+typedef struct {int suc, pre;} EKKHlink;
+typedef struct _EKKfactinfo {
+  double drtpiv;
+  double demark;
+  double zpivlu;
+  double zeroTolerance;
+  double areaFactor;
+  int *xrsadr;
+  int *xcsadr;
+  int *xrnadr;
+  int *xcnadr;
+  int *krpadr;
+  int *kcpadr;
+  int *mpermu;
+  int *bitArray;
+  int * back;
+  char * nonzero;
+  double * trueStart;
+  mutable double *kadrpm;
+  int *R_etas_index;
+  int *R_etas_start;
+  double *R_etas_element;
 
+  int *xecadr;
+  int *xeradr;
+  double *xeeadr;
+  double *xe2adr;
+  EKKHlink * kp1adr;
+  EKKHlink * kp2adr;
+  double * kw1adr;
+  double * kw2adr;
+  double * kw3adr;
+  int * hpivcoR;
+  int nrow;
+  int nrowmx;
+  int firstDoRow;
+  int firstLRow;
+  int maxinv;
+  int nnetas;
+  int iterin;
+  int iter0;
+  int invok;
+  int nbfinv;
+  int num_resets;
+  int nnentl;
+  int nnentu;
+#ifdef CLP_REUSE_ETAS
+  int save_nnentu;
+#endif
+  int ndenuc;
+  int npivots; /* use as xpivsq in factorization */
+  int kmxeta;
+  int xnetal;
+  int first_dense;
+  int last_dense;
+  int iterno;
+  int numberSlacks;
+  int lastSlack;
+  int firstNonSlack;
+  int xnetalval;
+  int lstart;
+  int if_sparse_update;
+  mutable int packedMode;
+  int switch_off_sparse_update;
+  int nuspike;
+  bool rows_ok;	/* replaces test using mrstrt[1] */
+#ifdef CLP_REUSE_ETAS
+  mutable int reintro;
+#endif
+  int nR_etas;
+  int sortedEta; /* if vector for F-T is sorted */
+  int lastEtaCount;
+  int ifvsol;
+  int eta_size;
+  int last_eta_size;
+  int maxNNetas;
+} EKKfactinfo;
 
 class CoinOslFactorization : public CoinOtherFactorization {
    friend void CoinOslFactorizationUnitTest( const std::string & mpsDir );

@@ -1,8 +1,8 @@
-# Copyright (C) 2006 International Business Machines.
+# Copyright (C) 2006,2009 International Business Machines.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: configure.ac 1244 2010-01-11 19:42:02Z stefan $
+## $Id: configure.ac 1557 2012-11-21 11:53:55Z stefan $
 
 # Author:  Andreas Waechter            IBM    2006-04-13
 
@@ -12,13 +12,13 @@
 
 AC_PREREQ(2.59)
 
-AC_INIT([CoinUtils],[2.6.0],[http://projects.coin-or.org/CoinUtils])
+AC_INIT([CoinUtils],[2.8.8],[http://projects.coin-or.org/CoinUtils])
 
 AC_COPYRIGHT([
 Copyright 2006 International Business Machines and others.
 All Rights Reserved.
 This file is part of the open source package Coin which is distributed
-under the Common Public License.])
+under the Eclipse Public License.])
 
 # List one file in the package so that the configure script can test
 # whether the package is actually there
@@ -41,7 +41,7 @@ AC_CANONICAL_BUILD
 # the source root directory contains definition of where to find those
 # externals.  The following macro ensures that those externals are
 # retrieved by svn if they are not there yet.
-AC_COIN_PROJECTDIR_INIT
+AC_COIN_PROJECTDIR_INIT(CoinUtils,11:8:8)
 
 # Check if user wants to produce debugging code
 AC_COIN_DEBUG_COMPILE(CoinUtils)
@@ -49,12 +49,12 @@ AC_COIN_DEBUG_COMPILE(CoinUtils)
 # Get the name of the C++ compiler and appropriate compiler options
 AC_COIN_PROG_CXX
 
-# Check if we have a Fortran compiler; if we do, acquire the appropriate
-# options. This has to be done before we call AC_COIN_INIT_AUTO_TOOLS, else
-# it will helpfully set FFLAGS to an incorrect value.
-AC_COIN_FIND_F77
-if test "$F77" != unavailable ; then
-  AC_COIN_PROG_F77
+# Get the name of the Fortran compiler and appropriate compiler options
+AC_COIN_PROG_F77
+
+# Find out how to call Fortran from C and determine Fortran runtime libraries
+if test "x$F77" != xunavailable
+then
   AC_COIN_F77_WRAPPERS
 fi
 
@@ -65,216 +65,19 @@ AC_COIN_INIT_AUTO_TOOLS
 #                   Stuff that we need for finite and isnan                #
 ############################################################################
 
-AC_LANG_PUSH(C++)
-
-################
-# Header Files #
-################
-AC_COIN_CHECK_CXX_CHEADER(math)
-AC_COIN_CHECK_CXX_CHEADER(float)
-AC_COIN_CHECK_CXX_CHEADER(ieeefp)
-AC_COIN_CHECK_CXX_CHEADER(assert)
-
-###################
-# Function finite #
-###################
-MY_C_FINITE=
-AC_CHECK_DECL([finite],[MY_C_FINITE=finite],,[
-#ifdef HAVE_CMATH
-# include <cmath>
-#else
-# ifdef HAVE_MATH_H
-#  include <math.h>
-# endif
-#endif
-#ifdef HAVE_CFLOAT
-# include <cfloat>
-#else
-# ifdef HAVE_FLOAT_H
-#  include <float.h>
-# endif
-#endif
-#ifdef HAVE_CIEEEFP
-# include <cieeefp>
-#else
-# ifdef HAVE_IEEEFP_H
-#  include <ieeefp.h>
-# endif
-#endif])
-if test -z "$MY_C_FINITE"; then
-  AC_CHECK_DECL([_finite],[MY_C_FINITE=_finite],,[
-#ifdef HAVE_CMATH
-# include <cmath>
-#else
-# ifdef HAVE_MATH_H
-#  include <math.h>
-# endif
-#endif
-#ifdef HAVE_CFLOAT
-# include <cfloat>
-#else
-# ifdef HAVE_FLOAT_H
-#  include <float.h>
-# endif
-#endif
-#ifdef HAVE_CIEEEFP
-# include <cieeefp>
-#else
-# ifdef HAVE_IEEEFP_H
-#  include <ieeefp.h>
-# endif
-#endif])
-  if test -z "$MY_C_FINITE"; then
-    AC_CHECK_DECL([isfinite],[MY_C_FINITE=isfinite],,[
-#ifdef HAVE_CMATH
-# include <cmath>
-#else
-# ifdef HAVE_MATH_H
-#  include <math.h>
-# endif
-#endif
-#ifdef HAVE_CFLOAT
-# include <cfloat>
-#else
-# ifdef HAVE_FLOAT_H
-#  include <float.h>
-# endif
-#endif
-#ifdef HAVE_CIEEEFP
-# include <cieeefp>
-#else
-# ifdef HAVE_IEEEFP_H
-#  include <ieeefp.h>
-# endif
-#endif])
-  fi
-fi
-if test -z "$MY_C_FINITE"; then
-  AC_MSG_WARN(Cannot find C-function for checking Inf. Check will test whether the value is different from DBL_MAX)
-else
-  AC_DEFINE_UNQUOTED([MY_C_FINITE],[$MY_C_FINITE],
-                     [Define to be the name of C-function for Inf check])
-fi
-
-###################
-# Function isnan #
-###################
-MY_C_ISNAN=
-AC_CHECK_DECL([isnan],[MY_C_ISNAN=isnan],,[
-#ifdef HAVE_CMATH
-# include <cmath>
-#else
-# ifdef HAVE_MATH_H
-#  include <math.h>
-# endif
-#endif
-#ifdef HAVE_CFLOAT
-# include <cfloat>
-#else
-# ifdef HAVE_FLOAT_H
-#  include <float.h>
-# endif
-#endif
-#ifdef HAVE_CIEEEFP
-# include <cieeefp>
-#else
-# ifdef HAVE_IEEEFP_H
-#  include <ieeefp.h>
-# endif
-#endif])
-
-# It appears that for some systems (e.g., Mac OSX), cmath will provide only
-# std::isnan, and bare isnan will be unavailable. Typically we need a parameter
-# in the test to allow C++ to do overload resolution.
-
-if test -z "$MY_C_ISNAN"; then
-  AC_CHECK_DECL([std::isnan(42.42)],[MY_C_ISNAN=std::isnan],,[
-#ifdef HAVE_CMATH
-# include <cmath>
-#else
-# ifdef HAVE_MATH_H
-#  include <math.h>
-# endif
-#endif
-#ifdef HAVE_CFLOAT
-# include <cfloat>
-#else
-# ifdef HAVE_FLOAT_H
-#  include <float.h>
-# endif
-#endif
-#ifdef HAVE_CIEEEFP
-# include <cieeefp>
-#else
-# ifdef HAVE_IEEEFP_H
-#  include <ieeefp.h>
-# endif
-#endif])
-fi
-
-if test -z "$MY_C_ISNAN"; then
-  AC_CHECK_DECL([_isnan],[MY_C_ISNAN=_isnan],,[
-#ifdef HAVE_CMATH
-# include <cmath>
-#else
-# ifdef HAVE_MATH_H
-#  include <math.h>
-# endif
-#endif
-#ifdef HAVE_CFLOAT
-# include <cfloat>
-#else
-# ifdef HAVE_FLOAT_H
-#  include <float.h>
-# endif
-#endif
-#ifdef HAVE_CIEEEFP
-# include <cieeefp>
-#else
-# ifdef HAVE_IEEEFP_H
-#  include <ieeefp.h>
-# endif
-#endif])
-fi
-if test -z "$MY_C_ISNAN"; then
-  AC_CHECK_DECL([isnand],[MY_C_ISNAN=isnand],,[
-#ifdef HAVE_CMATH
-# include <cmath>
-#else
-# ifdef HAVE_MATH_H
-#  include <math.h>
-# endif
-#endif
-#ifdef HAVE_CFLOAT
-# include <cfloat>
-#else
-# ifdef HAVE_FLOAT_H
-#  include <float.h>
-# endif
-#endif
-#ifdef HAVE_CIEEEFP
-# include <cieeefp>
-#else
-# ifdef HAVE_IEEEFP_H
-#  include <ieeefp.h>
-# endif
-#endif])
-fi
-if test -z "$MY_C_ISNAN"; then
-  AC_MSG_WARN(Cannot find C-function for checking NaN. Check will return false)
-else
-  AC_DEFINE_UNQUOTED([MY_C_ISNAN],[$MY_C_ISNAN],
-                     [Define to be the name of C-function for NaN check])
-fi
+AC_COIN_CHECK_ISFINITE
+AC_COIN_CHECK_ISNAN
 
 #############################################################################
-#                       Thread configuration				    #
+#                         Thread configuration                              #
 #############################################################################
 
 # Define new options: 
 #    --enable-coinutils-threads 
 #    --enable-coinutils-mempool-override-new
 #    --enable-coinutils-mempool-maxpooled
+
+AC_LANG_PUSH(C++)
 
 AC_ARG_ENABLE([coinutils-threads],
 [AC_HELP_STRING([--enable-coinutils-threads],
@@ -284,10 +87,12 @@ if test "$enable_coinutils_threads" = yes; then
   # Define the preprocessor macro
   AC_DEFINE([COINUTILS_PTHREADS],[1],[Define to 1 if the thread aware version of CoinUtils should be compiled])
   AC_CHECK_LIB([rt],[clock_gettime],
-               [ADDLIBS="-lrt $ADDLIBS"],
+               [COINUTILSLIB_LIBS="-lrt $COINUTILSLIB_LIBS"
+                COINUTILSLIB_PCLIBS="-lrt $COINUTILSLIB_PCLIBS"],
 	       [AC_MSG_ERROR([--enable-coinutils-threads selected, but -lrt unavailable])])
   AC_CHECK_LIB([pthread],[pthread_create],
-               [ADDLIBS="-lpthread $ADDLIBS"],
+               [COINUTILSLIB_LIBS="-lpthread $COINUTILSLIB_LIBS"
+                COINUTILSLIB_PCLIBS="-lpthread $COINUTILSLIB_PCLIBS"],
 	       [AC_MSG_ERROR([--enable-coinutils-threads selected, but -lpthreads unavailable])])
 fi
 
@@ -432,82 +237,33 @@ AC_DEFINE_UNQUOTED([COIN_INTPTR_T],[$CoinIntPtr],[Define to integer type capturi
 AC_CHECK_HEADERS([windows.h])
 
 #############################################################################
-#                              COIN components                              #
+#                           Check whether we have endian.h                  #
 #############################################################################
-
-AC_COIN_HAS_PROJECT(CoinUtils)
-
-#############################################################################
-#                             Other dependencies                            #
-#############################################################################
-
-# For Gnu Mathprog (GMPL), supplied by glpk.
-
-AC_COIN_HAS_GLPK(Gmpl)
-if test x"$use_thirdpartyglpk" = xbuild; then
-  COINUTILS_LIBADD="../../ThirdParty/Glpk/libcoinglpk.la $COINUTILS_LIBADD"
-fi
+AC_CHECK_HEADERS([endian.h])
 
 #############################################################################
-#                       Other third party software                          #
+#                             COIN-OR components                            #
 #############################################################################
 
-# Ampl Solver library
-AC_COIN_HAS_ASL
+AC_COIN_CHECK_LIBM(CoinUtilsLib)
 
-# Check for BLAS and LAPACK. If there's no Fortran compiler available, skip
-# this entirely, otherwise configuration will fail when we try to do a Fortran
-# link. The check cannot be embedded in AC_COIN_HAS_BLAS because the offending
-# macro is AC_REQUIRE'd from somewhere inside AC_TRY_LINK and ends up out in
-# front of all the code in AC_COIN_HAS_BLAS.  This will need to be revisited if
-# we run up against a situation where a prebuilt BLAS/LAPACK is linkable but
-# there's no Fortran compiler. This code has the unfortunate property that
-# calls to AM_CONDITIONAL are exposed here and still occur in AC_COIN_HAS_BLAS
-# and AC_COIN_HAS_LAPACK. With some thought, it should be possible to separate
-# BLAS and LAPACK configuration into two steps that would maintain information
-# hiding and still avoid attempting a Fortran link when no compiler is
-# present.
+AC_COIN_CHECK_PACKAGE_BLAS(CoinUtilsLib)
+AC_COIN_CHECK_PACKAGE_LAPACK(CoinUtilsLib)
+AC_COIN_CHECK_PACKAGE(Glpk,   [coinglpk], [CoinUtilsLib])
+AC_COIN_CHECK_PACKAGE(Sample, [coindatasample])
+AC_COIN_CHECK_PACKAGE(Netlib, [coindatanetlib])
 
-if test "$F77" = unavailable ; then
-  coin_has_blas=no
-  AM_CONDITIONAL([COIN_HAS_BLAS],[false])
-  AM_CONDITIONAL([COIN_BUILD_BLAS],[false])
-  coin_has_lapack=no
-  AM_CONDITIONAL([COIN_HAS_LAPACK],[false])
-  AM_CONDITIONAL([COIN_BUILD_LAPACK],[false])
-else
+AC_COIN_CHECK_GNU_ZLIB(CoinUtilsLib)
+AC_COIN_CHECK_GNU_BZLIB(CoinUtilsLib)
+AC_COIN_CHECK_GNU_READLINE(CoinUtilsLib)
 
-  #######################
-  #        BLAS         #
-  #######################
+AC_COIN_VPATH_LINK(test/plan.mod)
 
-  AC_COIN_HAS_BLAS
-  if test $coin_has_blas = no; then
-    AC_MSG_WARN([Cannot find BLAS - no dense factorization])
-  fi
-  if test "$use_blas" = BUILD; then
-    COINUTILS_LIBADD="../../ThirdParty/Blas/libcoinblas.la $COINUTILS_LIBADD"
-  fi
+#############################################################################
+#                  Check for doxygen                                        #
+#############################################################################
 
-  #######################
-  #       LAPACK        #
-  #######################
-
-  AC_COIN_HAS_LAPACK
-  if test $coin_has_lapack = no; then
-    AC_MSG_WARN([Cannot find LAPACK - no dense factorization])
-  fi
-  if test "$use_lapack" = BUILD; then
-    COINUTILS_LIBADD="../../ThirdParty/Lapack/libcoinlapack.la $COINUTILS_LIBADD"
-  fi
-fi
-
-# For now, we just add the lapack and blas libraries here in case they are
-# compiled in ThirdParty.  On the long run, we need a different solution
-AC_SUBST(COINUTILS_LIBADD)
-
-AC_COIN_CHECK_GNU_ZLIB
-AC_COIN_CHECK_GNU_BZLIB
+AC_COIN_DOXYGEN()
 
 ##############################################################################
 #                   Finishing up by writing all the output                   #
@@ -518,10 +274,11 @@ AC_COIN_CHECK_GNU_BZLIB
 AC_CONFIG_FILES([Makefile
                  src/Makefile
                  test/Makefile
-		 coinutils_addlibs.txt])
+                 coinutils.pc coinutils-uninstalled.pc])
+AC_CONFIG_FILES([doxydoc/doxygen.conf])
 
 # Here put the location and name of the configuration header file
-AC_CONFIG_HEADER([inc/config_coinutils.h])
+AC_CONFIG_HEADER([src/config.h src/config_coinutils.h])
 
 # Finally, we let configure write all the output...
 AC_COIN_FINALIZE

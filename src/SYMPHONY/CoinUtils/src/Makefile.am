@@ -1,8 +1,8 @@
 # Copyright (C) 2006 International Business Machines and others.
 # All Rights Reserved.
-# This file is distributed under the Common Public License.
+# This file is distributed under the Eclipse Public License.
 
-## $Id: Makefile.am 1215 2009-11-05 11:03:04Z forrest $
+## $Id: Makefile.am 1448 2011-06-19 15:34:41Z stefan $
 
 # Author:  Andreas Waechter           IBM    2006-04-13
 
@@ -12,19 +12,13 @@ AUTOMAKE_OPTIONS = foreign
 #                             libCoinUtils                             #
 ########################################################################
 
-# Name of the library compiled in this directory.  We want it to be installed
-# in the 'lib' directory
+# Name of the library compiled in this directory.
+# We want it to be installed in the $libdir directory
 lib_LTLIBRARIES = libCoinUtils.la
-
-# AW: This is a fix at the moment to head with the fact that LIBS has
-# -llapack and other libraries in it when those are used and not compiled
-# here.  The content of LIBS is passed to libtool when building a shared
-# library, and that can cause trouble, since liblapack.a and others
-# should not be built into the shared libraries.
-LIBS =
 
 # List all source files for this library, including headers
 libCoinUtils_la_SOURCES = \
+	config_coinutils.h \
 	CoinUtilsConfig.h \
 	Coin_C_defines.h \
 	CoinAlloc.cpp CoinAlloc.hpp \
@@ -47,7 +41,7 @@ libCoinUtils_la_SOURCES = \
 	CoinOslFactorization3.cpp \
 	CoinOslC.h \
 	CoinFileIO.cpp CoinFileIO.hpp \
-	CoinFinite.hpp \
+	CoinFinite.cpp CoinFinite.hpp \
 	CoinFloatEqual.hpp \
 	CoinHelperFunctions.hpp \
 	CoinIndexedVector.cpp CoinIndexedVector.hpp \
@@ -98,26 +92,15 @@ libCoinUtils_la_SOURCES = \
 	CoinWarmStartDual.cpp CoinWarmStartDual.hpp \
 	CoinWarmStartPrimalDual.cpp CoinWarmStartPrimalDual.hpp
 
-# This is for libtool (on Windows)
+# This is for libtool
 libCoinUtils_la_LDFLAGS = $(LT_LDFLAGS)
-
-# Here we list additional libraries that we want to include, such as Lapack
-# and Blas when they are compiled with the rest of COIN.  This is temporary
-# solution.
-libCoinUtils_la_LIBADD = $(COINUTILS_LIBADD)
-
-libCoinUtils_la_DEPENDENCIES = $(COINUTILS_LIBADD)
 
 # Here list all include flags, relative to this "srcdir" directory.  This
 # "cygpath" stuff is necessary to compile with native compilers on Windows
-AM_CPPFLAGS =
-if COIN_HAS_GMPL
-  AM_CPPFLAGS += -I`$(CYGPATH_W) $(GMPLINCDIR)`
-endif
+AM_CPPFLAGS = $(GLPK_CFLAGS)
 
-# This line is necessary to allow VPATH compilation with MS compilers
-# on Cygwin
-DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/inc
+# This line is necessary to allow VPATH compilation
+DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)`
 
 ########################################################################
 #                Headers that need to be installed                     #
@@ -127,7 +110,6 @@ DEFAULT_INCLUDES = -I. -I`$(CYGPATH_W) $(srcdir)` -I$(top_builddir)/inc
 # and that therefore should be installed in 'install/coin'
 includecoindir = $(includedir)/coin
 includecoin_HEADERS = \
-	../inc/config_coinutils.h \
 	Coin_C_defines.h \
 	CoinAlloc.hpp \
 	CoinBuild.hpp \
@@ -186,20 +168,12 @@ includecoin_HEADERS = \
 	CoinWarmStartDual.hpp \
 	CoinWarmStartPrimalDual.hpp
 
-#############################################################################
-# Create the Config.h file that always defines HAVE_CONFIG_H and install it #
-#############################################################################
-
-# You only need to adapt the following line
-ConfigHeader = CoinUtilsConfig.h
+#######################################################################
+# Create the Config.h file that has all public defines and install it #
+#######################################################################
 
 install-exec-local:
-	echo "#ifndef HAVE_CONFIG_H" >bla
-	echo "#define HAVE_CONFIG_H" >>bla
-	echo "#endif" >> bla
-	cat $(srcdir)/$(ConfigHeader) >> bla
-	$(install_sh_DATA) bla $(DESTDIR)$(includecoindir)/$(ConfigHeader)
-	rm -f bla
+	$(install_sh_DATA) config_coinutils.h $(DESTDIR)$(includecoindir)/CoinUtilsConfig.h
 
 uninstall-local:
-	rm -f $(DESTDIR)$(includecoindir)/$(ConfigHeader)
+	rm -f $(DESTDIR)$(includecoindir)/CoinUtilsConfig.h

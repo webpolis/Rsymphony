@@ -1,5 +1,8 @@
+// $Id: CglOddHole.cpp 1033 2011-06-19 16:49:13Z stefan $
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -144,7 +147,7 @@ void CglOddHole::generateCuts(const OsiSolverInterface & si, OsiCuts & cs,
   delete [] fixed;
     
 }
-void CglOddHole::generateCuts(const OsiRowCutDebugger * debugger,
+void CglOddHole::generateCuts(const OsiRowCutDebugger * /*debugger*/,
 			      const CoinPackedMatrix & rowCopy, 
 				 const double * solution, 
 			      const double * dj, OsiCuts & cs,
@@ -220,7 +223,7 @@ void CglOddHole::generateCuts(const OsiRowCutDebugger * debugger,
       // reallocate if matrix reached size limit
       if (n+nCols>maxels) {
 	maxels*=2;
-	cost=reinterpret_cast<double *> (realloc(cost,maxels*sizeof(int)));
+	cost=reinterpret_cast<double *> (realloc(cost,maxels*sizeof(double)));
 	to=reinterpret_cast<int *> (realloc(to,maxels*sizeof(int)));
 	rowfound=reinterpret_cast<int *> (realloc(rowfound,maxels*sizeof(int)));
       }
@@ -476,12 +479,12 @@ void CglOddHole::generateCuts(const OsiRowCutDebugger * debugger,
 	  double violation=0.0;
 	  if (packed) {
 	    violation = sum-rhs;
-	    rc.setLb(-DBL_MAX);
+	    rc.setLb(-COIN_DBL_MAX);
 	    rc.setUb(rhs);   
 	  } else {
 	    // other way for cover
 	    violation = rhs-sum;
-	    rc.setUb(DBL_MAX);
+	    rc.setUb(COIN_DBL_MAX);
 	    rc.setLb(rhs);   
 	  }
 	  if (violation<minimumViolation_) {
@@ -837,6 +840,6 @@ CglOddHole::setMaximumEntries(int value)
 
 // This can be used to refresh any inforamtion
 void 
-CglOddHole::refreshSolver(OsiSolverInterface * solver)
+CglOddHole::refreshSolver(OsiSolverInterface * )
 {
 }

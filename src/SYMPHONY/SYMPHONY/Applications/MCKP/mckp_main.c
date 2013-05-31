@@ -4,11 +4,11 @@
 /* SYMPHONY MILP Solver Framework.          This application is a solver for */
 /* the Vehicle Routing Problem and the Traveling Salesman Problem.           */
 /*                                                                           */
-/* (c) Copyright 2005-2010 Lehigh University. All Rights Reserved.           */
+/* (c) Copyright 2005-2011 Lehigh University. All Rights Reserved.           */
 /*                                                                           */
 /* This application was developed by Ted Ralphs (ted@lehigh.edu)             */
 /*                                                                           */
-/* This software is licensed under the Common Public License. Please see     */
+/* This software is licensed under the Eclipse Public License. Please see    */
 /* accompanying file for terms.                                              */
 /*                                                                           */
 /*===========================================================================*/
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 
    sym_environment *env = sym_open_environment();
 
-   version();
+   sym_version();
 
    sym_parse_command_line(env, argc, argv);
 

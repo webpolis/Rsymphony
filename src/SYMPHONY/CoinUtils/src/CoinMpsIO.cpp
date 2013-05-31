@@ -1,6 +1,8 @@
-/* $Id: CoinMpsIO.cpp 1215 2009-11-05 11:03:04Z forrest $ */
+/* $Id: CoinMpsIO.cpp 1448 2011-06-19 15:34:41Z stefan $ */
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
+
 #if defined(_MSC_VER)
 // Turn off compiler warning about long names
 #  pragma warning(disable:4786)
@@ -24,17 +26,21 @@
 
 //#############################################################################
 // type - 0 normal, 1 INTEL IEEE, 2 other IEEE
-double CoinMpsCardReader::osi_strtod(char * ptr, char ** output, int type) 
-{
 
-  static const double fraction[]=
+namespace {
+
+  const double fraction[]=
   {1.0,1.0e-1,1.0e-2,1.0e-3,1.0e-4,1.0e-5,1.0e-6,1.0e-7,1.0e-8,
    1.0e-9,1.0e-10,1.0e-11,1.0e-12,1.0e-13,1.0e-14,1.0e-15,1.0e-16,
    1.0e-17,1.0e-18,1.0e-19,1.0e-20,1.0e-21,1.0e-22,1.0e-23};
 
-  static const double exponent[]=
+  const double exponent[]=
   {1.0e-9,1.0e-8,1.0e-7,1.0e-6,1.0e-5,1.0e-4,1.0e-3,1.0e-2,1.0e-1,
    1.0,1.0e1,1.0e2,1.0e3,1.0e4,1.0e5,1.0e6,1.0e7,1.0e8,1.0e9};
+
+} // end file-local namespace
+double CoinMpsCardReader::osi_strtod(char * ptr, char ** output, int type) 
+{
 
   double value = 0.0;
   char * save = ptr;
@@ -290,7 +296,8 @@ int CoinMpsCardReader::cleanCard()
     }
     *(lastNonBlank+1)='\0';
     if (tabs&&section_ == COIN_BOUNDS_SECTION&&!freeFormat_&&eightChar_) {
-      int length=lastNonBlank+1-reinterpret_cast<unsigned char *>(card_);
+      int length = static_cast<int>(lastNonBlank+1-
+      				    reinterpret_cast<unsigned char *>(card_));
       assert (length<81);
       memcpy(card_+82,card_,length);
       int pos[]={1,4,14,24,1000};
@@ -467,7 +474,7 @@ CoinMpsCardReader::~CoinMpsCardReader (  )
 void
 CoinMpsCardReader::strcpyAndCompress ( char *to, const char *from )
 {
-  int n = strlen ( from );
+  int n = static_cast<int>(strlen(from));
   int i;
   int nto = 0;
 
@@ -528,7 +535,7 @@ CoinMpsCardReader::nextField (  )
 	int nchar;
 
 	if ( nextBlank ) {
-	  nchar = nextBlank - next;
+	  nchar = static_cast<int>(nextBlank - next);
 	} else {
 	  nchar = -1;
 	}
@@ -974,7 +981,7 @@ CoinMpsCardReader::nextGmsField ( int expectedType )
                  &&*next!='\t'&&*next!='-'&&*next!='+'&&*next>=32)
             next++;
           if (next) {
-            int length = next-position_;
+            int length = static_cast<int>(next-position_);
             strncpy(columnName_,position_,length);
             columnName_[length]='\0';
           } else {
@@ -1007,7 +1014,7 @@ CoinMpsCardReader::nextGmsField ( int expectedType )
                  &&*next!='\t'&&*next>=32)
             next++;
           if (next) {
-            int length = next-position_;
+            int length = static_cast<int>(next-position_);
             strncpy(rowName_,position_,length);
             rowName_[length]='\0';
           } else {
@@ -1080,7 +1087,7 @@ CoinMpsCardReader::nextGmsField ( int expectedType )
             if (next2&&next2-position_<next-position_) {
               next=next2;
             }
-            int length = next-position_;
+            int length = static_cast<int>(next-position_);
             strncpy(rowName_,position_,length);
             rowName_[length]='\0';
             value_=-1.0e100;
@@ -1106,7 +1113,7 @@ CoinMpsCardReader::nextGmsField ( int expectedType )
               (nextChar>='A'&&nextChar<='Z')) {
             char * next = nextBlankOr(position_);
             if (next) {
-              int length = next-position_;
+              int length = static_cast<int>(next-position_);
               strncpy(columnName_,position_,length);
               columnName_[length]='\0';
             } else {
@@ -1137,7 +1144,7 @@ CoinMpsCardReader::nextGmsField ( int expectedType )
 	if (nextChar=='=') {
           returnCode=0;
           char * next = nextBlankOr(position_);
-          int length = next-position_;
+          int length = static_cast<int>(next-position_);
           strncpy(rowName_,position_,length);
           rowName_[length]='\0';
           position_=next;
@@ -1177,10 +1184,8 @@ CoinMpsCardReader::nextGmsField ( int expectedType )
 
 //#############################################################################
 
-static int
-hash ( const char *name, int maxsiz, int length )
-{
-  static int mmult[] = {
+namespace {
+const int mmult[] = {
     262139, 259459, 256889, 254291, 251701, 249133, 246709, 244247,
     241667, 239179, 236609, 233983, 231289, 228859, 226357, 223829,
     221281, 218849, 216319, 213721, 211093, 208673, 206263, 203773,
@@ -1192,6 +1197,10 @@ hash ( const char *name, int maxsiz, int length )
     103387, 101021, 98639, 96179, 93911, 91583, 89317, 86939, 84521,
     82183, 79939, 77587, 75307, 72959, 70793, 68447, 66103
   };
+
+int hash ( const char *name, int maxsiz, int length )
+{
+  
   int n = 0;
   int j;
 
@@ -1202,6 +1211,8 @@ hash ( const char *name, int maxsiz, int length )
   }
   return ( abs ( n ) % maxsiz );	/* integer abs */
 }
+} // end file-local namespace
+
 // Define below if you are reading a Cnnnnnn file 
 // Will not do row names (for electricfence)
 //#define NONAMES
@@ -1240,7 +1251,7 @@ CoinMpsIO::startHash ( int section ) const
    */
   for ( i = 0; i < number; ++i ) {
     char *thisName = names[i];
-    int length = strlen ( thisName );
+    int length = static_cast<int>(strlen(thisName));
 
     ipos = hash ( thisName, maxhash, length );
     if ( hashThis[ipos].index == -1 ) {
@@ -1257,7 +1268,7 @@ CoinMpsIO::startHash ( int section ) const
   iput = -1;
   for ( i = 0; i < number; ++i ) {
     char *thisName = names[i];
-    int length = strlen ( thisName );
+    int length = static_cast<int>(strlen(thisName));
 
     ipos = hash ( thisName, maxhash, length );
 
@@ -1321,7 +1332,7 @@ CoinMpsIO::findHash ( const char *name , int section ) const
   /* default if we don't find anything */
   if ( !maxhash )
     return -1;
-  int length = strlen ( name );
+  int length = static_cast<int>(strlen(name));
 
   ipos = hash ( name, maxhash, length );
   while ( 1 ) {
@@ -1434,7 +1445,7 @@ CoinMpsIO::dealWithFileName(const char * filename,  const char * extension,
     if (strcmp(filename,"stdin")&&strcmp(filename,"-")) {
       if (extension&&strlen(extension)) {
 	// There was an extension - but see if user gave .xxx
-	int i = strlen(filename)-1;
+	int i = static_cast<int>(strlen(filename))-1;
 	strcpy(newName,filename);
 	bool foundDot=false; 
 	for (;i>=0;i--) {
@@ -2712,59 +2723,60 @@ int CoinMpsIO::readMps(int & numberSets,CoinSet ** &sets)
 					    <<CoinMessageEol;
   return numberErrors;
 }
-#ifdef COIN_HAS_GMPL
-extern "C" {
-#include "glpmpl.h"
-}
+#ifdef COIN_HAS_GLPK
+#include "glpk.h"
+glp_tran* cbc_glp_tran = NULL;
+glp_prob* cbc_glp_prob = NULL;
 #endif
 /* Read a problem in GMPL (subset of AMPL)  format from the given filenames.
    Thanks to Ted Ralphs - I just looked at his coding rather than look at the GMPL documentation.
  */
 int 
-CoinMpsIO::readGMPL(const char *modelName, const char * dataName,bool keepNames)
+CoinMpsIO::readGMPL(const char * modelName, const char * dataName,
+                    bool keepNames)
 {
-#ifdef COIN_HAS_GMPL
+#ifdef COIN_HAS_GLPK
   int returnCode;
   gutsOfDestructor();
   // initialize
-  MPL * gmpl = mpl_initialize();  
+  cbc_glp_tran = glp_mpl_alloc_wksp();
   // read model
   char name[2000]; // should be long enough
   assert (strlen(modelName)<2000&&(!dataName||strlen(dataName)<2000));
   strcpy(name,modelName);
-  returnCode = mpl_read_model(gmpl,name,false);
-  if (returnCode==1&&dataName) {
-    // read data
-    strcpy(name,dataName);
-    returnCode = mpl_read_data(gmpl,name);
-  }
-  if (returnCode!=2) {
+  returnCode = glp_mpl_read_model(cbc_glp_tran,name,false);
+  if (returnCode != 0) {
     // errors
-    mpl_terminate(gmpl);
+    glp_mpl_free_wksp(cbc_glp_tran);
+    cbc_glp_tran = NULL;
     return 1;
   }
+  if (dataName) {
+    // read data
+    strcpy(name,dataName);
+    returnCode = glp_mpl_read_data(cbc_glp_tran,name);
+    if (returnCode != 0) {
+      // errors
+      glp_mpl_free_wksp(cbc_glp_tran);
+      cbc_glp_tran = NULL;
+      return 1;
+    }
+  }
   // generate model
-  returnCode = mpl_generate(gmpl,NULL);
-  if (returnCode!=3) {
+  returnCode = glp_mpl_generate(cbc_glp_tran,NULL);
+  if (returnCode!=0) {
     // errors
-    mpl_terminate(gmpl);
+    glp_mpl_free_wksp(cbc_glp_tran);
+    cbc_glp_tran = NULL;
     return 2;
   }
-  // Get number of rows and elements
-  numberRows_=mpl_get_num_rows(gmpl);
-  int numberObj=0;
-  numberElements_=0;
-  int iRow;
-  // Remember Fortran conventions
-  for (iRow=0; iRow<numberRows_;iRow++) {
-    int rowType = mpl_get_row_kind(gmpl, iRow+1);
-    if (rowType==MPL_ST)
-      numberElements_ += mpl_get_mat_row(gmpl,iRow+1,NULL,NULL);
-    else
-      numberObj++;
-  }
-  numberRows_ -= numberObj;
-  numberColumns_ = mpl_get_num_cols(gmpl);
+  cbc_glp_prob = glp_create_prob();
+  glp_mpl_build_prob(cbc_glp_tran, cbc_glp_prob);
+  // Get number of rows, columns, and elements
+  numberRows_=glp_get_num_rows(cbc_glp_prob);
+  numberColumns_ = glp_get_num_cols(cbc_glp_prob);
+  numberElements_=glp_get_num_nz(cbc_glp_prob);
+  int iRow, iColumn;
   CoinBigIndex * start = new CoinBigIndex [numberRows_+1];
   int * index = new int [numberElements_];
   double * element = new double[numberElements_];
@@ -2773,14 +2785,7 @@ CoinMpsIO::readGMPL(const char *modelName, const char * dataName,bool keepNames)
   rowupper_ = reinterpret_cast<double *> (malloc ( numberRows_ * sizeof ( double )));
   // and objective
   objective_ = reinterpret_cast<double *> (malloc ( numberColumns_ * sizeof ( double )));
-  int iColumn;
-  for (iColumn=0; iColumn<numberColumns_;iColumn++) {
-    objective_[iColumn]=0.0;
-  }
-  objectiveOffset_ = 0.0;
-  problemName_= CoinStrdup(mpl_get_prob_name(gmpl));
-  bool objUsed=false;
-  bool minimize=true;
+  problemName_= CoinStrdup(glp_get_prob_name(cbc_glp_prob));
   int kRow=0;
   start[0]=0;
   numberElements_=0;
@@ -2793,56 +2798,60 @@ CoinMpsIO::readGMPL(const char *modelName, const char * dataName,bool keepNames)
     names_[0] = names;
     numberHash_[0] = numberRows_;
   }
-  for (iRow=0; iRow<numberRows_+numberObj;iRow++) {
-    int rowType = mpl_get_row_kind(gmpl, iRow+1);
-    int number = mpl_get_mat_row(gmpl,iRow+1,ind-1,el-1);
-    if (rowType==MPL_ST) {
-      double rowLower,rowUpper;
-      rowType = mpl_get_row_bnds(gmpl, iRow+1, &rowLower,&rowUpper); 
-      switch(rowType) {                                           
-      case MPL_LO: 
-        rowUpper =  COIN_DBL_MAX;
-        break;	 
-      case MPL_UP:
-        rowLower = -COIN_DBL_MAX;
-        break;
-      case MPL_FR:
-        rowLower = -COIN_DBL_MAX;
-        rowUpper =  COIN_DBL_MAX;
-        break;
-      default:
-        break;
-      }
-      rowlower_[kRow]=rowLower;
-      rowupper_[kRow]=rowUpper;
-      for (int i=0;i<number;i++) {
-        iColumn = ind[i]-1;
-        index[numberElements_]=iColumn;
-        element[numberElements_++]=el[i];
-      }
-      if (keepNames) {
-        strcpy(name,mpl_get_row_name(gmpl,iRow+1));
-        // could look at name?
-        names[kRow]=CoinStrdup(name);
-      }
-      kRow++;
-      start[kRow]=numberElements_;
-    } else {
-      if (!objUsed) {
-        objUsed=true;
-        if (rowType==MPL_MAX)
-          minimize=false; // not used but ...
-        // sign correct?
-        objectiveOffset_ = mpl_get_row_c0(gmpl,iRow+1);
-        for (int i=0;i<number;i++) {
-          iColumn = ind[i]-1;
-          objective_[iColumn]=el[i];
-        }
-      }
+  for (iRow=0; iRow<numberRows_;iRow++) {
+    int number = glp_get_mat_row(cbc_glp_prob,iRow+1,ind-1,el-1);
+    double rowLower,rowUpper;
+    int rowType;
+    rowLower = glp_get_row_lb(cbc_glp_prob, iRow+1);
+    rowUpper = glp_get_row_ub(cbc_glp_prob, iRow+1);
+    rowType  = glp_get_row_type(cbc_glp_prob, iRow+1); 
+    switch(rowType) {                                           
+    case GLP_LO: 
+      rowUpper =  COIN_DBL_MAX;
+      break;	 
+    case GLP_UP:
+      rowLower = -COIN_DBL_MAX;
+      break;
+    case GLP_FR:
+      rowLower = -COIN_DBL_MAX;
+       rowUpper =  COIN_DBL_MAX;
+     break;
+    default:
+      break;
     }
+    rowlower_[kRow]=rowLower;
+    rowupper_[kRow]=rowUpper;
+    for (int i=0;i<number;i++) {
+      iColumn = ind[i]-1;
+      index[numberElements_]=iColumn;
+      element[numberElements_++]=el[i];
+    }
+    if (keepNames) {
+      strcpy(name,glp_get_row_name(cbc_glp_prob,iRow+1));
+      // could look at name?
+      names[kRow]=CoinStrdup(name);
+    }
+    kRow++;
+    start[kRow]=numberElements_;
   }
   delete [] el;
   delete [] ind;
+
+   // FIXME why this variable is not used?
+  bool minimize=(glp_get_obj_dir(cbc_glp_prob)==GLP_MAX ? false : true);
+   // sign correct?
+  objectiveOffset_ = glp_get_obj_coef(cbc_glp_prob, 0);
+  for (int i=0;i<numberColumns_;i++)
+    objective_[i]=glp_get_obj_coef(cbc_glp_prob, i+1);
+  if (!minimize) {
+  for (int i=0;i<numberColumns_;i++)
+    objective_[i]=-objective_[i];
+    handler_->message(COIN_GENERAL_INFO,messages_)<<
+      " CoinMpsIO::readGMPL(): Maximization problem reformulated as minimization"
+						  <<CoinMessageEol;
+    objectiveOffset_ = -objectiveOffset_;
+  }
+
   // Matrix
   matrixByColumn_ = new CoinPackedMatrix(false,numberColumns_,numberRows_,numberElements_,
                                   element,index,start,NULL);
@@ -2861,16 +2870,17 @@ CoinMpsIO::readGMPL(const char *modelName, const char * dataName,bool keepNames)
   }
   int numberIntegers=0;
   for (iColumn=0; iColumn<numberColumns_;iColumn++) {
-    double columnLower,columnUpper;
-    int columnType = mpl_get_col_bnds(gmpl, iColumn+1, &columnLower,&columnUpper); 
+    double columnLower = glp_get_col_lb(cbc_glp_prob, iColumn+1);
+    double columnUpper = glp_get_col_ub(cbc_glp_prob, iColumn+1);
+    int columnType = glp_get_col_type(cbc_glp_prob, iColumn+1);
     switch(columnType) {                                           
-    case MPL_LO: 
+    case GLP_LO: 
       columnUpper =  COIN_DBL_MAX;
       break;	 
-    case MPL_UP:
+    case GLP_UP:
       columnLower = -COIN_DBL_MAX;
       break;
-    case MPL_FR:
+    case GLP_FR:
       columnLower = -COIN_DBL_MAX;
       columnUpper =  COIN_DBL_MAX;
       break;
@@ -2879,8 +2889,8 @@ CoinMpsIO::readGMPL(const char *modelName, const char * dataName,bool keepNames)
     }
     collower_[iColumn]=columnLower;
     colupper_[iColumn]=columnUpper;
-    columnType = mpl_get_col_kind(gmpl,iColumn+1);
-    if (columnType==MPL_INT) {
+    columnType = glp_get_col_kind(cbc_glp_prob,iColumn+1);
+    if (columnType==GLP_IV) {
       integerType_[iColumn]=1;
       numberIntegers++;
       //assert ( collower_[iColumn] >= -MAX_INTEGER );
@@ -2888,7 +2898,7 @@ CoinMpsIO::readGMPL(const char *modelName, const char * dataName,bool keepNames)
         collower_[iColumn] = -MAX_INTEGER;
       if ( colupper_[iColumn] > MAX_INTEGER ) 
         colupper_[iColumn] = MAX_INTEGER;
-    } else if (columnType==MPL_BIN) {
+    } else if (columnType==GLP_BV) {
       numberIntegers++;
       integerType_[iColumn]=1;
       collower_[iColumn]=0.0;
@@ -2897,25 +2907,28 @@ CoinMpsIO::readGMPL(const char *modelName, const char * dataName,bool keepNames)
       integerType_[iColumn]=0;
     }
     if (keepNames) {
-      strcpy(name,mpl_get_col_name(gmpl,iColumn+1));
+      strcpy(name,glp_get_col_name(cbc_glp_prob,iColumn+1));
       // could look at name?
       names[iColumn]=CoinStrdup(name);
     }
   }
-  mpl_terminate(gmpl);
+  // leave in case report needed
+  //glp_free(cbc_glp_prob);
+  //glp_mpl_free_wksp(cbc_glp_tran);
+  //glp_free_env();
   if ( !numberIntegers ) {
     free(integerType_);
     integerType_ = NULL;
   }
-  handler_->message(COIN_MPS_STATS,messages_)<<problemName_
+  if(handler_)
+    handler_->message(COIN_MPS_STATS,messages_)<<problemName_
 					    <<numberRows_
 					    <<numberColumns_
 					    <<numberElements_
 					    <<CoinMessageEol;
   return 0;
 #else
-  printf("GMPL not being used %s %s %s\n",
-	 modelName, dataName,keepNames ? "yes" : "no");
+  printf("GLPK is not available\n");
   abort();
   return 1;
 #endif
@@ -3468,7 +3481,7 @@ int CoinMpsIO::readGms(int & /*numberSets*/,CoinSet ** &/*sets*/)
 					    <<numberColumns_
 					    <<numberElements_
 					    <<CoinMessageEol;
-  if (numberTiny||numberLarge)
+  if ((numberTiny||numberLarge)&&handler_->logLevel()>3)
     printf("There were %d coefficients < %g and %d > %g\n",
            numberTiny,smallElement_,numberLarge,largeElement);
   return numberErrors;
@@ -3747,7 +3760,7 @@ CoinConvertDouble(int section, int formatType, double value, char outputValue[24
 	  outputValue[12]='\0';
 	} else {
 	  // e take out 0s
-	  int j= (e-outputValue)+1;
+	  int j = static_cast<int>((e-outputValue))+1;
 	  int put = j+1;
 	  assert(outputValue[j]=='-'||outputValue[j]=='+');
 	  for ( j = put ; j < 14 ; j++) {
@@ -4061,14 +4074,14 @@ CoinMpsIO::writeMps(const char *filename, int compression,
                                                   <<CoinMessageEol;
    for (i = 0 ; i < numberRows_; ++i) {
       if (strlen(rowNames[i]) > length) {
-	 length = strlen(rowNames[i]);
+	 length = static_cast<int>(strlen(rowNames[i]));
 	 break;
       }
    }
    if (length <= 8) {
       for (i = 0 ; i < numberColumns_; ++i) {
 	 if (strlen(columnNames[i]) > length) {
-	    length = strlen(columnNames[i]);
+	    length = static_cast<int>(strlen(columnNames[i]));
 	    break;
 	 }
       }
@@ -5837,7 +5850,7 @@ CoinMpsIO::addString(int iRow,int iColumn, const char * value)
 {
   char id [20];
   sprintf(id,"%d,%d,",iRow,iColumn);
-  int n = strlen(id)+strlen(value);
+  int n = static_cast<int>(strlen(id)+strlen(value));
   if (numberStringElements_==maximumStringElements_) {
     maximumStringElements_ = 2*maximumStringElements_+100;
     char ** temp = new char * [maximumStringElements_];

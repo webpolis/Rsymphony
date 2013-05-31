@@ -1,5 +1,6 @@
 // Copyright (C) 2000, International Business Machines
 // Corporation and others.  All Rights Reserved.
+// This code is licensed under the terms of the Eclipse Public License (EPL).
 
 #ifndef OsiXprSolverInterface_H
 #define OsiXprSolverInterface_H
@@ -59,6 +60,10 @@ public:
     bool getDblParam(OsiDblParam key, double& value) const;
     // Get a string parameter
     bool getStrParam(OsiStrParam key, std::string& value) const;
+    // Set mipstart option (pass column solution to XPRESS before MIP start)
+    void setMipStart(bool value) { domipstart = value; }
+    // Get mipstart option value
+    bool getMipStart() const { return domipstart; }
   //@}
 
   //---------------------------------------------------------------------------
@@ -234,6 +239,12 @@ public:
       /** Get as many dual rays as the solver can provide. (In case of proven
           primal infeasibility there should be at least one.)
      
+	  The first getNumRows() ray components will always be associated with
+	  the row duals (as returned by getRowPrice()). If \c fullRay is true,
+	  the final getNumCols() entries will correspond to the ray components
+	  associated with the nonbasic variables. If the full ray is requested
+	  and the method cannot provide it, it will throw an exception.
+     
           <strong>NOTE for implementers of solver interfaces:</strong> <br>
           The double pointers in the vector should point to arrays of length
           getNumRows() and they should be allocated via new[]. <br>
@@ -242,7 +253,8 @@ public:
           It is the user's responsibility to free the double pointers in the
           vector using delete[].
       */
-      virtual std::vector<double*> getDualRays(int maxNumRays) const;
+      virtual std::vector<double*> getDualRays(int maxNumRays,
+					       bool fullRay=false) const;
       /** Get as many primal rays as the solver can provide. (In case of proven
           dual infeasibility there should be at least one.)
      
@@ -276,11 +288,11 @@ public:
       virtual void setObjCoeff( int elementIndex, double elementValue );
 
       /** Set a single column lower bound<br>
-    	  Use -DBL_MAX for -infinity. */
+    	  Use -COIN_DBL_MAX for -infinity. */
       virtual void setColLower( int elementIndex, double elementValue );
       
       /** Set a single column upper bound<br>
-    	  Use DBL_MAX for infinity. */
+    	  Use COIN_DBL_MAX for infinity. */
       virtual void setColUpper( int elementIndex, double elementValue );
       
       /** Set a single column lower and upper bound<br>
@@ -302,11 +314,11 @@ public:
 				   const double* boundList);
       
       /** Set a single row lower bound<br>
-    	  Use -DBL_MAX for -infinity. */
+    	  Use -COIN_DBL_MAX for -infinity. */
       virtual void setRowLower( int elementIndex, double elementValue );
       
       /** Set a single row upper bound<br>
-    	  Use DBL_MAX for infinity. */
+    	  Use COIN_DBL_MAX for infinity. */
       virtual void setRowUpper( int elementIndex, double elementValue );
     
       /** Set a single row lower and upper bound<br>
@@ -701,7 +713,7 @@ private:
   /**@name Private member data */
   //@{
 
-    /**@name Data to suupport for XPRESS-MP multiple matrix facility */
+    /**@name Data to support for XPRESS-MP multiple matrix facility */
     //@{
     
     mutable XPRSprob prob_;
@@ -781,17 +793,18 @@ private:
           (as above, or 'C' for continuous)
       */
       mutable char    *vartype_;
+
+      /** Indicates whether the last solve was for a MIP or an LP. */
+      mutable bool lastsolvewasmip;
     //@}
   //@}
+
+      /// Whether to pass a column solution to XPRESS before starting MIP solve (loadmipsol)
+      bool            domipstart;
 };
 
 //#############################################################################
-/** A function that tests the methods in the OsiXprSolverInterface class. The
-    only reason for it not to be a member method is that this way it doesn't
-    have to be compiled into the library. And that's a gain, because the
-    library should be compiled with optimization on, but this method should be
-    compiled with debugging. */
-void
-OsiXprSolverInterfaceUnitTest(const std::string & mpsDir, const std::string & netlibDir);
+/** A function that tests the methods in the OsiXprSolverInterface class. */
+void OsiXprSolverInterfaceUnitTest(const std::string & mpsDir, const std::string & netlibDir);
 
 #endif
