@@ -7,7 +7,9 @@
 }
 \usage{
 Rsymphony_solve_LP(obj, mat, dir, rhs, bounds = NULL, types = NULL,
-                   max = FALSE)
+                   max = FALSE, verbosity = -2, time_limit = -1,
+                   node_limit = -1, gap_limit = -1, first_feasible = FALSE,
+                   write_lp = FALSE, write_mps = FALSE)
 }
 \arguments{
   \item{obj}{a vector with the objective coefficients}
@@ -27,6 +29,26 @@ Rsymphony_solve_LP(obj, mat, dir, rhs, bounds = NULL, types = NULL,
   \item{max}{a logical giving the direction of the optimization.
     \code{TRUE} means that the objective is to maximize the objective
     function, \code{FALSE} (default) means to minimize it.}
+  \item{verbosity}{an integer defining the level of verbosity,
+    \code{-2} (default) means no output.}
+  \item{time_limit}{an integer defining the time limit in seconds,
+    \code{-1} (default) means no time limit.}
+  \item{node_limit}{an integer defining the limit in number of iterations,
+    \code{-1} (default) means no node limit.}
+  \item{gap_limit}{when the gap between the lower and the upper bound
+    reaches this point, the solution process will stop and the best
+    solution found to that point will be returned,
+    \code{-1} (default) means no gap limit.}
+  \item{first_feasible}{a logical defining if the solution process
+    should stop after the first feasible solution has been found,
+    \code{FALSE} (default) means that the solution process does not
+    stop after the first feasible solution has been found.}
+  \item{write_lp}{a logical value indicating if an LP representation
+    of the problem should be written for debugging purposes,
+    \code{FALSE} (default) means no LP file is written.}
+  \item{write_mps}{a logical value indicating if an MPS representation
+    of the problem should be written for debugging purposes,
+    \code{FALSE} (default) means no MPS file is written.}
 }
 \details{
   SYMPHONY is an open source solver for solving mixed integer linear

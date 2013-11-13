@@ -1,5 +1,7 @@
 Rsymphony_solve_LP<-
-function(obj, mat, dir, rhs, bounds = NULL, types = NULL, max = FALSE)
+function(obj, mat, dir, rhs, bounds = NULL, types = NULL, max = FALSE,
+         verbosity = -2, time_limit = -1, node_limit = -1, gap_limit = -1,
+         first_feasible = FALSE, write_lp = FALSE, write_mps = FALSE)
 {
     ## Direction of optimization.
     if(!identical(max, TRUE) && !identical(max, FALSE))
@@ -56,7 +58,14 @@ function(obj, mat, dir, rhs, bounds = NULL, types = NULL, max = FALSE)
               double(),
               objval = double(1L),
               solution = double(nc),
-              status = integer(1L))
+              status = integer(1L),
+              verbosity = as.integer(verbosity),
+              time_limit = as.integer(time_limit),
+              node_limit = as.integer(node_limit),
+              gap_limit = as.double(gap_limit),
+              first_feasible = as.integer(first_feasible),
+              write_lp = as.integer(write_lp),
+              write_mps = as.integer(write_mps))
 
     ## Ensure that integer variables are really integer:
     solution <- out$solution

@@ -19,17 +19,19 @@ void R_symphony_solve(int *n_cols, int *n_rows, int *start, int *index,
 		      int* is_int, double *objective, double *obj2,
 		      char **row_sense, double *row_rhs,
 		      double *row_range, double *obj_final,
-		      double *sol_final, int *solve_status)
+		      double *sol_final, int *solve_status,
+          int *verbosity, int *time_limit, int *node_limit,
+          double *gap_limit, int *first_feasible, int *write_lp,
+          int *write_mps
+)
 {
    int i;
    
    /* Create a SYMPHONY environment */
    sym_environment *env = sym_open_environment();
    
-   /* Set verbosity to -2 to have no output from the SYMPHONY
-      application at all (default = 0).
-   */
-   sym_set_int_param(env, "verbosity", -2);
+   /* Set verbosity to desired level */
+   sym_set_int_param(env, "verbosity", *verbosity);
 
    /* Set if integer */
    char * int_vars = (char *) malloc (sizeof(char) * (*n_cols));
@@ -45,7 +47,15 @@ void R_symphony_solve(int *n_cols, int *n_rows, int *start, int *index,
    sym_explicit_load_problem(env, *n_cols, *n_rows, start, index, value,
 			     col_lb, col_ub, int_vars, objective, NULL,
 			     *row_sense, row_rhs, row_range, TRUE);
- 			     			     
+ 	 
+   /* Set optimization parameters. */
+   if( *time_limit>0 ) sym_set_dbl_param(env, "time_limit", *time_limit);
+   if( *node_limit>0 ) sym_set_int_param(env, "node_limit", *node_limit);
+   if( *gap_limit>0 ) sym_set_dbl_param(env, "gap_limit", *gap_limit);
+   sym_set_int_param(env, "find_first_feasible", *first_feasible);
+   sym_set_int_param(env, "write_lp", *write_lp);
+   sym_set_int_param(env, "write_mps", *write_mps);
+
    /* Solve the integer program. */
    sym_solve(env);
 
