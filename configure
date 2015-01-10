@@ -15,8 +15,13 @@ R="${R_HOME}/bin/R"
 
 SYMPHONY_CPPFLAGS=`pkg-config --cflags SYMPHONY >/dev/null 2>&1`
 SYMPHONY_LIBS=`pkg-config --libs SYMPHONY >/dev/null 2>&1`
-
-test -z "${SYMPHONY_LIBS}" && SYMPHONY_LIBS="-lSym -lCgl -lOsiClp -lClp -lOsi -lCoinUtils"
+## As of 2014-09-20, Debian testing/unstable has symphony.pc.
+test -z "${SYMPHONY_CPPFLAGS}" && \
+  SYMPHONY_CPPFLAGS=`pkg-config --cflags symphony >/dev/null 2>&1`
+test -z "${SYMPHONY_LIBS}" && \
+  SYMPHONY_LIBS=`pkg-config --libs symphony >/dev/null 2>&1`
+test -z "${SYMPHONY_LIBS}" && \
+  SYMPHONY_LIBS="-lSym -lCgl -lOsiClp -lClp -lOsi -lCoinUtils"
 
 ## Test whether we can compile and link a minimal program.
 rm -f conftest.*
@@ -38,33 +43,14 @@ status=${?}
 
 rm -f conftest.*
 
-if test ${status} -eq 0; then
-    SYMPHONY_INCLUDE_PATH=
-    SYMPHONY_LIB_PATH=
-    SYMPHONY_TS=
-else    
-    (cd src/SYMPHONY && \
-	./configure \
-	--enable-static --disable-shared --with-pic \
-        --with-application=no --disable-dependency-tracking \
-	--disable-zlib --disable-bzlib\
-        --disable-cplex-libcheck --disable-glpk-libcheck \
-        --disable-osl-libcheck --disable-soplex-libcheck \
-        --disable-xpress-libcheck \
-	CC="`${R} CMD config CC`" \
-	CPP="`${R} CMD config CPP`" \
-	CXX="`${R} CMD config CXX`" \
-	CXXCPP="`${R} CMD config CXXCPP`" \
-	F77="`${R} CMD config F77`" \
-	FLIBS="`${R} CMD config FLIBS`")
-    SYMPHONY_LIBS="-lSym -lCgl -lOsiClp -lClp -lOsi -lCoinUtils"
-    SYMPHONY_INCLUDE_PATH="-ISYMPHONY/include"
-    SYMPHONY_LIB_PATH="-LSYMPHONY/lib"
-    SYMPHONY_TS="SYMPHONY.ts"
+if test ${status} -ne 0; then
+  echo "Cannot find SYMPHONY libraries and headers."
+  echo "See <https://projects.coin-or.org/SYMPHONY>."
+  exit 1
 fi
 
-sed -e "s|@SYMPHONY_LIBS@|${SYMPHONY_LIBS}|" \
-    -e "s|@SYMPHONY_INCLUDE_PATH@|${SYMPHONY_INCLUDE_PATH}|" \
-    -e "s|@SYMPHONY_LIB_PATH@|${SYMPHONY_LIB_PATH}|" \
-    -e "s|@SYMPHONY_TS@|${SYMPHONY_TS}|" \
+sed -e "s|@SYMPHONY_CPPFLAGS@|${SYMPHONY_CPPFLAGS}|" \
+    -e "s|@SYMPHONY_LIBS@|${SYMPHONY_LIBS}|" \
     src/Makevars.in > src/Makevars
+
+exit 0
