@@ -13,41 +13,11 @@ fi
 
 R="${R_HOME}/bin/R"
 
-SYMPHONY_CPPFLAGS=`pkg-config --cflags SYMPHONY >/dev/null 2>&1`
-SYMPHONY_LIBS=`pkg-config --libs SYMPHONY >/dev/null 2>&1`
-## As of 2014-09-20, Debian testing/unstable has symphony.pc.
-test -z "${SYMPHONY_CPPFLAGS}" && \
-  SYMPHONY_CPPFLAGS=`pkg-config --cflags symphony >/dev/null 2>&1`
-test -z "${SYMPHONY_LIBS}" && \
-  SYMPHONY_LIBS=`pkg-config --libs symphony >/dev/null 2>&1`
-test -z "${SYMPHONY_LIBS}" && \
-  SYMPHONY_LIBS="-lSym -lCgl -lOsiClp -lClp -lOsi -lCoinUtils"
+SYMPHONY_CPPFLAGS=`pkg-config --cflags SYMPHONY`
+SYMPHONY_LIBS=`pkg-config --libs SYMPHONY`
 
 ## Test whether we can compile and link a minimal program.
 rm -f conftest.*
-
-cat > conftest.cc <<EOF
-#include <coin/symphony.h>
-extern "C"
-int
-main ()
-{
-    sym_environment *env = sym_open_environment();
-    sym_close_environment(env);
-    return 0;
-}
-EOF
-
-_R_SHLIB_BUILD_OBJECTS_SYMBOL_TABLES_=false ${R} CMD SHLIB conftest.cc ${SYMPHONY_CPPFLAGS} ${SYMPHONY_LIBS} >/dev/null 2>&1
-status=${?}
-
-rm -f conftest.*
-
-if test ${status} -ne 0; then
-  echo "Cannot find SYMPHONY libraries and headers."
-  echo "See <https://projects.coin-or.org/SYMPHONY>."
-  exit 1
-fi
 
 sed -e "s|@SYMPHONY_CPPFLAGS@|${SYMPHONY_CPPFLAGS}|" \
     -e "s|@SYMPHONY_LIBS@|${SYMPHONY_LIBS}|" \

@@ -1,0 +1,2 @@
+PKG_CPPFLAGS = -I/Volumes/KINGSTON/dev/SYMPHONY-5.6.10/include/coin 
+PKG_LIBS = -L/Volumes/KINGSTON/dev/SYMPHONY-5.6.10/lib -lSym -lCgl -lOsiClp -lClpSolver -lClp -lOsi -lCoinUtils -lbz2 -lz -framework Accelerate -lm  $(LAPACK_LIBS) $(BLAS_LIBS) $(FLIBS)
